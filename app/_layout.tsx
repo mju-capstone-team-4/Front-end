@@ -10,6 +10,9 @@ export default function Layout() {
 
       {/*  Tabs를 Stack 내부에서 렌더링 */}
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="board/ask/[id]_ask" />
+      <Stack.Screen name="board/trade/[id]_ask" />
+      <Stack.Screen name="board/ask/new" />
     </Stack>
   );
 }
