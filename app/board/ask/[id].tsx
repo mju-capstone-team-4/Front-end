@@ -51,8 +51,12 @@ export default function PostDetail() {
           style={styles.input}
           placeholder="댓글을 입력하세요..."
           value={commentInput}
-          onChangeText={setCommentInput}
+          onChangeText={(text) => setCommentInput(text)}
+          maxLength={150}
+          multiline
         />
+        <Text style={styles.charCount}>{commentInput.length} / 150</Text>
+
         <Button title="등록" onPress={handleAddComment} />
       </View>
     </View>
@@ -108,7 +112,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     padding: 10,
     marginTop: 12,
-    marginBottom: 8,
     borderRadius: 6,
+  },
+  charCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#888",
+    marginBottom: 8,
+    marginTop: 4,
   },
 });
