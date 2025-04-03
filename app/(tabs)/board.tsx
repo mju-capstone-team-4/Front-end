@@ -3,14 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import QuestionBox from "../../components/QuestionBox";
 
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
-
-  const convert_ask = () => setAsking(true);
-  const convert_trade = () => setAsking(false);
 
   type Question = { title: string; content: string; nickname: string };
   type Trade = { title: string; content: string; nickname: string; price: string };
@@ -31,10 +29,8 @@ export default function BoardScreen() {
     const loadData = async () => {
       const ask_storage = await AsyncStorage.getItem(ASK_STORAGE_KEY);
       const trade_storage = await AsyncStorage.getItem(TRADE_STORAGE_KEY);
-
       if (ask_storage) setQuestions(JSON.parse(ask_storage));
       if (trade_storage) setTrades(JSON.parse(trade_storage));
-
       setIsDataLoaded(true);
     };
     loadData();
@@ -53,10 +49,7 @@ export default function BoardScreen() {
     ) {
       const newId = typeof id === "string" ? id : Date.now().toString();
 
-      if (
-        (asking === "true" && questions[newId]) ||
-        (asking !== "true" && trades[newId])
-      ) return;
+      if ((asking === "true" && questions[newId]) || (asking !== "true" && trades[newId])) return;
 
       const save = async () => {
         if (asking === "true") {
@@ -85,11 +78,9 @@ export default function BoardScreen() {
   }, [params, isDataLoaded]);
 
   const filteredData = asking
-    ? Object.entries(questions)
-        .map(([id, item]) => ({ id, ...item }))
+    ? Object.entries(questions).map(([id, item]) => ({ id, ...item }))
         .filter((item) => item.title.includes(searchText))
-    : Object.entries(trades)
-        .map(([id, item]) => ({ id, ...item }))
+    : Object.entries(trades).map(([id, item]) => ({ id, ...item }))
         .filter((item) => item.title.includes(searchText));
 
   return (
@@ -98,19 +89,12 @@ export default function BoardScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>모두를 위한 식물</Text>
         <View style={styles.icons}>
-          <TouchableOpacity
-            onPress={() => setSearchVisible((prev) => !prev)}
-            style={styles.iconButton}
-          >
+          <TouchableOpacity onPress={() => setSearchVisible((prev) => !prev)} style={styles.iconButton}>
             <Ionicons name="search" size={20} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              if (asking) {
-                router.push("/board/ask/new" as const);
-              } else {
-                router.push("/board/trade/new" as const);
-              }
+              router.push(asking ? "/board/ask/new" : "/board/trade/new");
             }}
             style={styles.iconButton}
           >
@@ -131,83 +115,32 @@ export default function BoardScreen() {
 
       {/* 탭 메뉴 */}
       <View style={styles.tabs}>
-        <TouchableOpacity onPress={convert_ask}>
+        <TouchableOpacity onPress={() => setAsking(true)}>
           <Text style={[styles.tabText, asking && styles.activeTab]}>질문 게시판</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={convert_trade}>
+        <TouchableOpacity onPress={() => setAsking(false)}>
           <Text style={[styles.tabText, !asking && styles.activeTab]}>거래 게시판</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 게시글 리스트 (고정된 구조 사용) */}
-      {/* 게시글 리스트 - 검색 중이면 결과만, 아니면 전체 리스트 */}
-{searchVisible ? (
-  <FlatList
-    data={filteredData}
-    keyExtractor={(item) => item.id}
-    renderItem={({ item }) => (
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: asking ? "/board/ask/[id]" : "/board/trade/[id]",
-            params: item,
-          })
-        }
-      >
-        <View style={styles.questionBox}>
-          <Text style={styles.questionText}>{item.title}</Text>
-          {!asking && (
-            <Text style={styles.priceText}>💰 {(item as any).price}</Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    )}
-    contentContainerStyle={styles.list}
-  />
-) : (
-  asking ? (
-    <FlatList
-      data={Object.entries(questions).map(([id, item]) => ({ id, ...item }))}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/board/ask/[id]",
-              params: item,
-            })
-          }
-        >
-          <View style={styles.questionBox}>
-            <Text style={styles.questionText}>{item.title}</Text>
-          </View>
-        </TouchableOpacity>
-      )}
-      contentContainerStyle={styles.list}
-    />
-  ) : (
-    <FlatList
-      data={Object.entries(trades).map(([id, item]) => ({ id, ...item }))}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/board/trade/[id]",
-              params: item,
-            })
-          }
-        >
-          <View style={styles.questionBox}>
-            <Text style={styles.questionText}>{item.title}</Text>
-            <Text style={styles.priceText}>💰 {item.price}</Text>
-          </View>
-        </TouchableOpacity>
-      )}
-      contentContainerStyle={styles.list}
-    />
-  )
-)}
+      {/* 게시글 리스트 */}
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <QuestionBox
+            title={item.title}
+            price={asking ? undefined : (item as any).price}
+            onPress={() =>
+              router.push({
+                pathname: asking ? "/board/ask/[id]" : "/board/trade/[id]",
+                params: item,
+              })
+            }
+          />
+        )}
+        contentContainerStyle={styles.list}
+      />
     </View>
   );
 }
@@ -263,20 +196,5 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingTop: 10,
-  },
-  questionBox: {
-    backgroundColor: "#ddd",
-    padding: 20,
-    borderRadius: 4,
-    marginBottom: 12,
-  },
-  questionText: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  priceText: {
-    fontSize: 14,
-    marginTop: 8,
-    color: "#333",
   },
 });
