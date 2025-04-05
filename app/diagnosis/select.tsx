@@ -16,7 +16,7 @@ export default function DiagnosisSelectScreen() {
   ); // 페이지에 다시 진입할 때 입력 내용 초기화
 
   const router = useRouter();
-  const { name } = useLocalSearchParams();
+  const { name } = useLocalSearchParams(); //dianosis.tsx에서 식물 이름 name 받기
   const selectedPlantName = Array.isArray(name) ? name[0] : name;
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -35,7 +35,8 @@ export default function DiagnosisSelectScreen() {
   };
 
   const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    const permission = await ImagePicker.requestCameraPermissionsAsync(); 
+    // 이미지 권한 확인  
     if (!permission.granted) {
       Alert.alert('카메라 권한이 필요합니다.');
       return;
@@ -65,20 +66,27 @@ export default function DiagnosisSelectScreen() {
       return;
     }
 
-    const fileName = image.split('/').pop();
-    const fileType = fileName?.split('.').pop() || 'jpg';
+    const fileName = image.split('/').pop(); // 이미지 이름 추출
+    const fileType = fileName?.split('.').pop() || 'jpg'; // 이미지 타입 추출
 
     const formData = new FormData();
     formData.append('file', {
-      uri: image,
-      name: fileName,
+      uri: image, // 이미지 파일 경로 
+      name: fileName, // 업로드될 파일의 이름
       type: `image/${fileType}`,
     } as any);
 
+    formData.append('description', description);
+
+    /*
+    FormData {
+      "file": (이미지 파일),
+      "description": "부가 설명"
+    }
+    */ // FormData 구조 예시
+
     try {
-      /*
-      const response = await fetch('http://192.168.0.X:8080', {
-        //진단 요청 ip
+      const response = await fetch('http://192.168.0.X:8080', { //백엔드 ip
         method: 'POST',
         body: formData,
       });
@@ -88,34 +96,17 @@ export default function DiagnosisSelectScreen() {
       router.push({
         pathname: '/diagnosis/result',
         params: {
-          result: result.result,
-          confidence: result.confidence.toString(),
-          description
+          image: image, // 식물 이미지 
+          result: result.result, // 식물의 진단명 
+          confidence: result.confidence.toString(), // 병명 정확도
+          //image: result.image_url // 이미지 url
         },
       });
-      */
-
-      const result2 = {
-        result: '병명 테스트',
-        confidence: '99.9',
-      }; //임시 데이터
-
-      router.push({
-        pathname: '/diagnosis/result',
-        params: {
-          result: result2.result,
-          confidence: result2.confidence,
-          image: image,
-          image2: 'https://upload.wikimedia.org/wikipedia/commons/7/7f/Lilac.leaves.arp.jpg',
-          description: description
-        },
-      }); // 임시 결과 전송
 
     } catch (error) {
       console.error('진단 요청 실패:', error);
       Alert.alert('진단 요청 중 오류가 발생했습니다.');
     }
-
   };
 
   return (

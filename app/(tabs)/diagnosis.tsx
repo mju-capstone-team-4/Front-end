@@ -1,15 +1,31 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 
 export default function DiagnosisScreen() {
+  const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
+  
+  type Plant = { // 필요한 식물 정보 타입
+    id: number; // 유저 id
+    name: string; // 식물 이름
+    status: string; // 식물 상태
+    image: string; // 식물 이미지 주소
+  };
 
-  const plants = [
-    { id: 1, name: '식물A', status: '양호' },
-    { id: 2, name: '식물B', status: '주의' },
-    { id: 3, name: '식물C', status: '위험' },
-    { id: 4, name: '식물D', status: '??' },
-  ]; //임시 데이터
+  useEffect(() => {
+    fetchMyPlants();
+  }, []);
+
+  const fetchMyPlants = async () => {
+    try {
+      const response = await fetch('http://192.168.0.X:8080'); // 백엔드 ip주소
+      const data = await response.json();
+      setPlants(data);
+    } catch (error) {
+      console.error('식물 정보를 불러오지 못했습니다:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -26,15 +42,16 @@ export default function DiagnosisScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/diagnosis/select',
-                  params: {
-                    name: plant.name,
-                    //status: plant.status,
-                  },
+                  params: { name: plant.name },
                 })
               }
             >
               <View style={styles.imageBox}>
-                <Text style={styles.imageText}>사진</Text>
+                {plant.image ? (
+                  <Image source={{ uri: plant.image }} style={styles.image} />
+                ) : (
+                  <Text style={styles.imageText}>사진</Text>
+                )}
               </View>
               <View>
                 <Text>이름 : {plant.name}</Text>
@@ -78,6 +95,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 8,
+  },
+  image: {
+    width: 60,
+    height: 60,
     borderRadius: 8,
   },
   imageText: { 
