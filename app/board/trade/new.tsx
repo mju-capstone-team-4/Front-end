@@ -6,133 +6,165 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default function NewTradePostScreen() {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [image, setImage] = useState<any>(null);
   const router = useRouter();
 
-  const handleSubmit = () => {
-    if (!title.trim() || !content.trim() || !price.trim()) {
+  // ✅ 이미지 선택 및 리사이징
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const resized = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      setImage({
+        uri: resized.uri,
+        name: "image.jpg",
+        type: "image/jpeg",
+      });
+    }
+  };
+
+  // ✅ 가격 입력
+  const handlePriceChange = (text: string) => {
+    const onlyNumber = text.replace(/[^0-9]/g, "");
+    const num = parseInt(onlyNumber || "0", 10);
+    if (num <= 10000000) setPrice(num.toString());
+  };
+
+  // ✅ 제출
+  const handleSubmit = async () => {
+    if (!title.trim() || !description.trim() || !price.trim() || !image) {
       Alert.alert("오류", "모든 항목을 입력해주세요.");
       return;
     }
 
     if (title.length > 40) {
-      Alert.alert("제한 초과", "제목은 40자 이하로 작성해주세요.");
+      Alert.alert("제목 제한", "제목은 40자 이하로 작성해주세요.");
       return;
     }
 
-    if (content.length > 500) {
-      Alert.alert("제한 초과", "내용은 500자 이하로 작성해주세요.");
+    if (description.length > 500) {
+      Alert.alert("내용 제한", "내용은 500자 이하로 작성해주세요.");
       return;
     }
 
-    const numericPrice = parseInt(price.replace(/[^0-9]/g, ""), 10);
-    if (isNaN(numericPrice)) {
-      Alert.alert("가격 오류", "가격은 숫자로 입력해주세요.");
-      return;
+    const formData = new FormData();
+    formData.append("itemName", title);
+    formData.append("price", parseInt(price).toString());
+    formData.append("description", description);
+    formData.append("image", {
+      uri: image.uri,
+      name: image.name,
+      type: image.type,
+    } as any);
+
+    try {
+      const response = await fetch("http://43.201.33.187:8080/api/trade/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("서버 오류");
+
+      const result = await response.json();
+      Alert.alert("성공", `거래글이 등록되었습니다!`);
+      router.push("/(tabs)/board");
+    } catch (error) {
+      console.error("📛 서버 오류:", error);
+      Alert.alert("에러", "서버 오류로 등록에 실패했습니다.");
     }
-
-    if (numericPrice > 10000000) {
-      Alert.alert("가격 초과", "가격은 1,000만원 이하로 입력해주세요.");
-      return;
-    }
-
-    const newPost = {
-      id: Date.now().toString(),
-      title,
-      content,
-      nickname: "익명",
-      price: `${numericPrice.toLocaleString()}원`,
-      asking: "false",
-    };
-
-    router.push({
-      pathname: "/(tabs)/board",
-      params: newPost,
-    });
-  };
-
-  // 가격 입력 핸들러
-  const handlePriceChange = (text: string) => {
-    const numbersOnly = text.replace(/[^0-9]/g, "");
-    const numberValue = parseInt(numbersOnly || "0", 10);
-
-    if (numberValue > 10000000) return;
-
-    setPrice(numberValue.toString());
   };
 
   const numericPrice = parseInt(price || "0", 10);
   const formattedPrice = numericPrice.toLocaleString();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>거래 게시판</Text>
-        <TouchableOpacity onPress={handleSubmit} style={styles.iconButton}>
-          <Ionicons name="pencil-outline" size={20} color="black" />
-        </TouchableOpacity>
-      </View>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>거래 게시판</Text>
+            <TouchableOpacity onPress={handleSubmit} style={styles.iconButton}>
+              <Ionicons name="pencil-outline" size={20} color="black" />
+            </TouchableOpacity>
+          </View>
 
-      <Text style={styles.label}>제목</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={(text) => {
-          if (text.length <= 40) setTitle(text);
-        }}
-        placeholder="제목을 입력하세요"
-        maxLength={40}
-      />
-      <Text style={styles.charCount}>{title.length}/40</Text>
+          <Text style={styles.label}>제목</Text>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={(text) => text.length <= 40 && setTitle(text)}
+            placeholder="제목을 입력하세요"
+          />
+          <Text style={styles.charCount}>{title.length}/40</Text>
 
-      <Text style={styles.label}>가격(원)</Text>
-      <TextInput
-        style={styles.input}
-        value={formattedPrice}
-        onChangeText={handlePriceChange}
-        placeholder="예: 10000원 또는 가격 제안 받습니다"
-        keyboardType="numeric"
-      />
-      <Text style={styles.charCount}>
-        {numericPrice.toLocaleString()} / 10,000,000
-      </Text>
+          <Text style={styles.label}>가격(원)</Text>
+          <TextInput
+            style={styles.input}
+            value={formattedPrice}
+            onChangeText={handlePriceChange}
+            placeholder="예: 10000"
+            keyboardType="numeric"
+          />
+          <Text style={styles.charCount}>
+            {formattedPrice} / 10,000,000
+          </Text>
 
-      <Text style={styles.label}>내용</Text>
-      <TextInput
-        style={[styles.input, { height: 120 }]}
-        value={content}
-        onChangeText={(text) => {
-          if (text.length <= 500) setContent(text);
-        }}
-        placeholder="내용을 입력하세요"
-        multiline
-        maxLength={500}
-      />
-      <Text style={styles.charCount}>{content.length}/500</Text>
-    </View>
+          <Text style={styles.label}>내용</Text>
+          <TextInput
+            style={[styles.input, { height: 120 }]}
+            value={description}
+            onChangeText={(text) => text.length <= 500 && setDescription(text)}
+            placeholder="내용을 입력하세요"
+            multiline
+          />
+          <Text style={styles.charCount}>{description.length}/500</Text>
+
+          <Text style={styles.label}>이미지</Text>
+          {image && <Image source={{ uri: image.uri }} style={styles.imagePreview} />}
+          <TouchableOpacity onPress={pickImage} style={styles.imageButton}>
+            <Text style={styles.imageButtonText}>이미지 선택하기</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: "#fff",
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 6,
-    marginTop: 30,
-  },
+  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
+  label: { fontSize: 16, fontWeight: "bold", marginBottom: 6, marginTop: 30 },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -161,5 +193,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#999",
     borderRadius: 8,
+  },
+  imagePreview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  imageButton: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: "#3f6cff",
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  imageButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
