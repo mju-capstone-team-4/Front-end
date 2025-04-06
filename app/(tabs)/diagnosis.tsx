@@ -1,13 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
   
   type Plant = { // 필요한 식물 정보 타입
-    id: number; // 유저 id
+    id: number; // 식물 id
     name: string; // 식물 이름
     status: string; // 식물 상태
     image: string; // 식물 이미지 주소
@@ -19,9 +20,18 @@ export default function DiagnosisScreen() {
 
   const fetchMyPlants = async () => {
     try {
-      const response = await fetch('http://192.168.0.X:8080'); // 백엔드 ip주소
+      const token = await SecureStore.getItemAsync('userToken');
+
+      const response = await fetch('http://192.168.0.X:8080/plant', { // 백엔드 ip주소
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`, // JWT 토큰 
+      },
+    });
+
       const data = await response.json();
-      setPlants(data);
+      setPlants(data); // 사용자의 식물 정보 받아오기
+
     } catch (error) {
       console.error('식물 정보를 불러오지 못했습니다:', error);
     }

@@ -86,7 +86,7 @@ export default function DiagnosisSelectScreen() {
     */ // FormData 구조 예시
 
     try {
-      const response = await fetch('http://192.168.0.X:8080', { //백엔드 ip
+      const response = await fetch('http://192.168.0.X:8080/disease/predict', { //백엔드 ip
         method: 'POST',
         body: formData,
       });
