@@ -22,7 +22,7 @@ export default function DiagnosisScreen() {
     try {
       const token = await SecureStore.getItemAsync('userToken');
 
-      const response = await fetch('http://3.36.59.124:8080/plant', { // 백엔드 ip주소
+      const response = await fetch('http://192.108.0.X:8080', { // 백엔드 ip주소
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`, // JWT 토큰 
@@ -43,7 +43,7 @@ export default function DiagnosisScreen() {
 
       <ScrollView contentContainerStyle={{ gap: 12 }}>
         {plants.length === 0 ? (
-          <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
+          <Text style={styles.card}>내 식물이 없습니다.</Text>
         ) : (
           plants.map((plant) => (
             <TouchableOpacity

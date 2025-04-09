@@ -27,7 +27,7 @@ export default function DiagnosisResultScreen() {
         <Text style={styles.resultValue}>{predictResult || '없음'}</Text>
 
         <Text style={styles.resultLabel}>정확도</Text>
-        <Text style={styles.resultValue}>{predictConfidence ? `${predictConfidence}%` : 'N/A'}</Text>
+        <Text style={styles.resultValue}>{predictConfidence ? `${(parseFloat(predictConfidence) * 100).toFixed(1)}%` : 'N/A'}</Text>
       </View>
     </View>
 

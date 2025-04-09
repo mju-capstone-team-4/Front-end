@@ -78,15 +78,18 @@ export default function DiagnosisSelectScreen() {
 
     formData.append('description', description);
 
+    formData.append('plant', selectedPlantName);
+
     /*
     FormData {
       "file": (이미지 파일),
       "description": "부가 설명"
+      "plant": "식물의 이름"
     }
     */ // FormData 구조 예시
 
     try {
-      const response = await fetch('http://3.36.59.124:8080/disease/predict', { //백엔드 ip
+      const response = await fetch('http://43.202.4.163:8080/api/disease/predict', { //백엔드 ip
         method: 'POST',
         body: formData,
       });
@@ -98,7 +101,7 @@ export default function DiagnosisSelectScreen() {
         params: {
           image: image, // 식물 이미지 
           result: result.result, // 식물의 진단명 
-          confidence: result.confidence.toString(), // 병명 정확도
+          confidence: result.confidence, // 병명 정확도
           //image: result.image_url // 이미지 url
         },
       });
