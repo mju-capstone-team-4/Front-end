@@ -61,7 +61,7 @@ import {
       }
   
       try {
-        const response = await fetch(`http://43.201.33.187:8080/api/question/${id}`, {
+        const response = await fetch(`http://54.180.238.252:8080/api/question/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "multipart/form-data",

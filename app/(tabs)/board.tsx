@@ -23,7 +23,7 @@ export default function BoardScreen() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch("http://43.201.33.187:8080/api/question/all?page=0&size=20");
+      const response = await fetch("http://54.180.238.252:8080/api/question/all?page=0&size=20");
       const data = await response.json();
       setQuestions(data.content);
     } catch (error) {
@@ -33,7 +33,7 @@ export default function BoardScreen() {
 
   const fetchTrades = async () => {
     try {
-      const response = await fetch("http://43.201.33.187:8080/api/trade/all?page=0&size=20");
+      const response = await fetch("http://54.180.238.252:8080/api/trade/all?page=0&size=20");
       const data = await response.json();
       setTrades(data.content);
     } catch (error) {
