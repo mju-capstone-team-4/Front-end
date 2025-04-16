@@ -20,13 +20,21 @@ import * as ImageManipulator from "expo-image-manipulator";
 export default function NewPostScreen() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState<{ uri: string; name: string; type: string } | null>(null);
+  const [image, setImage] = useState<{
+    uri: string;
+    name: string;
+    type: string;
+  } | null>(null);
   const router = useRouter();
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert("권한 필요", "이미지를 선택하려면 갤러리 접근 권한이 필요합니다.");
+      Alert.alert(
+        "권한 필요",
+        "이미지를 선택하려면 갤러리 접근 권한이 필요합니다."
+      );
       return;
     }
 
@@ -80,13 +88,16 @@ export default function NewPostScreen() {
     } as any);
 
     try {
-      const response = await fetch("http://54.180.238.252:8080/api/question/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        "http://54.180.238.252:8080/api/question/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -144,7 +155,9 @@ export default function NewPostScreen() {
           <Text style={styles.charCount}>{content.length}/500</Text>
 
           <Text style={styles.label}>이미지</Text>
-          {image && <Image source={{ uri: image.uri }} style={styles.imagePreview} />}
+          {image && (
+            <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+          )}
           <TouchableOpacity onPress={pickImage} style={styles.imageButton}>
             <Text style={styles.imageButtonText}>이미지 선택하기</Text>
           </TouchableOpacity>

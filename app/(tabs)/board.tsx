@@ -10,6 +10,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import QuestionBox from "../../components/QuestionBox";
+import { getAllQuestions } from "@/service/getAllQuestions";
+import { getAllTrades } from "@/service/getAllTrades";
 
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
@@ -23,9 +25,9 @@ export default function BoardScreen() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch("http://54.180.238.252:8080/api/question/all?page=0&size=20");
-      const data = await response.json();
-      setQuestions(data.content);
+      const data = await getAllQuestions();
+      // API 응답 구조에 따라 data.content을 사용하거나 data.data를 사용합니다.
+      setQuestions(data);
     } catch (error) {
       console.error("❌ 질문 목록 가져오기 실패:", error);
     }
@@ -33,9 +35,8 @@ export default function BoardScreen() {
 
   const fetchTrades = async () => {
     try {
-      const response = await fetch("http://54.180.238.252:8080/api/trade/all?page=0&size=20");
-      const data = await response.json();
-      setTrades(data.content);
+      const data = await getAllTrades();
+      setTrades(data);
     } catch (error) {
       console.error("❌ 거래 목록 가져오기 실패:", error);
     }
@@ -46,15 +47,15 @@ export default function BoardScreen() {
   }, [asking]);
 
   const filteredData = asking
-  ? questions
-      .filter((item) => typeof item.title === "string")
-      .filter((item) =>
-        item.title.toLowerCase().includes(searchText.toLowerCase())
-      )
-  : trades.filter((item) => {
-      const name = item?.itemName ?? "";
-      return name.toLowerCase().includes(searchText.toLowerCase());
-    });
+    ? questions
+        .filter((item) => typeof item.title === "string")
+        .filter((item) =>
+          item.title.toLowerCase().includes(searchText.toLowerCase())
+        )
+    : trades.filter((item) => {
+        const name = item?.itemName ?? "";
+        return name.toLowerCase().includes(searchText.toLowerCase());
+      });
 
   return (
     <View style={styles.container}>
@@ -62,7 +63,10 @@ export default function BoardScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>모두를 위한 식물</Text>
         <View style={styles.icons}>
-          <TouchableOpacity onPress={() => setSearchVisible((prev) => !prev)} style={styles.iconButton}>
+          <TouchableOpacity
+            onPress={() => setSearchVisible((prev) => !prev)}
+            style={styles.iconButton}
+          >
             <Ionicons name="search" size={20} />
           </TouchableOpacity>
           <TouchableOpacity
@@ -89,17 +93,23 @@ export default function BoardScreen() {
       {/* 탭 메뉴 */}
       <View style={styles.tabs}>
         <TouchableOpacity onPress={() => setAsking(true)}>
-          <Text style={[styles.tabText, asking && styles.activeTab]}>질문 게시판</Text>
+          <Text style={[styles.tabText, asking && styles.activeTab]}>
+            질문 게시판
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setAsking(false)}>
-          <Text style={[styles.tabText, !asking && styles.activeTab]}>거래 게시판</Text>
+          <Text style={[styles.tabText, !asking && styles.activeTab]}>
+            거래 게시판
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* 게시글 리스트 */}
       <FlatList
         data={filteredData}
-        keyExtractor={(item) => `${asking ? item.questionId : item.tradePostId}`}
+        keyExtractor={(item) =>
+          `${asking ? item.questionId : item.tradePostId}`
+        }
         renderItem={({ item }) => (
           <QuestionBox
             title={asking ? item.title : item.itemName}
