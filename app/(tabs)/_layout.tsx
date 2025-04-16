@@ -6,14 +6,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarStyle: { backgroundColor: "white", height: 60 },
       }}
     >
       <Tabs.Screen
         name="board"
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarLabel: '게시판', tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="clipboard-text-outline"
               size={24}

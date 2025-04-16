@@ -53,6 +53,12 @@ export default function MyPlant(): JSX.Element {
     router.push("/plantRegistration");
   };
 
+  const handlePlantPress = (index: number) => {
+    router.push({
+      pathname: "/plantDetail",
+      params: { index: index.toString() },
+    });
+  };
   // 지정한 인덱스의 식물을 삭제하는 함수
   const handleDeletePlant = async (index: number) => {
     // 삭제 전에 사용자에게 확인
@@ -87,7 +93,10 @@ export default function MyPlant(): JSX.Element {
   };
 
   const renderPlant = ({ item, index }: { item: PlantData; index: number }) => (
-    <View style={styles.plantItem}>
+    <TouchableOpacity
+      style={styles.plantItem}
+      onPress={() => handlePlantPress(index)}
+    >
       <View style={styles.itemInfo}>
         <Text style={styles.plantNickname}>
           식물 별명: {item.plantNickname}
@@ -97,7 +106,7 @@ export default function MyPlant(): JSX.Element {
       <TouchableOpacity onPress={() => handleDeletePlant(index)}>
         <MaterialIcons name="delete" size={24} color="grey" />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

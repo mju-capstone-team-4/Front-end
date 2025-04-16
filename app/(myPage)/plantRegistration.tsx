@@ -109,6 +109,7 @@ export default function PlantRegistration(): JSX.Element {
     // 기본 사진은 로컬 이미지로 지정 (require 사용)
     const defaultPhotoUri = require("@/assets/images/react-logo.png");
     const finalPhotoUri = photoUri ? photoUri : defaultPhotoUri;
+    console.log("finalPhotoUri:", finalPhotoUri);
     const newPlantData = {
       plantName,
       plantNickname,
