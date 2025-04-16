@@ -87,7 +87,7 @@ export default function NewTradePostScreen() {
     } as any);
 
     try {
-      const response = await fetch("http://43.201.33.187:8080/api/trade/create", {
+      const response = await fetch("http://54.180.238.252:8080/api/trade/create", {
         method: "POST",
         headers: {
           "Content-Type": "multipart/form-data",
