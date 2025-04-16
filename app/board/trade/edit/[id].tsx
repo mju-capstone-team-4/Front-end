@@ -83,7 +83,7 @@ export default function TradeEdit() {
     }
 
     try {
-      const response = await fetch(`http://43.201.33.187:8080/api/trade/${id}`, {
+      const response = await fetch(`http://54.180.238.252:8080/api/trade/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "multipart/form-data",

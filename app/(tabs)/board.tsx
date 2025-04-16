@@ -10,6 +10,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import QuestionBox from "../../components/QuestionBox";
+import { getAllQuestions } from "@/service/getAllQuestions";
+import { getAllTrades } from "@/service/getAllTrades";
 
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
@@ -23,11 +25,9 @@ export default function BoardScreen() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(
-        "http://43.201.33.187:8080/api/question/all?page=0&size=20"
-      );
-      const data = await response.json();
-      setQuestions(data.content);
+      const data = await getAllQuestions();
+      // API 응답 구조에 따라 data.content을 사용하거나 data.data를 사용합니다.
+      setQuestions(data);
     } catch (error) {
       console.error("❌ 질문 목록 가져오기 실패:", error);
     }
@@ -35,11 +35,8 @@ export default function BoardScreen() {
 
   const fetchTrades = async () => {
     try {
-      const response = await fetch(
-        "http://43.201.33.187:8080/api/trade/all?page=0&size=20"
-      );
-      const data = await response.json();
-      setTrades(data.content);
+      const data = await getAllTrades();
+      setTrades(data);
     } catch (error) {
       console.error("❌ 거래 목록 가져오기 실패:", error);
     }

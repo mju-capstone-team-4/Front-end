@@ -46,7 +46,7 @@ export default function NewPostScreen() {
     if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
 
-      // ✅ 이미지 리사이즈 (가로 800px로 줄이기)
+      // 이미지 리사이즈 (가로 800px로 줄이기)
       const resized = await ImageManipulator.manipulateAsync(
         asset.uri,
         [{ resize: { width: 800 } }],
@@ -89,7 +89,7 @@ export default function NewPostScreen() {
 
     try {
       const response = await fetch(
-        "http://43.201.33.187:8080/api/question/create",
+        "http://54.180.238.252:8080/api/question/create",
         {
           method: "POST",
           headers: {

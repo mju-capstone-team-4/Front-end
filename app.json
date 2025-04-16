@@ -46,6 +46,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "API_URL": "http://43.201.85.159:8080/api"
     }
   }
 }
