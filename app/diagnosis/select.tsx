@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Image, Alert,
-  TextInput, KeyboardAvoidingView, ScrollView, Platform
+  TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +20,7 @@ export default function DiagnosisSelectScreen() {
   const selectedPlantName = Array.isArray(name) ? name[0] : name;
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -66,6 +67,11 @@ export default function DiagnosisSelectScreen() {
       return;
     }
 
+    setIsLoading(true); // 로딩 시작
+    
+    // 최소 로딩 시간을 위한 시작 시간 기록
+    const startTime = Date.now();
+
     const fileName = image.split('/').pop(); // 이미지 이름 추출
     const fileType = fileName?.split('.').pop() || 'jpg'; // 이미지 타입 추출
 
@@ -96,6 +102,15 @@ export default function DiagnosisSelectScreen() {
 
       const result = await response.json();
       
+      // 최소 로딩 시간 계산
+      const elapsedTime = Date.now() - startTime;
+      const minLoadingTime = 1000; // 최소 1초
+      
+      // 최소 로딩 시간보다 적게 걸렸다면 남은 시간만큼 대기
+      if (elapsedTime < minLoadingTime) {
+        await new Promise(resolve => setTimeout(resolve, minLoadingTime - elapsedTime));
+      }
+      
       router.push({
         pathname: '/diagnosis/result',
         params: {
@@ -109,6 +124,8 @@ export default function DiagnosisSelectScreen() {
     } catch (error) {
       console.error('진단 요청 실패:', error);
       Alert.alert('진단 요청 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false); // 로딩 종료
     }
   };
 
@@ -143,9 +160,26 @@ export default function DiagnosisSelectScreen() {
               onChangeText={setDescription}
             />
           </View>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>진단하기</Text>
+          <TouchableOpacity 
+            style={[styles.submitButton, isLoading && styles.disabledButton]} 
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>진단하기</Text>
+            )}
           </TouchableOpacity>
+          
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#4CAF50" />
+                <Text style={styles.loadingText}>진단 중입니다...</Text>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -224,5 +258,30 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: 'bold',
     fontSize: 16,
-  }
+  },
+  disabledButton: {
+    backgroundColor: '#999',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  loadingContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
