@@ -16,7 +16,7 @@ export default function Layout() {
           {/* 추가된 화면들 */}
           <Stack.Screen name="board/ask/[id]_ask" />
           <Stack.Screen name="board/trade/[id]_ask" />
-          <Stack.Screen name="board/ask/new" />
+          <Stack.Screen name="bard/ask/new" />
         </Stack>
       </SafeAreaView>
     </SafeAreaProvider>
