@@ -5,7 +5,7 @@ import { Stack } from "expo-router";
 export default function Layout() {
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+     
         <Stack screenOptions={{ headerShown: false }}>
           {/* (root) 폴더에 있는 index.tsx를 Stack에서 관리 */}
           <Stack.Screen name="(root)/index" />
@@ -18,7 +18,6 @@ export default function Layout() {
           <Stack.Screen name="board/trade/[id]_ask" />
           <Stack.Screen name="bard/ask/new" />
         </Stack>
-      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

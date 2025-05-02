@@ -48,7 +48,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://43.201.85.159:8080/api"
+      "API_URL": "http://ec2-15-164-198-69.ap-northeast-2.compute.amazonaws.com:8080/api",
+      "API_LOGIN_URL": "http://ec2-15-164-198-69.ap-northeast-2.compute.amazonaws.com:8080"
     }
   }
 }
