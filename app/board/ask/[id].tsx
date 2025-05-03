@@ -32,7 +32,9 @@ export default function PostDetail() {
 
   const fetchComments = async () => {
     try {
-      const res = await fetch(`http://54.180.238.252:8080/api/question/${questionId}/comments`);
+      const res = await fetch(
+        `http://54.180.238.252:8080/api/question/${questionId}/comments`
+      );
       const data = await res.json();
       setComments(data.content || []);
     } catch (err) {
@@ -90,9 +92,12 @@ export default function PostDetail() {
         style: "destructive",
         onPress: async () => {
           try {
-            const res = await fetch(`http://54.180.238.252:8080/api/question/${questionId}`, {
-              method: "DELETE",
-            });
+            const res = await fetch(
+              `http://54.180.238.252:8080/api/question/${questionId}`,
+              {
+                method: "DELETE",
+              }
+            );
             if (!res.ok) throw new Error("삭제 실패");
             Alert.alert("삭제 완료", "게시글이 삭제되었습니다.");
             router.push("/(tabs)/board");
@@ -127,14 +132,17 @@ export default function PostDetail() {
   const handleLikeToggle = async (commentId: number, liked: boolean) => {
     try {
       const method = liked ? "DELETE" : "POST";
-      const res = await fetch(`http://54.180.238.252:8080/api/comments/${commentId}/likes`, {
-        method,
-      });
+      const res = await fetch(
+        `http://54.180.238.252:8080/api/comments/${commentId}/likes`,
+        {
+          method,
+        }
+      );
       const responseText = await res.text();
-  
+
       if (!res.ok) {
         throw new Error("좋아요 처리 실패: " + responseText);
-      }  
+      }
       fetchComments();
     } catch (err) {
       Alert.alert("❌ 좋아요 처리 실패");
@@ -168,7 +176,10 @@ export default function PostDetail() {
               >
                 <Ionicons name="pencil-outline" size={20} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.iconButton, { marginLeft: 8 }]} onPress={handleDeletePost}>
+              <TouchableOpacity
+                style={[styles.iconButton, { marginLeft: 8 }]}
+                onPress={handleDeletePost}
+              >
                 <Ionicons name="trash-outline" size={20} />
               </TouchableOpacity>
             </View>
@@ -201,7 +212,9 @@ export default function PostDetail() {
                   <Text style={styles.commentNickname}>익명</Text>
                   <View style={styles.commentActions}>
                     <View style={styles.likeWrapper}>
-                      <TouchableOpacity onPress={() => handleLikeToggle(c.commentId, c.liked)}>
+                      <TouchableOpacity
+                        onPress={() => handleLikeToggle(c.commentId, c.liked)}
+                      >
                         <Ionicons
                           name="thumbs-up-outline"
                           size={16}
@@ -211,10 +224,19 @@ export default function PostDetail() {
                       </TouchableOpacity>
                       <Text style={styles.recommendCount}>{c.likeCount}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => handleEdit(c.commentId, c.content)}>
-                      <Ionicons name="create-outline" size={16} color="#666" style={styles.iconSpacing} />
+                    <TouchableOpacity
+                      onPress={() => handleEdit(c.commentId, c.content)}
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={16}
+                        color="#666"
+                        style={styles.iconSpacing}
+                      />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteComment(c.commentId)}>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteComment(c.commentId)}
+                    >
                       <Ionicons name="trash-outline" size={16} color="#666" />
                     </TouchableOpacity>
                   </View>
@@ -229,10 +251,18 @@ export default function PostDetail() {
                       multiline
                     />
                     <View style={styles.editButtons}>
-                      <TouchableOpacity style={styles.saveButton} onPress={handleAddOrUpdateComment}>
-                        <Text style={{ color: "#fff", fontWeight: "bold" }}>완료</Text>
+                      <TouchableOpacity
+                        style={styles.saveButton}
+                        onPress={handleAddOrUpdateComment}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                          완료
+                        </Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.cancelButton} onPress={handleCancelEdit}>
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={handleCancelEdit}
+                      >
                         <Text style={{ color: "#666" }}>취소</Text>
                       </TouchableOpacity>
                     </View>
@@ -284,7 +314,12 @@ const styles = StyleSheet.create({
   nickname: { color: "#555", marginBottom: 20 },
   image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 16 },
   content: { fontSize: 16, color: "#333", lineHeight: 24, marginBottom: 24 },
-  commentTitle: { fontSize: 16, fontWeight: "bold", color: "#000", marginBottom: 12 },
+  commentTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 12,
+  },
   commentItem: {
     flexDirection: "row",
     alignItems: "flex-start",
