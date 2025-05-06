@@ -1,4 +1,3 @@
-// createQuestion.ts
 import apiClient from "./apiClient";
 import { getToken } from "./getToken";
 

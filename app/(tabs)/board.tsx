@@ -26,7 +26,6 @@ export default function BoardScreen() {
   const fetchQuestions = async () => {
     try {
       const data = await getAllQuestions();
-      // API 응답 구조에 따라 data.content을 사용하거나 data.data를 사용합니다.
       setQuestions(data);
     } catch (error) {
       console.error("❌ 질문 목록 가져오기 실패:", error);

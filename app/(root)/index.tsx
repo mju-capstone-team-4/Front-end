@@ -23,12 +23,17 @@ export default function LoginScreen() {
 
   useEffect(() => {
     const listener = LinkingModule.addEventListener("url", async ({ url }) => {
+      console.log("🔗 리디렉션 URL 수신됨:", url);
       const parsed = LinkingModule.parse(url);
       const accessToken = parsed.queryParams?.accessToken;
 
       if (accessToken) {
+        console.log("✅ accessToken 수신:", accessToken);
         await AsyncStorage.setItem("accessToken", accessToken as string);
+        console.log("💾 accessToken 저장 완료");
         router.replace("/(tabs)/board");
+      } else {
+        console.log("⚠️ accessToken 없음. 로그인 실패로 간주");
       }
     });
 

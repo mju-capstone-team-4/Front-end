@@ -16,26 +16,19 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { createQuestion } from "@/service/createQuestion";
 
-export default function NewPostScreen() {
+export default function NewTradePostScreen() {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState<{
-    uri: string;
-    name: string;
-    type: string;
-  } | null>(null);
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [image, setImage] = useState<any>(null);
   const router = useRouter();
 
+  // ✅ 이미지 선택 및 리사이징
   const pickImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert(
-        "권한 필요",
-        "이미지를 선택하려면 갤러리 접근 권한이 필요합니다."
-      );
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
       return;
     }
 
@@ -45,50 +38,79 @@ export default function NewPostScreen() {
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const asset = result.assets[0];
-
-      // 이미지 리사이즈 (가로 800px로 줄이기)
       const resized = await ImageManipulator.manipulateAsync(
-        asset.uri,
+        result.assets[0].uri,
         [{ resize: { width: 800 } }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      const fileName = resized.uri.split("/").pop() || "image.jpg";
       setImage({
         uri: resized.uri,
-        name: fileName,
+        name: "image.jpg",
         type: "image/jpeg",
       });
     }
   };
 
+  // ✅ 가격 입력
+  const handlePriceChange = (text: string) => {
+    const onlyNumber = text.replace(/[^0-9]/g, "");
+    const num = parseInt(onlyNumber || "0", 10);
+    if (num <= 10000000) setPrice(num.toString());
+  };
+
+  // ✅ 제출
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim() || !image) {
-      Alert.alert("오류", "제목, 내용, 이미지를 모두 입력해주세요.");
+    if (!title.trim() || !description.trim() || !price.trim() || !image) {
+      Alert.alert("오류", "모든 항목을 입력해주세요.");
       return;
     }
 
     if (title.length > 40) {
-      Alert.alert("제한 초과", "제목은 40자 이하로 작성해주세요.");
+      Alert.alert("제목 제한", "제목은 40자 이하로 작성해주세요.");
       return;
     }
 
-    if (content.length > 500) {
-      Alert.alert("제한 초과", "내용은 500자 이하로 작성해주세요.");
+    if (description.length > 500) {
+      Alert.alert("내용 제한", "내용은 500자 이하로 작성해주세요.");
       return;
     }
+
+    const formData = new FormData();
+    formData.append("itemName", title);
+    formData.append("price", parseInt(price).toString());
+    formData.append("description", description);
+    formData.append("image", {
+      uri: image.uri,
+      name: image.name,
+      type: image.type,
+    } as any);
 
     try {
-      // createQuestion 함수에서 FormData 구성, 토큰 발급, API 호출 등을 처리함
-      const result = await createQuestion({ title, content, image });
-      Alert.alert("성공", "질문이 등록되었습니다!");
+      const response = await fetch(
+        "http://54.180.238.252:8080/api/trade/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error("서버 오류");
+
+      const result = await response.json();
+      Alert.alert("성공", `거래글이 등록되었습니다!`);
       router.push("/(tabs)/board");
     } catch (error) {
-      Alert.alert("에러", "질문 등록에 실패했습니다.");
-      console.error(error);
+      console.error("📛 서버 오류:", error);
+      Alert.alert("에러", "서버 오류로 등록에 실패했습니다.");
     }
   };
+
+  const numericPrice = parseInt(price || "0", 10);
+  const formattedPrice = numericPrice.toLocaleString();
 
   return (
     <KeyboardAvoidingView
@@ -98,7 +120,7 @@ export default function NewPostScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>질문 게시판</Text>
+            <Text style={styles.title}>거래 게시판</Text>
             <TouchableOpacity onPress={handleSubmit} style={styles.iconButton}>
               <Ionicons name="pencil-outline" size={20} color="black" />
             </TouchableOpacity>
@@ -108,26 +130,30 @@ export default function NewPostScreen() {
           <TextInput
             style={styles.input}
             value={title}
-            onChangeText={(text) => {
-              if (text.length <= 40) setTitle(text);
-            }}
+            onChangeText={(text) => text.length <= 40 && setTitle(text)}
             placeholder="제목을 입력하세요"
-            maxLength={40}
           />
           <Text style={styles.charCount}>{title.length}/40</Text>
+
+          <Text style={styles.label}>가격(원)</Text>
+          <TextInput
+            style={styles.input}
+            value={formattedPrice}
+            onChangeText={handlePriceChange}
+            placeholder="예: 10000"
+            keyboardType="numeric"
+          />
+          <Text style={styles.charCount}>{formattedPrice} / 10,000,000</Text>
 
           <Text style={styles.label}>내용</Text>
           <TextInput
             style={[styles.input, { height: 120 }]}
-            value={content}
-            onChangeText={(text) => {
-              if (text.length <= 500) setContent(text);
-            }}
+            value={description}
+            onChangeText={(text) => text.length <= 500 && setDescription(text)}
             placeholder="내용을 입력하세요"
             multiline
-            maxLength={500}
           />
-          <Text style={styles.charCount}>{content.length}/500</Text>
+          <Text style={styles.charCount}>{description.length}/500</Text>
 
           <Text style={styles.label}>이미지</Text>
           {image && (

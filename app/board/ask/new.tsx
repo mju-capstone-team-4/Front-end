@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { createQuestion } from "@/service/createQuestion";
 
 export default function NewPostScreen() {
   const [title, setTitle] = useState("");
@@ -78,36 +79,10 @@ export default function NewPostScreen() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("image", {
-      uri: image.uri,
-      name: image.name,
-      type: image.type,
-    } as any);
-
     try {
-      const response = await fetch(
-        "http://54.180.238.252:8080/api/question/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("📛 서버 오류 발생 - 상태 코드:", response.status);
-        console.error("📛 서버 응답 본문:", errorText);
-        throw new Error("서버 오류");
-      }
-
-      const data = await response.json();
-      Alert.alert("성공", `질문이 등록되었습니다!`);
+      // createQuestion 함수에서 FormData 구성, 토큰 발급, API 호출 등을 처리함
+      const result = await createQuestion({ title, content, image });
+      Alert.alert("성공", "질문이 등록되었습니다!");
       router.push("/(tabs)/board");
     } catch (error) {
       Alert.alert("에러", "질문 등록에 실패했습니다.");

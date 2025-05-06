@@ -1,13 +1,21 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+} from "react-native";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import * as SecureStore from "expo-secure-store";
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
-  
-  type Plant = { // 필요한 식물 정보 타입
+
+  type Plant = {
+    // 필요한 식물 정보 타입
     id: number; // 식물 id
     name: string; // 식물 이름
     status: string; // 식물 상태
@@ -20,20 +28,20 @@ export default function DiagnosisScreen() {
 
   const fetchMyPlants = async () => {
     try {
-      const token = await SecureStore.getItemAsync('userToken');
+      const token = await SecureStore.getItemAsync("userToken");
 
-      const response = await fetch('http://192.168.0.X:8080/plant', { // 백엔드 ip주소
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`, // JWT 토큰 
-      },
-    });
+      const response = await fetch("http://192.168.0.X:8080/plant", {
+        // 백엔드 ip주소
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰
+        },
+      });
 
       const data = await response.json();
       setPlants(data); // 사용자의 식물 정보 받아오기
-
     } catch (error) {
-      console.error('식물 정보를 불러오지 못했습니다:', error);
+      console.error("식물 정보를 불러오지 못했습니다:", error);
     }
   };
 
@@ -51,7 +59,7 @@ export default function DiagnosisScreen() {
               style={styles.card}
               onPress={() =>
                 router.push({
-                  pathname: '/diagnosis/select',
+                  pathname: "/diagnosis/select",
                   params: { name: plant.name },
                 })
               }
@@ -72,7 +80,8 @@ export default function DiagnosisScreen() {
         )}
         <TouchableOpacity
           style={styles.selectButton}
-          onPress={() => router.push('/diagnosis/select')}>
+          onPress={() => router.push("/diagnosis/select")}
+        >
           <Text style={styles.selectButtonText}>사진으로 진단</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -81,20 +90,20 @@ export default function DiagnosisScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    backgroundColor: '#fff' 
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  title: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    marginBottom: 20 
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eee',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#eee",
     padding: 12,
     borderRadius: 10,
     gap: 16,
@@ -102,9 +111,9 @@ const styles = StyleSheet.create({
   imageBox: {
     width: 60,
     height: 60,
-    backgroundColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 8,
   },
   image: {
@@ -112,24 +121,24 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 8,
   },
-  imageText: { 
-    color: '#666' 
+  imageText: {
+    color: "#666",
   },
   selectButton: {
     marginTop: 20,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 10,
   },
   selectButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   emptyMessage: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 40,
     fontSize: 16,
-    color: '#888',
+    color: "#888",
   },
 });
