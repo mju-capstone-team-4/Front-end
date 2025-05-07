@@ -14,12 +14,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
 import { handleOAuthLogin } from "@/service/auth";
+import { getToken } from "@/service/getToken";
+
+// 추가할 거 자동로그인
 
 WebBrowser.maybeCompleteAuthSession();
 const API_URL = Constants?.expoConfig?.extra?.API_LOGIN_URL;
 
 export default function LoginScreen() {
   const router = useRouter();
+  console.log("일단 여기 들어옴");
 
   useEffect(() => {
     const listener = LinkingModule.addEventListener("url", async ({ url }) => {
@@ -70,6 +74,24 @@ export default function LoginScreen() {
               style={styles.icon}
             />
             <Text style={styles.buttonText}>구글로 로그인</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "#999" }]}
+            onPress={async () => {
+              const token = await getToken();
+              if (token) {
+                await AsyncStorage.setItem("accessToken", token);
+                console.log("✅ 테스트 토큰 저장 완료:", token);
+                router.replace("/(tabs)/board");
+              } else {
+                console.log("⚠️ 테스트 토큰을 받지 못했습니다.");
+              }
+            }}
+          >
+            <Text style={[styles.buttonText, { color: "#fff" }]}>
+              테스트 계정으로 시작
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
