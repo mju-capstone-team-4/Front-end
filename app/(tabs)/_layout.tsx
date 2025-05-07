@@ -1,6 +1,9 @@
 import { Tabs } from "expo-router";
 import { Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
+import { SplashScreen } from "expo-router"; // (자동 splash 처리용)
+import { useEffect } from "react";
 
 const icons = {
   board: require("../../assets/images/board_icon.png"),
@@ -12,6 +15,14 @@ const icons = {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  
+  // 폰트 여기에 추가
+  const [fontsLoaded] = useFonts({
+    "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
+    "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
+  });
+
+  if (!fontsLoaded) return null;
 
   return (
     <Tabs
