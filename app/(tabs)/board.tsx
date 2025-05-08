@@ -5,23 +5,34 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import QuestionBox from "../../components/QuestionBox";
-import { getAllQuestions } from "@/service/getAllQuestions";
-import { getAllTrades } from "@/service/getAllTrades";
+import { getAllQuestions } from "../../service/getAllQuestions";
+import { getAllTrades } from "../../service/getAllTrades";
+
+const icons = {
+  SearchIcon: require("../../assets/images/search_button.png"),
+  WriteIcon: require("../../assets/images/write_button.png"),
+  ChevronIcon: require("../../assets/images/chevron.png"),
+};
 
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
-
   const [questions, setQuestions] = useState<any[]>([]);
   const [trades, setTrades] = useState<any[]>([]);
-
   const router = useRouter();
+
+  useEffect(() => {
+    asking ? fetchQuestions() : fetchTrades();
+  }, [asking]);
 
   const fetchQuestions = async () => {
     try {
@@ -41,111 +52,173 @@ export default function BoardScreen() {
     }
   };
 
-  useEffect(() => {
-    asking ? fetchQuestions() : fetchTrades();
-  }, [asking]);
-
   const filteredData = asking
-    ? questions
-        .filter((item) => typeof item.title === "string")
-        .filter((item) =>
+    ? questions.filter(
+        (item) =>
+          typeof item.title === "string" &&
           item.title.toLowerCase().includes(searchText.toLowerCase())
-        )
+      )
     : trades.filter((item) => {
         const name = item?.itemName ?? "";
         return name.toLowerCase().includes(searchText.toLowerCase());
       });
 
-  return (
-    <View style={styles.container}>
-      {/* 상단 제목 + 아이콘 */}
-      <View style={styles.header}>
-        <Text style={styles.title}>모두를 위한 식물</Text>
-        <View style={styles.icons}>
-          <TouchableOpacity
-            onPress={() => setSearchVisible((prev) => !prev)}
-            style={styles.iconButton}
-          >
-            <Ionicons name="search" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              router.push(asking ? "/board/ask/new" : "/board/trade/new");
-            }}
-            style={styles.iconButton}
-          >
-            <Ionicons name="create-outline" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* 검색창 */}
-      {searchVisible && (
-        <TextInput
-          placeholder="검색어를 입력하세요"
-          value={searchText}
-          onChangeText={setSearchText}
-          style={styles.searchInput}
-        />
-      )}
-
-      {/* 탭 메뉴 */}
-      <View style={styles.tabs}>
-        <TouchableOpacity onPress={() => setAsking(true)}>
-          <Text style={[styles.tabText, asking && styles.activeTab,  { fontFamily: "Pretendard-Regular" }]}>
-            질문 게시판
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setAsking(false)}>
-          <Text style={[styles.tabText, !asking && styles.activeTab,  { fontFamily: "Pretendard-Regular" }]}>
-            거래 게시판
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 게시글 리스트 */}
-      <FlatList
-        data={filteredData}
-        keyExtractor={(item) =>
-          `${asking ? item.questionId : item.tradePostId}`
-        }
-        renderItem={({ item }) => (
-          <QuestionBox
-            title={asking ? item.title : item.itemName}
-            price={asking ? undefined : `${item.price.toLocaleString()}원`}
-            onPress={() =>
-              router.push({
-                pathname: asking ? "/board/ask/[id]" : "/board/trade/[id]",
-                params: asking
-                  ? {
-                      id: item.questionId,
-                      title: item.title,
-                      content: item.content,
-                      nickname: item.nickname,
-                      imageUrl: item.image_url,
-                    }
-                  : {
-                      id: item.tradePostId,
-                      itemName: item.itemName,
-                      description: item.description,
-                      nickname: item.nickname,
-                      price: item.price,
-                      imageUrl: item.imageUrl,
-                    },
-              })
-            }
-          />
-        )}
-        contentContainerStyle={styles.list}
+  const renderQuestionItem = ({ item }: any) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        router.push({
+          pathname: "/board/ask/[id]",
+          params: {
+            id: item.questionId,
+            title: item.title,
+            content: item.content,
+            nickname: item.nickname,
+            imageUrl: item.image_url,
+          },
+        })
+      }
+    >
+      <Image
+        source={{ uri: item.image_url }}
+        style={styles.cardImage}
+        resizeMode="cover"
       />
-    </View>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardSubtitle} numberOfLines={1}>
+          {item.content}
+        </Text>
+      </View>
+      <Image source={icons.ChevronIcon} style={styles.chevron} />
+    </TouchableOpacity>
+  );
+
+  const renderTradeItem = ({ item }: any) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        router.push({
+          pathname: "/board/trade/[id]",
+          params: {
+            id: item.tradePostId,
+            itemName: item.itemName,
+            description: item.description,
+            nickname: item.nickname,
+            price: item.price,
+            imageUrl: item.imageUrl,
+          },
+        })
+      }
+    >
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.cardImage}
+        resizeMode="cover"
+      />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.itemName}</Text>
+        <Text style={styles.cardSubtitle}>
+          {item.price.toLocaleString()}원
+        </Text>
+      </View>
+      <Image source={icons.ChevronIcon} style={styles.chevron} />
+    </TouchableOpacity>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* 상단 */}
+          <View style={styles.header}>
+            <Text style={styles.title}>모두를 위한 식물</Text>
+            <View style={styles.icons}>
+              <TouchableOpacity
+                onPress={() => setSearchVisible(!searchVisible)}
+              >
+                <Image source={icons.SearchIcon} style={styles.iconImage} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push(
+                    asking ? "/board/ask/new" : "/board/trade/new"
+                  );
+                }}
+              >
+                <Image source={icons.WriteIcon} style={styles.iconImage} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* 검색창 */}
+          {searchVisible && (
+            <TextInput
+              placeholder="검색어를 입력하세요"
+              value={searchText}
+              onChangeText={setSearchText}
+              style={styles.searchInput}
+            />
+          )}
+
+          {/* 탭 */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              onPress={() => setAsking(true)}
+              style={styles.tab}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  asking && styles.activeTabText,
+                  { fontFamily: "Pretendard-Regular" },
+                ]}
+              >
+                질문 게시판
+              </Text>
+              {asking && <View style={styles.underline} />}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setAsking(false)}
+              style={styles.tab}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  !asking && styles.activeTabText,
+                  { fontFamily: "Pretendard-Regular" },
+                ]}
+              >
+                거래 게시판
+              </Text>
+              {!asking && <View style={styles.underline} />}
+            </TouchableOpacity>
+          </View>
+
+          {/* 리스트 */}
+          <FlatList
+            data={filteredData}
+            keyExtractor={(item) =>
+              `${asking ? item.questionId : item.tradePostId}`
+            }
+            renderItem={asking ? renderQuestionItem : renderTradeItem}
+            contentContainerStyle={styles.list}
+            keyboardShouldPersistTaps="handled" 
+            keyboardDismissMode="on-drag" 
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingTop: 60,
   },
@@ -155,47 +228,81 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    fontFamily: "Pretendard-Regular"
+    fontSize: 20,
+    fontFamily: "Pretendard-SemiBold",
   },
   icons: {
     flexDirection: "row",
-    gap: 10,
+    gap: 12,
   },
-  iconButton: {
-    padding: 6,
-    borderWidth: 1,
-    borderColor: "#999",
-    borderRadius: 8,
+  iconImage: {
+    width: 32,
+    height: 32,
   },
   searchInput: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: "#fff",
-    borderRadius: 6,
-    borderColor: "#ccc",
-    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: "#F3F3F3",
   },
   tabs: {
     flexDirection: "row",
-    marginTop: 20,
-    marginBottom: 10,
-    gap: 20,
+    justifyContent: "center",
+    marginTop: 24,
+    gap: 30,
+  },
+  tab: {
+    alignItems: "center",
   },
   tabText: {
     fontSize: 16,
-    color: "#999",
+    color: "#888",
   },
-  activeTab: {
-    color: "#000",
+  activeTabText: {
+    color: "#00D282",
     fontWeight: "bold",
-    textDecorationLine: "underline",
+  },
+  underline: {
+    marginTop: 4,
+    height: 2,
+    backgroundColor: "#00D282",
+    width: "100%",
   },
   list: {
-    paddingTop: 10,
+    marginTop: 10,
+    paddingBottom: 40,
   },
-  fonts_head:{
-    fontFamily: "Pretendard-SemiBold"
-  }
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#F9F9F9",
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  cardImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#ccc",
+  },
+  cardContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cardTitle: {
+    fontFamily: "Pretendard-SemiBold",
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontFamily: "Pretendard-Regular",
+    fontSize: 12,
+    color: "#666",
+  },
+  chevron: {
+    width: 16,
+    height: 16,
+    tintColor: "#999",
+  },
 });
