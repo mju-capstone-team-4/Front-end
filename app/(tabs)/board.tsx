@@ -22,6 +22,8 @@ const icons = {
   ChevronIcon: require("../../assets/images/chevron.png"),
 };
 
+// (import 부분은 그대로 유지)
+
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
   const [searchVisible, setSearchVisible] = useState(false);
@@ -73,8 +75,8 @@ export default function BoardScreen() {
             id: item.questionId,
             title: item.title,
             content: item.content,
-            nickname: item.nickname,
-            imageUrl: item.image_url,
+            nickname: item.username, // ✅ username으로 수정
+            imageUrl: item.image_url, // ✅ image_url로 수정
           },
         })
       }
@@ -206,8 +208,8 @@ export default function BoardScreen() {
             }
             renderItem={asking ? renderQuestionItem : renderTradeItem}
             contentContainerStyle={styles.list}
-            keyboardShouldPersistTaps="handled" 
-            keyboardDismissMode="on-drag" 
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
           />
         </View>
       </TouchableWithoutFeedback>
