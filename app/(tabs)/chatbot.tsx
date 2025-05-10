@@ -3,11 +3,13 @@ import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet 
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
 export default function ChatbotScreen() {
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const router = useRouter();
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
 
   const getToken = async () => {
     return await SecureStore.getItemAsync('accessToken');
@@ -17,7 +19,7 @@ export default function ChatbotScreen() {
     const fetchUsers = async () => {
       try {
         const token = getToken;
-        const res = await axios.get('http://43.202.4.163:8080/api/mypage/members', {
+        const res = await axios.get(`${API_BASE}/mypage/members`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -36,7 +38,7 @@ export default function ChatbotScreen() {
       const token = getToken;
 
       const res = await axios.post(
-        `http://43.202.4.163:8080/api/chat/room/private/create?otherMemberId=${otherMemberId}`,
+        `${API_BASE}/chat/room/private/create?otherMemberId=${otherMemberId}`,
         {},
         {
           headers: {

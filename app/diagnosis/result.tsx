@@ -3,6 +3,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+//import { useEffect, useState } from 'react';
+import Constants from 'expo-constants';
 
 export default function DiagnosisResultScreen() {
   const { image, result, confidence } = useLocalSearchParams();
@@ -13,9 +15,28 @@ export default function DiagnosisResultScreen() {
   const predictConfidence = parseFloat(
     Array.isArray(confidence) ? confidence[0] : confidence
   ); // 정확도 
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
 
   const percentage = isNaN(predictConfidence) ? 0 : Math.round(predictConfidence * 100);
 
+  /*const [treatments, setTreatments] = useState([]); // 치료 방법
+
+  useEffect(() => {
+    const fetchTreatments = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/disease/treatment?name=${predictResult}`);
+        const data = await response.json();
+        setTreatments(data);
+      } catch (error) {
+        console.error('치료 방법 불러오기 실패:', error);
+        setTreatments([]);
+      }
+    };
+
+    if (predictResult) {
+      fetchTreatments();
+    }
+  }, [predictResult]); */
 
   const dummytreatments = [
     {

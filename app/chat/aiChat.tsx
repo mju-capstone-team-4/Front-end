@@ -2,12 +2,14 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 
 export default function AiChat() {
   const [messages, setMessages] = useState<{ from: 'user' | 'ai'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -15,7 +17,7 @@ export default function AiChat() {
     setMessages(prev => [...prev, { from: 'user', text: input }]); // 사용자 메시지
 
     try {
-      const res = await axios.post('http://43.202.4.163:8080/api/chat/bot/ask', 
+      const res = await axios.post(`${API_BASE}/chat/bot/ask`, 
         { 
           message: input 
         }); // AI 서버 요청

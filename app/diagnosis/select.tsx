@@ -10,6 +10,7 @@ import LoadingSplash from './LoadingSplash';
 import { Ionicons } from '@expo/vector-icons';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 export default function DiagnosisSelectScreen() {
   useFocusEffect(
@@ -22,7 +23,7 @@ export default function DiagnosisSelectScreen() {
   const router = useRouter();
   const { name } = useLocalSearchParams(); //dianosis.tsx에서 식물 이름 name 받기
   const selectedPlantName = Array.isArray(name) ? name[0] : name;
-
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -116,7 +117,7 @@ export default function DiagnosisSelectScreen() {
     formData.append('plant', selectedPlantName);
 
     try {
-      const response = await fetch('http://43.202.4.163:8080/api/disease/predict', { //백엔드 ip
+      const response = await fetch(`${API_BASE}/disease/predict`, { //백엔드 ip
         method: 'POST',
         body: formData,
       });

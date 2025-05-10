@@ -2,10 +2,12 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'rea
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
   const allowedPlants = ['딸기', '토마토', '포도', '호박', '오이', '상추', '고추', '감자', '파프리카']; // 진단 가능 식물 목록 
 
   type Plant = { // 필요한 식물 정보 타입
@@ -13,6 +15,7 @@ export default function DiagnosisScreen() {
     name: string; // 식물 이름
     status: string; // 식물 상태
     image: string; // 식물 이미지 주소
+    description: string; // 임시
   };
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export default function DiagnosisScreen() {
   const fetchMyPlants = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await fetch('http://43.202.4.163:8080/api/disease/predict', { // 백엔드 ip주소
+      const response = await fetch(`${API_BASE}/mypage/myplant`, { // 백엔드 ip주소
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`, // JWT 토큰 
@@ -45,7 +48,7 @@ export default function DiagnosisScreen() {
         {plants.length === 0 ? (
           <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
         ) : (
-          plants.map((plant) => {
+          /*plants.map((plant) => {
             const isAllowed = allowedPlants.includes(plant.name);
             return (
               <View key={plant.id} style={styles.card}>
@@ -79,7 +82,38 @@ export default function DiagnosisScreen() {
                 </View>
               </View>
             );
-          })
+          }) */
+          plants.map((plant, index) => {
+            const isAllowed = allowedPlants.includes(plant.name);
+            return (
+              <View key={index} style={styles.card}>
+                <View style={styles.imageBox}>
+                  <Text style={styles.imageText}>사진 없음</Text>
+                </View>
+                <View style={styles.cardTextBox}>
+                  <Text style={styles.plantName}>이름: {plant.name}</Text>
+                  <Text style={styles.plantStatus}>설명: {plant.description}</Text>
+                  <TouchableOpacity
+                    style={isAllowed ? styles.myPlantSelectButton : styles.myPlantSelectButton2}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      if (isAllowed) {
+                        router.push({
+                          pathname: '/diagnosis/select',
+                          params: { name: plant.name },
+                        });
+                      }
+                    }}
+                    disabled={!isAllowed}
+                  >
+                    <Text style={styles.myPlantSelectButtonText}>
+                      {isAllowed ? '선택하기' : '진단 불가'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          }) // 임시
         )}
         <TouchableOpacity
           style={styles.selectButton}
@@ -102,7 +136,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 20,
@@ -113,7 +147,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F0F0F0',
     borderRadius: 30,
     marginBottom: 8,
   },
@@ -205,5 +239,6 @@ const styles = StyleSheet.create({
     marginTop: 40,
     fontSize: 16,
     color: '#9E9E9E',
+    marginBottom: 30,
   },
 });

@@ -6,6 +6,7 @@ import { Client } from '@stomp/stompjs';
 import * as SecureStore from 'expo-secure-store';
 import { decode as atob } from 'base-64';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 
 const SERVER_URL = 'http://15.164.198.69:8080';
 
@@ -29,6 +30,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const stompClientRef = useRef<Client | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
+  const API_BASE = Constants.expoConfig?.extra?.API_URL;
 
   // JWT에서 이메일 추출
   const getMyEmailFromToken = async (): Promise<string | null> => {
@@ -55,7 +57,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
 
   // 메시지 히스토리 불러오기
   useEffect(() => {
-    axios.get(`${SERVER_URL}/chat/history/${roomId}`)
+    axios.get(`${API_BASE}/chat/history/${roomId}`)
       .then(res => setMessages(res.data))
       .catch(err => console.error('히스토리 로딩 실패:', err));
   }, [roomId]);
