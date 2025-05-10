@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Front-end",
+    "name": "Planty",
     "slug": "Front-end",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,12 +10,18 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.plantz.planty",
       "infoPlist": {
         "NSCameraUsageDescription": "이 앱은 식물 진단을 위한 사진 촬영을 위해 카메라 접근이 필요합니다.",
-        "NSPhotoLibraryUsageDescription": "이 앱은 식물 진단을 위한 사진 선택을 위해 갤러리 접근이 필요합니다."
+        "NSPhotoLibraryUsageDescription": "이 앱은 식물 진단을 위한 사진 선택을 위해 갤러리 접근이 필요합니다.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
+      "package": "com.plantz.planty",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -41,10 +47,22 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "API_URL": "http://ec2-15-164-198-69.ap-northeast-2.compute.amazonaws.com:8080/api",
+      "API_LOGIN_URL": "http://ec2-15-164-198-69.ap-northeast-2.compute.amazonaws.com:8080",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e43d6268-a36e-4948-8ae4-3fe792242e38"
+      }
+    },
+    "owner": "ch0eun"
   }
 }
