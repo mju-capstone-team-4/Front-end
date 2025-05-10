@@ -32,7 +32,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",
-          bottom: insets.bottom + 20,
+          bottom: insets.bottom + 1,
           left: "50%", // 👉 왼쪽 기준 중앙
        
        
