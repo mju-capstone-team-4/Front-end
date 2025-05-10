@@ -2,6 +2,8 @@ import { Tabs } from "expo-router";
 import { Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
+import { SplashScreen } from "expo-router"; // (자동 splash 처리용)
+import { useEffect } from "react";
 
 const icons = {
   board: require("../../assets/images/board_icon.png"),

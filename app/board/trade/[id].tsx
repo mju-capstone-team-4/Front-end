@@ -8,6 +8,7 @@ import {
   Pressable,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import ImageView from "react-native-image-viewing";
@@ -54,7 +55,7 @@ export default function TradeDetail() {
         onPress: async () => {
           try {
             const response = await fetch(
-              `http://43.201.33.187:8080/api/trade/${id}`,
+              `http://54.180.238.252:8080/api/trade/${id}`,
               {
                 method: "DELETE",
               }
@@ -73,58 +74,60 @@ export default function TradeDetail() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.postBox}>
-        {/* 제목 + 수정/삭제 아이콘 */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{displayTitle}</Text>
-          <View style={styles.iconButtons}>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => {
-                if (typeof id === "string") {
-                  router.push({
-                    pathname: "/board/trade/edit/[id]",
-                    params: {
-                      id,
-                      itemName,
-                      description,
-                      price,
-                      imageUrl,
-                    },
-                  });
-                }
-              }}
-            >
-              <Ionicons name="create-outline" size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.iconButton, { marginLeft: 8 }]}
-              onPress={handleDelete}
-            >
-              <Ionicons name="trash-outline" size={20} />
-            </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.postBox}>
+          {/* 제목 + 수정/삭제 아이콘 */}
+          <View style={styles.header}>
+            <Text style={styles.title}>{displayTitle}</Text>
+            <View style={styles.iconButtons}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  if (typeof id === "string") {
+                    router.push({
+                      pathname: "/board/trade/edit/[id]",
+                      params: {
+                        id,
+                        itemName,
+                        description,
+                        price,
+                        imageUrl,
+                      },
+                    });
+                  }
+                }}
+              >
+                <Ionicons name="create-outline" size={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { marginLeft: 8 }]}
+                onPress={handleDelete}
+              >
+                <Ionicons name="trash-outline" size={20} />
+              </TouchableOpacity>
+            </View>
           </View>
+
+          <Text style={styles.meta}>작성자: {displayNickname}</Text>
+          <Text style={styles.meta_price}>가격: {displayPrice}</Text>
+
+          {validImage && (
+            <>
+              <Pressable onPress={() => setVisible(true)}>
+                <Image source={{ uri: validImage }} style={styles.image} />
+              </Pressable>
+              <ImageView
+                images={[{ uri: validImage }]}
+                imageIndex={0}
+                visible={visible}
+                onRequestClose={() => setVisible(false)}
+              />
+            </>
+          )}
+
+          <Text style={styles.content}>{displayContent}</Text>
         </View>
-
-        <Text style={styles.meta}>작성자: {displayNickname}</Text>
-        <Text style={styles.meta_price}>가격: {displayPrice}</Text>
-
-        {validImage && (
-          <>
-            <Pressable onPress={() => setVisible(true)}>
-              <Image source={{ uri: validImage }} style={styles.image} />
-            </Pressable>
-            <ImageView
-              images={[{ uri: validImage }]}
-              imageIndex={0}
-              visible={visible}
-              onRequestClose={() => setVisible(false)}
-            />
-          </>
-        )}
-
-        <Text style={styles.content}>{displayContent}</Text>
-      </View>
+      </ScrollView>
 
       <View style={styles.buttonBox}>
         <Button title="채팅하기" onPress={() => alert("채팅 준비 중")} />
@@ -136,12 +139,14 @@ export default function TradeDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
-    padding: 20,
+    backgroundColor: "#ffffff", // 밝은 테마
     paddingTop: 60,
   },
+  scrollContent: {
+    padding: 20,
+  },
   postBox: {
-    backgroundColor: "#ddd",
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
     padding: 24,
     marginBottom: 30,
@@ -170,7 +175,7 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 1,
+    marginBottom: 4,
   },
   meta_price: {
     fontSize: 14,
@@ -191,10 +196,7 @@ const styles = StyleSheet.create({
   buttonBox: {
     backgroundColor: "#fff",
     padding: 20,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 4,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
   },
 });

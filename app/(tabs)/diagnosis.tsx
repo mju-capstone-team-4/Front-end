@@ -34,9 +34,8 @@ export default function DiagnosisScreen() {
 
       const data = await response.json();
       setPlants(data); // 사용자의 식물 정보 받아오기
-
     } catch (error) {
-      console.error('식물 정보를 불러오지 못했습니다:', error);
+      console.error("식물 정보를 불러오지 못했습니다:", error);
     }
   };
 
@@ -235,7 +234,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   emptyMessage: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 40,
     fontSize: 16,
     color: '#9E9E9E',

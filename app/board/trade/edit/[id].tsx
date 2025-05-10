@@ -1,59 +1,66 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
-  TouchableOpacity,
-  Image,
+  StyleSheet,
   Alert,
+  Image,
+  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import { updateTrade } from "../../../../service/updateTrade";
 
-export default function TradeEdit() {
+const icons = {
+  WriteIcon: require("../../../../assets/images/write_button.png"),
+  PictureIcon: require("../../../../assets/images/picture.png"),
+  PlantIcon: require("../../../../assets/images/plant_icon.png"),
+};
+
+export default function TradeEditScreen() {
   const router = useRouter();
-  const {
-    id,
-    itemName,
-    description,
-    price,
-    imageUrl,
-  } = useLocalSearchParams();
+  const { id, itemName, description, price, imageUrl } = useLocalSearchParams();
 
   const [title, setTitle] = useState(itemName as string);
   const [content, setContent] = useState(description as string);
   const [priceText, setPriceText] = useState(price as string);
-  const [image, setImage] = useState<{ uri: string; name: string; type: string } | null>(
+  const [image, setImage] = useState<{
+    uri: string;
+    name: string;
+    type: string;
+  } | null>(
     imageUrl && typeof imageUrl === "string"
-      ? {
-          uri: imageUrl,
-          name: "image.jpg",
-          type: "image/jpeg",
-        }
+      ? { uri: imageUrl, name: "origin.jpg", type: "image/jpeg" }
       : null
   );
-  useEffect(() => {
-    console.log("🪵 수정 중인 질문 ID:", id);
-  }, [id]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       quality: 1,
     });
-    if (!result.canceled) {
+
+    if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
-      const fileName = asset.uri.split("/").pop() || "image.jpg";
-      const ext = fileName.split(".").pop()?.toLowerCase() || "jpg";
-      const mimeType = `image/${ext === "jpg" ? "jpeg" : ext}`;
+
+      const resized = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const fileName = resized.uri.split("/").pop() || "image.jpg";
+
       setImage({
-        uri: asset.uri,
+        uri: resized.uri,
         name: fileName,
-        type: mimeType,
+        type: "image/jpeg",
       });
     }
   };
@@ -70,34 +77,20 @@ export default function TradeEdit() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("itemName", title);
-    formData.append("description", content);
-    formData.append("price", numericPrice.toString());
-    if (image?.uri && image.uri !== imageUrl) {
-      formData.append("image", {
-        uri: image.uri,
-        name: image.name,
-        type: image.type,
-      } as any);
-    }
-
     try {
-      const response = await fetch(`http://43.201.33.187:8080/api/trade/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
+      await updateTrade({
+        id: id as string,
+        itemName: title,
+        description: content,
+        price: numericPrice.toString(),
+        image: image?.uri ? image : undefined,
       });
 
-      if (!response.ok) throw new Error("서버 오류");
-
-      Alert.alert("수정 완료", "거래 게시글이 수정되었습니다!");
+      Alert.alert("수정 완료", "거래글이 성공적으로 수정되었습니다!");
       router.replace("/(tabs)/board");
     } catch (error) {
-      Alert.alert("에러", "거래글 수정에 실패했습니다!");
       console.error("❌ 수정 실패:", error);
+      Alert.alert("에러", "거래글 수정 중 오류가 발생했습니다!");
     }
   };
 
@@ -106,105 +99,149 @@ export default function TradeEdit() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.label}>제목</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={(text) => {
-            if (text.length <= 40) setTitle(text);
-          }}
-          placeholder="제목을 입력하세요"
-        />
-        <Text style={styles.charCount}>{title.length}/40</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* 상단 헤더 */}
+          <View style={styles.header}>
+            <Text style={styles.title}>거래글 수정</Text>
+            <TouchableOpacity onPress={handleUpdate}>
+              <Image source={icons.WriteIcon} style={styles.writeButton} />
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.label}>가격</Text>
-        <TextInput
-          style={styles.input}
-          value={priceText}
-          onChangeText={setPriceText}
-          placeholder="가격을 입력하세요"
-          keyboardType="numeric"
-        />
+          {/* 이미지 안내 + 업로드 */}
+          <Text style={styles.uploadGuide}>상품 이미지를 업로드해주세요</Text>
+          <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
+            {image ? (
+              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+            ) : (
+              <Image source={icons.PictureIcon} style={styles.pictureButton} />
+            )}
+          </TouchableOpacity>
 
-        <Text style={styles.label}>내용</Text>
-        <TextInput
-          style={[styles.input, { height: 100 }]}
-          value={content}
-          onChangeText={(text) => {
-            if (text.length <= 500) setContent(text);
-          }}
-          placeholder="내용을 입력하세요"
-          multiline
-        />
-        <Text style={styles.charCount}>{content.length}/500</Text>
+          {/* 제목 */}
+          <View style={styles.inputBox}>
+            <View style={styles.labelRow}>
+              <Image source={icons.PlantIcon} style={styles.labelIcon} />
+              <Text style={styles.label}>제목</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={(text) => {
+                if (text.length <= 40) setTitle(text);
+              }}
+              placeholder="제목을 입력하세요"
+              maxLength={40}
+            />
+            <Text style={styles.charCount}>{title.length}/40</Text>
+          </View>
 
-        <Text style={styles.label}>이미지</Text>
-        {image && <Image source={{ uri: image.uri }} style={styles.preview} />}
-        <TouchableOpacity onPress={pickImage} style={styles.imageButton}>
-          <Text style={styles.imageButtonText}>이미지 선택</Text>
-        </TouchableOpacity>
+          {/* 가격 */}
+          <View style={styles.inputBox}>
+            <View style={styles.labelRow}>
+              <Image source={icons.PlantIcon} style={styles.labelIcon} />
+              <Text style={styles.label}>가격</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={priceText}
+              onChangeText={setPriceText}
+              placeholder="가격을 입력하세요"
+              keyboardType="numeric"
+            />
+          </View>
 
-        <TouchableOpacity onPress={handleUpdate} style={styles.submitButton}>
-          <Text style={styles.submitButtonText}>수정 완료</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          {/* 내용 */}
+          <View style={styles.inputBox}>
+            <View style={styles.labelRow}>
+              <Image source={icons.PlantIcon} style={styles.labelIcon} />
+              <Text style={styles.label}>내용</Text>
+            </View>
+            <TextInput
+              style={[styles.input, { height: 100 }]}
+              value={content}
+              onChangeText={(text) => {
+                if (text.length <= 500) setContent(text);
+              }}
+              placeholder="내용을 입력하세요"
+              multiline
+              maxLength={500}
+            />
+            <Text style={styles.charCount}>{content.length}/500</Text>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: "#fff",
+  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: "Pretendard-SemiBold",
+  },
+  writeButton: {
+    width: 32,
+    height: 32,
+  },
+  uploadGuide: {
+    fontSize: 16,
+    fontFamily: "Pretendard-Regular",
+    textAlign: "center",
+    marginBottom: 12,
+    color: "#555",
+  },
+  pictureButton: {
+    width: 140,
+    height: 140,
+  },
+  imageIconButton: {
+    alignSelf: "center",
+    marginBottom: 30,
+  },
+  imagePreview: {
+    width: 140,
+    height: 140,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+  },
+  inputBox: {
+    marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 6,
+  },
+  labelIcon: {
+    width: 15,
+    height: 15,
   },
   label: {
     fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 6,
+    fontFamily: "Pretendard-SemiBold",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#F3F3F3",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    marginBottom: 6,
   },
   charCount: {
-    fontSize: 12,
-    color: "#888",
     alignSelf: "flex-end",
-    marginBottom: 10,
-  },
-  preview: {
-    width: "100%",
-    height: 200,
-    marginTop: 10,
-    borderRadius: 8,
-  },
-  imageButton: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: "#4a90e2",
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  imageButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  submitButton: {
-    marginTop: 24,
-    backgroundColor: "#00aa55",
-    padding: 14,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 4,
   },
 });

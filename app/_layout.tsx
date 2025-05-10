@@ -1,18 +1,26 @@
-import { Stack } from "expo-router";
-import { Tabs } from "expo-router";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useEffect } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Stack, useRouter } from "expo-router";
+import * as Linking from "expo-linking";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Layout() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/*  (root) 폴더에 있는 index.tsx를 Stack에서 관리 */} 
-      <Stack.Screen name="(root)" />
+  const router = useRouter();
 
-      {/*  Tabs를 Stack 내부에서 렌더링 */}
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="board/ask/[id]_ask" />
-      <Stack.Screen name="board/trade/[id]_ask" />
-      <Stack.Screen name="board/ask/new" />
-    </Stack>
+  return (
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* (root) 폴더에 있는 index.tsx를 Stack에서 관리 */}
+        <Stack.Screen name="(root)/index" />
+
+        {/* Tabs를 Stack 내부에서 렌더링 */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        {/* 추가된 화면들 */}
+        <Stack.Screen name="board/ask/[id]" />
+        <Stack.Screen name="board/trade/[id]" />
+        <Stack.Screen name="board/ask/new" />
+      </Stack>
+    </SafeAreaProvider>
   );
 }
