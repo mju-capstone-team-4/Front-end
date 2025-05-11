@@ -6,10 +6,21 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getMypage } from "@/service/getMypage";
 import { useRouter } from "expo-router";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function UserProfile() {
   const [user, setUser] = useState<{
@@ -78,12 +89,12 @@ export default function UserProfile() {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 250,
+    height: 290,
     flexDirection: "column",
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
     justifyContent: "center",
+    backgroundColor: "red",
+    marginTop: scaleHeight(63),
   },
   loadingContainer: {
     flex: 1,
@@ -100,14 +111,20 @@ const styles = StyleSheet.create({
     color: "red",
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    backgroundColor: "blue",
+    position: "absolute",
+    width: scaleWidth(211),
+    height: scaleWidth(211), // 정사각형이므로 width 기준
+    top: 0,
+    left: SCREEN_WIDTH / 2 - scaleWidth(211) / 2, // 가운데 정렬
+    borderRadius: scaleWidth(211) / 2,
+    backgroundColor: "#D9D9D9", // 로딩 전 배경
+    zIndex: 2,
   },
   infoContainer: {
+    position: "absolute",
     alignItems: "center",
+    backgroundColor: "blue",
+    top: scaleHeight(286),
   },
   nameRow: {
     flexDirection: "row",
@@ -115,8 +132,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   userName: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Pretendard-Bold",
+    fontSize: scaleWidth(24),
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   editIcon: {
     marginLeft: 8,

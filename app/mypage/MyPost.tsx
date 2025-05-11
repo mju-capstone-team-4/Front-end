@@ -3,7 +3,7 @@ import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 
-export default function MyPost(): JSX.Element {
+export default function MyPost(): React.JSX.Element {
   const router = useRouter();
 
   const handlePress = () => {
@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: 50,
-    backgroundColor: "#fff",
     paddingLeft: 16,
   },
   title: {

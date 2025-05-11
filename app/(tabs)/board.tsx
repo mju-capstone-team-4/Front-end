@@ -92,12 +92,24 @@ export default function BoardScreen() {
       {/* 탭 메뉴 */}
       <View style={styles.tabs}>
         <TouchableOpacity onPress={() => setAsking(true)}>
-          <Text style={[styles.tabText, asking && styles.activeTab,  { fontFamily: "Pretendard-Regular" }]}>
+          <Text
+            style={[
+              styles.tabText,
+              asking && styles.activeTab,
+              { fontFamily: "Pretendard-Regular" },
+            ]}
+          >
             질문 게시판
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setAsking(false)}>
-          <Text style={[styles.tabText, !asking && styles.activeTab,  { fontFamily: "Pretendard-Regular" }]}>
+          <Text
+            style={[
+              styles.tabText,
+              !asking && styles.activeTab,
+              { fontFamily: "Pretendard-Regular" },
+            ]}
+          >
             거래 게시판
           </Text>
         </TouchableOpacity>
@@ -157,7 +169,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    fontFamily: "Pretendard-Regular"
+    fontFamily: "Pretendard-Regular",
   },
   icons: {
     flexDirection: "row",
@@ -195,7 +207,7 @@ const styles = StyleSheet.create({
   list: {
     paddingTop: 10,
   },
-  fonts_head:{
-    fontFamily: "Pretendard-SemiBold"
-  }
+  fonts_head: {
+    fontFamily: "Pretendard-SemiBold",
+  },
 });

@@ -10,7 +10,5 @@ export default function postAll() {
 }
 
 const styles = StyleSheet.create({
-    container : {
-        
-    }
+  container: {},
 });
