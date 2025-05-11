@@ -106,7 +106,7 @@ export default function BoardScreen() {
             id: item.tradePostId,
             itemName: item.itemName,
             description: item.description,
-            nickname: item.nickname,
+            nickname: item.username,
             price: item.price,
             imageUrl: item.imageUrl,
           },
