@@ -15,11 +15,12 @@ export default function AiChat() {
     if (!input.trim()) return;
 
     setMessages(prev => [...prev, { from: 'user', text: input }]); // 사용자 메시지
+    setInput(''); // 입력창 초기화 
 
     try {
-      const res = await axios.post(`${API_BASE}/chat/bot/ask`, 
-        { 
-          message: input 
+      const res = await axios.post(`${API_BASE}/chat/bot/ask`,
+        {
+          message: input
         }); // AI 서버 요청
 
       const aiMessage = res.data.message || 'AI 응답 없음';
@@ -53,6 +54,8 @@ export default function AiChat() {
       <ScrollView
         ref={scrollRef}
         style={styles.chatContainer}
+        contentContainerStyle={{ paddingBottom:25 }} // 메시지 박스 공간 확보
+        keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
         {messages.map((msg, idx) => (

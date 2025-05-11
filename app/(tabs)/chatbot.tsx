@@ -18,15 +18,40 @@ export default function ChatbotScreen() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = getToken;
+        const token = await getToken();
         const res = await axios.get(`${API_BASE}/mypage/members`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUsers(res.data);
-      } catch (err) {
+        setUsers(res.data.content);
+
+      } catch (err: any) {
         console.error('사용자 목록 불러오기 실패:', err);
+        /*
+        if (err.response) {
+          console.error('서버 응답 코드:', err.response.status);
+          console.error('서버 응답 데이터:', err.response.data);
+        } else {
+          console.error('네트워크 에러 또는 서버 미응답');
+        }*/
+        setUsers([
+          {
+            id: 1,
+            username: 'test user1',
+            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
+          },
+          {
+            id: 2,
+            username: 'test user2',
+            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
+          },
+          {
+            id: 3,
+            username: 'test user3',
+            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
+          },
+        ]); // 임시 데이터
       }
     };
 
@@ -90,15 +115,15 @@ export default function ChatbotScreen() {
 
       <ScrollView contentContainerStyle={styles.userList}>
         {users
-          .filter(u => u.name.includes(search))
+          .filter(u => u.username && u.username.includes(search))
           .map((user, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => handleUserPress(user.id, user.name, user.image)}
+              onPress={() => handleUserPress(user.id, user.username, user.profileUrl)}
               style={styles.userCard}
             >
-              <Image source={{ uri: user.image }} style={styles.avatar} />
-              <Text style={styles.userName}>{user.name}</Text>
+              <Image source={{ uri: user.profileUrl }} style={styles.avatar} />
+              <Text style={styles.userName}>{user.username}</Text>
             </TouchableOpacity>
           ))}
       </ScrollView>
