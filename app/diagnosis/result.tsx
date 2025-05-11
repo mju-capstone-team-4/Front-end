@@ -3,8 +3,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-//import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DiagnosisResultScreen() {
   const { image, result, confidence } = useLocalSearchParams();
@@ -37,6 +38,23 @@ export default function DiagnosisResultScreen() {
       fetchTreatments();
     }
   }, [predictResult]); */
+
+  const [diagnosis, setDiagnosis] = useState<{
+    image: string;
+    result: string;
+    confidence: number;
+    createdAt?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const loadLatestDiagnosis = async () => {
+      const stored = await AsyncStorage.getItem('diagnosisHistory');
+      const data = stored ? JSON.parse(stored) : [];
+      const latest = data[data.length - 1];
+      setDiagnosis(latest);
+    };
+    loadLatestDiagnosis();
+  }, []); // 임시 이미지 출력
 
   const dummytreatments = [
     {
@@ -98,9 +116,10 @@ export default function DiagnosisResultScreen() {
           </View>
 
           <View style={styles.imageBox}>
-            {imageUri ? (
+            {diagnosis?.image? ( // {imageUri? (
               <Image
-                source={{ uri: imageUri }}
+                //source={{ uri: imageUri }}
+                source={{ uri: diagnosis.image }}
                 style={styles.image}
                 resizeMode="cover"
                 onError={(e) => console.log('이미지 로드 실패:', e.nativeEvent.error)} // 이미지 출력 확인
