@@ -34,6 +34,8 @@ export default function NewPostScreen() {
 
   const router = useRouter();
 
+  console.log("👤 로그인 사용자:", global.userInfo.username);
+
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
