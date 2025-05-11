@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient";
 import { getToken } from "./getToken";
 
@@ -17,8 +18,7 @@ export async function createQuestion({
   image,
 }: CreateQuestionParams) {
   try {
-    // 로그인 등으로 getToken()을 호출하여 토큰을 받아옴.
-    const token = await getToken();
+    const token = await AsyncStorage.getItem("accessToken");
 
     const formData = new FormData();
     formData.append("title", title);

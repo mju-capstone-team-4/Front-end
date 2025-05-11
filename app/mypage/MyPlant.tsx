@@ -19,7 +19,7 @@ interface PlantData {
   useFertilizer: boolean;
 }
 
-export default function MyPlant(): JSX.Element {
+export default function MyPlant(): React.JSX.Element {
   const [plants, setPlants] = useState<PlantData[]>([]);
 
   // 화면이 포커스될 때마다 데이터 불러오기
@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
     width: "100%",
   },
   title: {

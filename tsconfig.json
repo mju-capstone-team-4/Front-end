@@ -1,12 +1,22 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [
+      "react",
+      "react-native"
+    ],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true,
     "module": "es2022",
-    "jsx": "react-native",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -14,6 +24,7 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "global.d.ts"  
-  ]
+    "global.d.ts"
+  ],
+  "extends": "expo/tsconfig.base"
 }

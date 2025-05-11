@@ -38,7 +38,9 @@ function decodeTokenPayload(token: string) {
     const base64Payload = token.split(".")[1];
     if (!base64Payload) return null;
 
-    const decodedPayload = atob(base64Payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const decodedPayload = atob(
+      base64Payload.replace(/-/g, "+").replace(/_/g, "/")
+    );
     const payload = JSON.parse(decodedPayload);
     console.log("📦 디코딩된 Payload:", payload);
     return payload;
@@ -78,7 +80,7 @@ export default function LoginScreen() {
       }
     };
 
-    tryAutoLogin();
+    //tryAutoLogin();
 
     const listener = LinkingModule.addEventListener("url", async ({ url }) => {
       console.log("🔗 리디렉션 URL 수신됨:", url);
@@ -129,20 +131,26 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#999" }]}
+            style={[styles.button, styles.test]}
             onPress={async () => {
-              const token = await getToken();
-              if (token) {
-                console.log("✅ 테스트 토큰 수신:", token);
-                await processToken(token);
-              } else {
-                console.log("⚠️ 테스트 토큰을 받지 못했습니다.");
-              }
+              const token = await getToken("anonymous");
+              await AsyncStorage.setItem("accessToken", token);
+              console.log("새로 저장됨");
+              router.replace("/(tabs)/board");
             }}
           >
-            <Text style={[styles.buttonText, { color: "#fff" }]}>
-              테스트 계정으로 시작
-            </Text>
+            <Text>테스트 계정 1로 시작</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.test]}
+            onPress={async () => {
+              const token = await getToken("anonymous2");
+              await AsyncStorage.setItem("accessToken", token);
+              router.replace("/(tabs)/board");
+            }}
+          >
+            <Text>테스트 계정 2로 시작</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -170,6 +178,8 @@ const styles = StyleSheet.create({
   },
   kakao: { backgroundColor: "#FEE500" },
   google: { backgroundColor: "#EA4335" },
+  test: { backgroundColor: "white" },
+
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",

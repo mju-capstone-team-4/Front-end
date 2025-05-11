@@ -1,8 +1,8 @@
 import apiClient from "./apiClient";
 
-export async function getToken() {
+export async function getToken(username: string) {
   try {
-    const response = await apiClient.get("/mypage/token");
+    const response = await apiClient.post("/mypage/token", { username }); // ✅ POST로 바꿈
     if (response.status === 200) {
       return response.data;
     } else {

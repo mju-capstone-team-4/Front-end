@@ -15,7 +15,7 @@ const icons = {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  
+
   // 폰트 여기에 추가
   const [fontsLoaded] = useFonts({
     "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
@@ -34,8 +34,7 @@ export default function TabLayout() {
           position: "absolute",
           bottom: insets.bottom + 1,
           left: "50%", // 👉 왼쪽 기준 중앙
-       
-       
+
           backgroundColor: "white",
           borderRadius: 50,
           height: 70,
