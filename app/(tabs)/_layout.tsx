@@ -20,6 +20,7 @@ export default function TabLayout() {
   const [fontsLoaded] = useFonts({
     "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
     "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
+    "Pretendard-SemiBold": require("../../assets/fonts/Pretendard-SemiBold.otf"),
   });
 
   if (!fontsLoaded) return null;
@@ -31,7 +32,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",
-          bottom: insets.bottom + 20,
+          bottom: insets.bottom + 1,
           left: "50%", // 👉 왼쪽 기준 중앙
 
           backgroundColor: "white",

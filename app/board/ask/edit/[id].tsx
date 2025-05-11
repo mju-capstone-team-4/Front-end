@@ -3,18 +3,27 @@ import {
   Text,
   TextInput,
   StyleSheet,
+  TouchableOpacity,
   Alert,
   Image,
-  TouchableOpacity,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useState } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import * as ImageManipulator from "expo-image-manipulator";
+import { updateQuestion } from "../../../../service/updateQuestion";
 
-export default function EditPostScreen() {
+const icons = {
+  WriteIcon: require("../../../../assets/images/write_button.png"),
+  PictureIcon: require("../../../../assets/images/picture.png"),
+  PlantIcon: require("../../../../assets/images/plant_icon.png"),
+};
+
+export default function EditQuestionScreen() {
   const router = useRouter();
   const { id, title, content, imageUrl } = useLocalSearchParams();
 
@@ -24,71 +33,70 @@ export default function EditPostScreen() {
   const [newContent, setNewContent] = useState(
     typeof content === "string" ? content : ""
   );
-  const [image, setImage] = useState<any>(
+  const [image, setImage] = useState<{
+    uri: string;
+    name: string;
+    type: string;
+  } | null>(
     typeof imageUrl === "string"
       ? { uri: imageUrl, name: "origin.jpg", type: "image/jpeg" }
       : null
   );
 
   const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("권한 필요", "이미지 선택을 위해 갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
       quality: 1,
     });
 
     if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
-      const uri = asset.uri;
-      const filename = uri.split("/").pop() || "image.jpg";
-      const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
-      const mimeType = `image/${ext === "jpg" ? "jpeg" : ext}`;
 
-      setImage({ uri, name: filename, type: mimeType });
+      const resized = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const fileName = resized.uri.split("/").pop() || "image.jpg";
+      setImage({
+        uri: resized.uri,
+        name: fileName,
+        type: "image/jpeg",
+      });
     }
   };
 
   const handleUpdate = async () => {
-    if (!id) {
+    if (!id || typeof id !== "string") {
       Alert.alert("질문 ID가 없습니다");
       return;
     }
 
-    const formData = new FormData();
-    if (newTitle.trim()) formData.append("title", newTitle);
-    if (newContent.trim()) formData.append("content", newContent);
-    if (image?.uri) {
-      formData.append("image", {
-        uri: image.uri,
-        name: image.name,
-        type: image.type,
-      } as any);
+    if (!newTitle.trim() || !newContent.trim()) {
+      Alert.alert("입력 필요", "제목과 내용을 입력해주세요.");
+      return;
     }
 
     try {
-      const response = await fetch(
-        `http://54.180.238.252:8080/api/question/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          body: formData,
-        }
-      );
+      await updateQuestion({
+        id,
+        title: newTitle,
+        content: newContent,
+        image: image?.uri ? image : undefined,
+      });
 
-      const responseText = await response.text(); // 디버깅용
-
-      if (!response.ok) {
-        console.error("❌ 수정 실패 상태 코드:", response.status);
-        console.error("❌ 서버 응답 본문:", responseText);
-        throw new Error("수정 실패");
-      }
-
-      Alert.alert("성공", "질문이 수정되었습니다!");
+      Alert.alert("수정 완료", "질문이 성공적으로 수정되었습니다!");
       router.push("/(tabs)/board");
     } catch (error) {
-      console.error("수정 실패:", error);
-      Alert.alert("에러", "질문 수정에 실패했습니다.");
+      console.error("❌ 수정 실패:", error);
+      Alert.alert("에러", "질문 수정 중 오류가 발생했습니다.");
     }
   };
 
@@ -97,94 +105,138 @@ export default function EditPostScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.label}>제목</Text>
-        <TextInput
-          style={styles.input}
-          value={newTitle}
-          onChangeText={setNewTitle}
-          maxLength={40}
-        />
-        <Text style={styles.charCount}>{newTitle.length}/40</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* 상단 제목 + 수정 버튼 */}
+          <View style={styles.header}>
+            <Text style={styles.title}>질문 수정</Text>
+            <TouchableOpacity onPress={handleUpdate}>
+              <Image source={icons.WriteIcon} style={styles.writeButton} />
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.label}>내용</Text>
-        <TextInput
-          style={[styles.input, { height: 120 }]}
-          value={newContent}
-          onChangeText={setNewContent}
-          maxLength={500}
-          multiline
-        />
-        <Text style={styles.charCount}>{newContent.length}/500</Text>
+          {/* 안내 문구 */}
+          <Text style={styles.uploadGuide}>
+            질문내용에 해당하는 사진을 업로드해주세요
+          </Text>
 
-        <Text style={styles.label}>이미지</Text>
-        {image && (
-          <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-        )}
-        <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-          <Text style={styles.imageButtonText}>이미지 선택하기</Text>
-        </TouchableOpacity>
+          {/* 사진 업로드 */}
+          <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
+            {image ? (
+              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+            ) : (
+              <Image source={icons.PictureIcon} style={styles.pictureButton} />
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleUpdate}>
-          <Text style={styles.submitButtonText}>수정 완료</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          {/* 제목 */}
+          <View style={styles.inputBox}>
+            <View style={styles.labelRow}>
+              <Image source={icons.PlantIcon} style={styles.labelIcon} />
+              <Text style={styles.label}>제목</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={newTitle}
+              onChangeText={(text) => {
+                if (text.length <= 40) setNewTitle(text);
+              }}
+              placeholder="제목을 입력하세요"
+              maxLength={40}
+            />
+            <Text style={styles.charCount}>{newTitle.length}/40</Text>
+          </View>
+
+          {/* 내용 */}
+          <View style={styles.inputBox}>
+            <View style={styles.labelRow}>
+              <Image source={icons.PlantIcon} style={styles.labelIcon} />
+              <Text style={styles.label}>내용</Text>
+            </View>
+            <TextInput
+              style={[styles.input, { height: 120 }]}
+              value={newContent}
+              onChangeText={(text) => {
+                if (text.length <= 500) setNewContent(text);
+              }}
+              placeholder="내용을 입력하세요"
+              multiline
+              maxLength={500}
+            />
+            <Text style={styles.charCount}>{newContent.length}/500</Text>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: "#fff",
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 30,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 10,
-    backgroundColor: "#fff",
-  },
-  charCount: {
-    fontSize: 12,
-    color: "#888",
-    alignSelf: "flex-end",
-    marginBottom: 10,
-  },
-  imagePreview: {
-    width: "100%",
-    height: 200,
-    marginTop: 10,
-    borderRadius: 8,
-  },
-  imageButton: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: "#3f6cff",
-    borderRadius: 6,
+  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
   },
-  imageButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  title: {
+    fontSize: 20,
+    fontFamily: "Pretendard-SemiBold",
   },
-  submitButton: {
-    marginTop: 10,
-    backgroundColor: "#00aa55",
-    paddingVertical: 14,
-    borderRadius: 6,
-    alignItems: "center",
+  writeButton: {
+    width: 32,
+    height: 32,
   },
-  submitButtonText: {
-    color: "#fff",
+  uploadGuide: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Pretendard-Regular",
+    textAlign: "center",
+    marginBottom: 12,
+    color: "#555",
+  },
+  pictureButton: {
+    width: 140,
+    height: 140,
+  },
+  imageIconButton: {
+    alignSelf: "center",
+    marginBottom: 30,
+  },
+  imagePreview: {
+    width: 140,
+    height: 140,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+  },
+  inputBox: {
+    marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 6,
+  },
+  labelIcon: {
+    width: 15,
+    height: 15,
+  },
+  label: {
+    fontSize: 16,
+    fontFamily: "Pretendard-SemiBold",
+  },
+  input: {
+    backgroundColor: "#F3F3F3",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    marginBottom: 6,
+  },
+  charCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 4,
   },
 });

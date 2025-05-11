@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "strict": true,
+    "module": "es2022",
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
@@ -22,7 +23,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "global.d.ts"
   ],
   "extends": "expo/tsconfig.base"
 }
