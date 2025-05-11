@@ -37,29 +37,32 @@ export default function DiagnosisHistoryScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>진단 이력</Text>
       </View>
-      <ScrollView contentContainerStyle={styles.container}>
-        {history.length === 0 ? (
-          <Text style={styles.emptyText}>진단 이력이 없습니다.</Text>
-        ) : (
-          history.map((item, index) => (
-            <View key={index} style={styles.card}>
-              <Image source={{ uri: item.image }} style={styles.image} />
-              <View style={styles.textBox}>
-                <Text style={styles.resultLabel}>진단 결과</Text>
-                <Text style={styles.resultValue}>{item.result}</Text>
-                <Text style={styles.resultLabel}>정확도</Text>
-                <Text style={styles.resultValue}>
-                  {item.confidence ? `${(item.confidence * 100).toFixed(1)}%` : 'N/A'}
-                </Text>
-                <Text style={styles.resultLabel}>진단 일시</Text>
-                <Text style={styles.resultValue}>
-                  {item.createdAt ? new Date(item.createdAt).toLocaleString() : '알 수 없음'}
-                </Text>
-              </View>
+      <ScrollView
+      contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
+      showsVerticalScrollIndicator={false}
+    >
+      {history.length === 0 ? (
+        <Text style={styles.emptyText}>진단 이력이 없습니다.</Text>
+      ) : (
+        history.map((item, index) => (
+          <View key={index} style={styles.card}>
+            <Image source={{ uri: item.image }} style={styles.image} />
+            <View style={styles.textBox}>
+              <Text style={styles.resultLabel}>진단 결과</Text>
+              <Text style={styles.resultValue}>{item.result}</Text>
+              <Text style={styles.resultLabel}>정확도</Text>
+              <Text style={styles.resultValue}>
+                {item.confidence ? `${(item.confidence * 100).toFixed(1)}%` : 'N/A'}
+              </Text>
+              <Text style={styles.resultLabel}>진단 일시</Text>
+              <Text style={styles.resultValue}>
+                {item.createdAt ? new Date(item.createdAt).toLocaleString() : '알 수 없음'}
+              </Text>
             </View>
-          ))
-        )}
-      </ScrollView>
+          </View>
+        ))
+      )}
+    </ScrollView>
     </>
   );
 }
@@ -98,10 +101,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     overflow: 'hidden',
-    shadowColor: '#363636',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
     elevation: 3,
   },
   image: {

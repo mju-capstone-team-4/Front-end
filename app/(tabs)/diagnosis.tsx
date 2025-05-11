@@ -33,7 +33,18 @@ export default function DiagnosisScreen() {
       });
 
       const data = await response.json();
-      setPlants(data); // 사용자의 식물 정보 받아오기
+      console.log('응답 데이터:', data); // 데이터 확인용
+
+      if (Array.isArray(data)) {
+        setPlants(data); // 사용자의 식물 정보 받아오기
+      } else {
+        console.error('식물 데이터 에러:', data);
+        setPlants([
+          { id: 1, name: '딸기', status: '건강', image: '', description: 'test' },
+          { id: 2, name: '토마토', status: '조심', image: '', description: 'test' },
+          { id: 3, name: '가지', status: '위험', image: '', description: 'test' },
+        ]); // 임시 데이터
+      }
     } catch (error) {
       console.error("식물 정보를 불러오지 못했습니다:", error);
     }
