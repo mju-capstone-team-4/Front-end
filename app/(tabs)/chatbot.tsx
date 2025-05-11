@@ -19,39 +19,18 @@ export default function ChatbotScreen() {
     const fetchUsers = async () => {
       try {
         const token = await getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}; // 임시 
+
         const res = await axios.get(`${API_BASE}/mypage/members`, {
-          headers: {
+          headers, // 테스트 계정 접속용
+          /*headers: {
             Authorization: `Bearer ${token}`,
-          },
+          }, */
         });
         setUsers(res.data.content);
 
       } catch (err: any) {
         console.error('사용자 목록 불러오기 실패:', err);
-        /*
-        if (err.response) {
-          console.error('서버 응답 코드:', err.response.status);
-          console.error('서버 응답 데이터:', err.response.data);
-        } else {
-          console.error('네트워크 에러 또는 서버 미응답');
-        }*/
-        setUsers([
-          {
-            id: 1,
-            username: 'test user1',
-            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
-          },
-          {
-            id: 2,
-            username: 'test user2',
-            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
-          },
-          {
-            id: 3,
-            username: 'test user3',
-            profileUrl: 'https://cdn.m-i.kr/news/photo/202205/921704_686770_251.jpg',
-          },
-        ]); // 임시 데이터
       }
     };
 
@@ -60,7 +39,7 @@ export default function ChatbotScreen() {
 
   const handleUserPress = async (otherMemberId: number, name: string, image: string) => {
     try {
-      const token = getToken;
+      const token = await getToken();
 
       const res = await axios.post(
         `${API_BASE}/chat/room/private/create?otherMemberId=${otherMemberId}`,
@@ -106,12 +85,19 @@ export default function ChatbotScreen() {
         </View>
       </View>
 
-      <TextInput
-        style={styles.searchBar}
-        placeholder="사용자를 검색하세요"
-        value={search}
-        onChangeText={setSearch}
-      />
+      <View style={styles.searchWrapper}>
+        <Image
+          source={require('../../assets/images/search_button.png')}
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="사용자를 검색하세요"
+          value={search}
+          onChangeText={setSearch}
+          placeholderTextColor="#9E9E9E"
+        />
+      </View>
 
       <ScrollView contentContainerStyle={styles.userList}>
         {users
@@ -122,7 +108,14 @@ export default function ChatbotScreen() {
               onPress={() => handleUserPress(user.id, user.username, user.profileUrl)}
               style={styles.userCard}
             >
-              <Image source={{ uri: user.profileUrl }} style={styles.avatar} />
+              <Image
+                source={
+                  user.profileUrl
+                    ? { uri: user.profileUrl }
+                    : require('../../assets/images/plant_icon.png')
+                }
+                style={styles.avatar}
+              />              
               <Text style={styles.userName}>{user.username}</Text>
             </TouchableOpacity>
           ))}
@@ -172,16 +165,29 @@ const styles = StyleSheet.create({
   tabTextInactive: {
     color: '#FFFFFF',
   },
-  searchBar: {
-    borderWidth: 1,
+  searchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
     borderColor: '#00D282',
     borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 8,
     marginTop: 32,
     marginBottom: 16,
-    marginLeft: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  searchIcon: {
+    width: 30,
+    height: 30,
+    marginLeft: -5,
     marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 14,
+    color: '#393939',
   },
   userList: {
     flexDirection: 'row',
@@ -189,21 +195,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   userCard: {
-    width: '47%',
+    width: '46%',
+    aspectRatio: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    marginLeft: 5,
+    marginRight: 5,
     padding: 10,
     backgroundColor: '#F8F8F8',
     borderRadius: 12,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 999,
+    width: 100,
+    height: 100,
+    borderRadius: 100,
     marginBottom: 8,
   },
   userName: {
     fontSize: 14,
-    color: '#333',
+    color: '#393939',
   },
 });

@@ -51,12 +51,12 @@ export default function DiagnosisScreen() {
       });
 
       const data = await response.json();
-      console.log("응답 데이터:", data); // 데이터 확인용
+      //console.log("응답 데이터:", data); // 데이터 확인용
 
       if (Array.isArray(data)) {
         setPlants(data); // 사용자의 식물 정보 받아오기
       } else {
-        console.error("식물 데이터 에러:", data);
+        //console.error("식물 데이터 에러:", data);
         setPlants([
           {
             id: 1,
@@ -79,10 +79,10 @@ export default function DiagnosisScreen() {
             image: "",
             description: "test",
           },
-        ]); // 임시 데이터
+        ]);  // 임시 데이터
       }
     } catch (error) {
-      console.error("❌ 식물 정보를 불러오지 못했습니다:", error);
+      console.error("식물 정보를 불러오기 실패:", error);
       setPlants([]); // 오류 발생 시에도 안전하게 초기화
     }
   };
@@ -92,13 +92,14 @@ export default function DiagnosisScreen() {
       <Text style={styles.title}>진단이 필요한 친구를 선택해주세요</Text>
 
       <ScrollView
-        contentContainerStyle={{ gap: 16, paddingBottom: 50 }}
+        style={styles.scrollArea}
+        contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
         {plants.length === 0 ? (
           <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
         ) : (
-          /*plants.map((plant) => {
+          plants.map((plant) => {
             const isAllowed = allowedPlants.includes(plant.name);
             return (
               <View key={plant.id} style={styles.card}>
@@ -132,45 +133,11 @@ export default function DiagnosisScreen() {
                 </View>
               </View>
             );
-          }) */
-          plants.map((plant, index) => {
-            const isAllowed = allowedPlants.includes(plant.name);
-            return (
-              <View key={index} style={styles.card}>
-                <View style={styles.imageBox}>
-                  <Text style={styles.imageText}>사진 없음</Text>
-                </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.plantName}>이름: {plant.name}</Text>
-                  <Text style={styles.plantStatus}>
-                    설명: {plant.description}
-                  </Text>
-                  <TouchableOpacity
-                    style={
-                      isAllowed
-                        ? styles.myPlantSelectButton
-                        : styles.myPlantSelectButton2
-                    }
-                    activeOpacity={0.85}
-                    onPress={() => {
-                      if (isAllowed) {
-                        router.push({
-                          pathname: "/diagnosis/select",
-                          params: { name: plant.name },
-                        });
-                      }
-                    }}
-                    disabled={!isAllowed}
-                  >
-                    <Text style={styles.myPlantSelectButtonText}>
-                      {isAllowed ? "선택하기" : "진단 불가"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          }) // 임시
+          })
         )}
+      </ScrollView>
+
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.selectButton}
           activeOpacity={0.85}
@@ -185,7 +152,7 @@ export default function DiagnosisScreen() {
         >
           <Text style={styles.historyButtonText}>진단기록 확인</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -298,5 +265,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#9E9E9E",
     marginBottom: 30,
+  },
+  scrollArea: {
+    flex: 1,
+  },
+  buttonContainer: {
+    paddingVertical: 12,
+    gap: 8,
+    marginTop: -15,
+    marginBottom: 20,
   },
 });
