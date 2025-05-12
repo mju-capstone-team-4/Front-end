@@ -1,4 +1,5 @@
 // service/updateTrade.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient";
 import { getToken } from "./getToken";
 
@@ -21,7 +22,7 @@ export async function updateTrade({
   price,
   image,
 }: UpdateTradeParams) {
-  const token = await getToken();
+  const token = await AsyncStorage.getItem("accessToken");
 
   const formData = new FormData();
   formData.append("itemName", itemName);

@@ -1,8 +1,6 @@
-declare global {
-    var userInfo: {
-      username: string | null;
-      memberId: number | null;
-    };
-  }
-  
-  export {};
+declare module "*.svg" {
+  import React from "react";
+  import { SvgProps } from "react-native-svg";
+  const content: React.FC<SvgProps>;
+  export default content;
+}
