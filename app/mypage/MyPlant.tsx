@@ -6,10 +6,23 @@ import {
   FlatList,
   Alert,
   TouchableOpacity,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import PlusIcon from "@/assets/images/plus.svg";
+import PotIcon from "@/assets/images/pot.svg";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 interface PlantData {
   plantName: string;
@@ -92,81 +105,98 @@ export default function MyPlant(): React.JSX.Element {
     );
   };
 
-  const renderPlant = ({ item, index }: { item: PlantData; index: number }) => (
-    <TouchableOpacity
-      style={styles.plantItem}
-      onPress={() => handlePlantPress(index)}
-    >
-      <View style={styles.itemInfo}>
-        <Text style={styles.plantNickname}>
-          식물 별명: {item.plantNickname}
-        </Text>
-        <Text style={styles.plantName}>식물 이름: {item.plantName}</Text>
-      </View>
-      <TouchableOpacity onPress={() => handleDeletePlant(index)}>
-        <MaterialIcons name="delete" size={24} color="grey" />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-
+  // MyPlant.tsx
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>나의 식물</Text>
-      <Text style={styles.plusButton} onPress={handlePlusPress}>
-        [+]
-      </Text>
-      {plants.length > 0 ? (
-        <FlatList
-          data={plants}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={renderPlant}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <Text>등록된 식물이 없습니다.</Text>
-      )}
+      <View style={styles.titleBox}>
+        <PotIcon />
+        <Text style={styles.title}>나의 식물</Text>
+      </View>
+
+      <ScrollView style={styles.scrollArea}>
+        {plants.map((plant, index) => (
+          <TouchableOpacity
+            key={`${plant.plantNickname}-${index}`}
+            style={styles.plantItem}
+            onPress={() => handlePlantPress(index)}
+          >
+            <View style={styles.itemInfo}>
+              <Text style={styles.plantNickname}>{plant.plantNickname}</Text>
+            </View>
+            <TouchableOpacity onPress={() => handleDeletePlant(index)}>
+              <MaterialIcons name="delete" size={24} color="#00D282" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <View style={styles.plusContainer}>
+        <TouchableOpacity onPress={handlePlusPress} style={styles.plusButton}>
+          <PlusIcon width={scaleWidth(44)} height={scaleHeight(44)} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
-    width: "100%",
+    width: scaleWidth(366),
+    height: scaleHeight(237),
+    backgroundColor: "white",
+    shadowColor: "#E4E4E4",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    borderRadius: 20,
+  },
+  scrollArea: {
+    flex: 1, // ✅ 고정 높이 내에서 스크롤
+  },
+  titleBox: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    padding: 12,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+    fontFamily: "Pretendard-Medium",
     textAlign: "left",
+    fontSize: 18,
   },
   plusButton: {
-    fontSize: 32,
-    color: "#6FA46F",
-    textAlign: "center",
-    marginBottom: 16,
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
   listContainer: {
     paddingBottom: 16,
+    flexGrow: 1,
   },
   plantItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderTopColor: "#eee",
+    borderTopWidth: 1,
   },
-  itemInfo: {
-    flex: 1,
-  },
+  itemInfo: {},
   plantNickname: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
+    fontFamily: "Pretendard-Medium",
   },
   plantName: {
     fontSize: 14,
     color: "#555",
+  },
+  plusContainer: {
+    position: "relative", // 생략해도 기본값이지만 명시해주는 게 좋음
+    alignItems: "center",
   },
 });

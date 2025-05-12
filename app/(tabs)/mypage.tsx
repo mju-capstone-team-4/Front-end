@@ -46,23 +46,25 @@ export default function HomeScreen() {
       />
 
       {/* 스크롤 가능한 콘텐츠 */}
-      <ScrollView
+      {/* <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-      >
-        <UserProfile />
-        <MyPlant />
-        <MyPost />
-      </ScrollView>
+      > */}
+      <UserProfile />
+      <MyPlant />
+      <MyPost />
+      {/* </ScrollView> */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "#F8F8F8",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    //justifyContent: "center",
+    //alignContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
   },
   ellipse: {
     position: "absolute",

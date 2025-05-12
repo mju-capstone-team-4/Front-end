@@ -11,7 +11,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { getMypage } from "@/service/getMypage";
 import { useRouter } from "expo-router";
-
+import EditButton from "../../assets/images/edit.svg";
+import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -67,20 +68,32 @@ export default function UserProfile() {
   }
   return (
     <View style={styles.container}>
-      <Image source={{ uri: user.profileUrl }} style={styles.profileImage} />
+      <View style={styles.profileWrapper}>
+        {/* 바깥 원형 테두리 */}
+        <View style={styles.profileBorder}>
+          {/* 이미지 */}
+          <Image
+            source={
+              user.profileUrl
+                ? { uri: user.profileUrl }
+                : require("@/assets/images/woman.png")
+            }
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
+        </View>
+      </View>
       <View style={styles.infoContainer}>
         <View style={styles.nameRow}>
           <Text style={styles.userName}>{user.username}</Text>
           <TouchableOpacity onPress={handleEditProfile}>
-            <MaterialIcons
-              name="edit"
-              size={20}
-              color="#777"
-              style={styles.editIcon}
-            />
+            <EditButton width={22} height={22} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.userEmail}>{user.email}</Text>
+        <View style={styles.emailContainer}>
+          <View style={styles.emailBackground} />
+          <Text style={styles.userEmail}>{user.email}</Text>
+        </View>
       </View>
     </View>
   );
@@ -89,12 +102,13 @@ export default function UserProfile() {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 290,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "red",
+    height: scaleHeight(350),
+    //flexDirection: "column",
+    // alignItems: "center",
+    // justifyContent: "center",
     marginTop: scaleHeight(63),
+    position: "relative",
+    alignItems: "center",
   },
   loadingContainer: {
     flex: 1,
@@ -110,21 +124,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "red",
   },
-  profileImage: {
+  profileWrapper: {
     position: "absolute",
-    width: scaleWidth(211),
-    height: scaleWidth(211), // 정사각형이므로 width 기준
     top: 0,
-    left: SCREEN_WIDTH / 2 - scaleWidth(211) / 2, // 가운데 정렬
-    borderRadius: scaleWidth(211) / 2,
-    backgroundColor: "#D9D9D9", // 로딩 전 배경
-    zIndex: 2,
+    width: scaleWidth(211),
+    height: scaleWidth(211),
+    // justifyContent: "center",
+    // alignItems: "center",
   },
+
+  profileBorder: {
+    width: scaleWidth(211),
+    height: scaleWidth(211),
+    borderRadius: scaleWidth(211) / 2,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  profileImage: {
+    width: scaleWidth(197),
+    height: scaleWidth(197),
+    borderRadius: scaleWidth(197) / 2,
+  },
+
   infoContainer: {
     position: "absolute",
     alignItems: "center",
-    backgroundColor: "blue",
-    top: scaleHeight(286),
+    top: scaleHeight(265),
   },
   nameRow: {
     flexDirection: "row",
@@ -136,13 +164,30 @@ const styles = StyleSheet.create({
     fontSize: scaleWidth(24),
     fontWeight: "700",
     color: "#FFFFFF",
+    marginRight: 5,
   },
-  editIcon: {
-    marginLeft: 8,
+  emailContainer: {
+    position: "relative",
+    width: scaleWidth(154),
+    height: scaleHeight(26),
+    justifyContent: "center",
+    alignItems: "center",
   },
+
+  emailBackground: {
+    position: "absolute",
+    width: scaleWidth(154),
+    height: scaleHeight(26),
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    borderRadius: 30,
+  },
+
   userEmail: {
-    fontSize: 14,
-    color: "black",
-    marginTop: 4,
+    fontFamily: "Pretendard-Medium",
+    fontSize: scaleWidth(10),
+    lineHeight: scaleHeight(12),
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textAlign: "center",
   },
 });
