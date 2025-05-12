@@ -134,9 +134,7 @@ export default function LoginScreen() {
             style={[styles.button, styles.test]}
             onPress={async () => {
               const token = await getToken("anonymous");
-              await AsyncStorage.setItem("accessToken", token);
-              console.log("새로 저장됨");
-              router.replace("/(tabs)/board");
+              await processToken(token); 
             }}
           >
             <Text>테스트 계정 1로 시작</Text>
@@ -146,8 +144,7 @@ export default function LoginScreen() {
             style={[styles.button, styles.test]}
             onPress={async () => {
               const token = await getToken("anonymous2");
-              await AsyncStorage.setItem("accessToken", token);
-              router.replace("/(tabs)/board");
+              await processToken(token); 
             }}
           >
             <Text>테스트 계정 2로 시작</Text>

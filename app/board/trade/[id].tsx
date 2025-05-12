@@ -28,9 +28,6 @@ export default function TradeDetail() {
   const displayPrice = typeof price === "string" ? `${parseInt(price).toLocaleString()}원` : "가격 미정";
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
 
-  console.log("👤 로그인 사용자:", global.userInfo.username);
-  console.log("📝 게시글 작성자:", nickname);
-
   const handleDelete = async () => {
     if (typeof id !== "string") {
       Alert.alert("오류", "잘못된 게시글 ID입니다.");

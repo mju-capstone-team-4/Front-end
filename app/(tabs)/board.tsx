@@ -31,7 +31,7 @@ export default function BoardScreen() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [trades, setTrades] = useState<any[]>([]);
   const router = useRouter();
-
+  
   useEffect(() => {
     asking ? fetchQuestions() : fetchTrades();
   }, [asking]);
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "#D4EAE1",
     borderRadius: 12,
     marginBottom: 10,
   },
