@@ -36,14 +36,13 @@ export default function UserProfile() {
 
   const handleEditProfile = () => {
     console.log("프로필 편집 클릭");
-    // 여기서 프로필 편집 화면으로 이동하는 내비게이션 로직 등을 추가할 수 있습니다.
+    router.push("/editProfile");
   };
   useEffect(() => {
     async function fetchUser() {
       try {
         const data = await getMypage();
         setUser(data);
-        //console.log("사용자 데이터:", data);
       } catch (error) {
         console.error("사용자 데이터 불러오기 실패:", error);
       } finally {
@@ -103,9 +102,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: scaleHeight(350),
-    //flexDirection: "column",
-    // alignItems: "center",
-    // justifyContent: "center",
     marginTop: scaleHeight(63),
     position: "relative",
     alignItems: "center",

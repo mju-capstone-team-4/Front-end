@@ -14,6 +14,7 @@ import { router, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import PlusIcon from "@/assets/images/plus.svg";
 import PotIcon from "@/assets/images/pot.svg";
+import { getMyPlant } from "@/service/getMyPlant";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -40,17 +41,9 @@ export default function MyPlant(): React.JSX.Element {
     useCallback(() => {
       const fetchPlantData = async () => {
         try {
-          const data = await AsyncStorage.getItem("myPlantData");
-          if (data !== null) {
-            const parsedData = JSON.parse(data);
-            if (Array.isArray(parsedData)) {
-              setPlants(parsedData);
-            } else {
-              setPlants([parsedData]);
-            }
-          } else {
-            setPlants([]);
-          }
+          const data = await getMyPlant();
+          setPlants(data);
+          console.log("식물데이터 체크: ", data);
         } catch (error) {
           console.error("데이터 불러오기 오류:", error);
           Alert.alert("오류", "식물 데이터를 불러오지 못했습니다.");

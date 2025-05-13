@@ -12,6 +12,7 @@ export default function Layout() {
       <Stack screenOptions={{ headerShown: false }}>
         {/* (root) 폴더에 있는 index.tsx를 Stack에서 관리 */}
         <Stack.Screen name="(root)/index" />
+        <Stack.Screen name="(root)/loginScreen" />
 
         {/* Tabs를 Stack 내부에서 렌더링 */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
