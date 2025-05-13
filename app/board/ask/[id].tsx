@@ -1,21 +1,32 @@
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
+  StyleSheet,
+  TouchableOpacity,
   Image,
   Pressable,
-  TouchableOpacity,
-  Alert,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
-import ImageView from "react-native-image-viewing";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import ImageView from "react-native-image-viewing";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  fetchComments,
+  addOrUpdateComment,
+  deleteComment,
+  toggleLike,
+} from "@/service/commentService";
+import { deleteQuestion } from "@/service/questionService";
+
+const icons = {
+  WriteIcon: require("../../../assets/images/write_button.png"),
+  DeleteIcon: require("../../../assets/images/trash_icon.png"),
+};
 
 export default function PostDetail() {
   const router = useRouter();
@@ -24,26 +35,68 @@ export default function PostDetail() {
   const questionId = Array.isArray(id) ? id[0] : id;
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
 
-  const [visible, setIsVisible] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentInput, setCommentInput] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState("");
+
+  const loadComments = async () => {
+    if (!questionId) return;
+    const result = await fetchComments(questionId);
+    setComments(result);
+  };
+
+  useEffect(() => {
+    loadComments();
+  }, [questionId]);
+
+  const handleAddOrUpdateComment = async () => {
+    const text = editingCommentId ? editingText : commentInput;
+    if (!text.trim()) return;
+    try {
+      await addOrUpdateComment(questionId, text, editingCommentId || undefined);
+      setEditingCommentId(null);
+      setEditingText("");
+      setCommentInput("");
+      await loadComments();
+    } catch {
+      Alert.alert("댓글 등록/수정 실패");
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment(commentId);
+      await loadComments();
+    } catch {
+      Alert.alert("댓글 삭제 실패");
+    }
+  };
+
+  const handleLikeToggle = async (commentId: number, liked: boolean) => {
+    try {
+      await toggleLike(commentId, liked);
+      await loadComments();
+    } catch {
+      Alert.alert("좋아요 실패");
+    }
+  };
 
   const handleDeletePost = async () => {
     if (!questionId) return;
-    Alert.alert("삭제 확인", "정말 이 질문을 삭제하시겠습니까?", [
+    Alert.alert("삭제 확인", "이 게시글을 삭제할까요?", [
       { text: "취소", style: "cancel" },
       {
         text: "삭제",
         style: "destructive",
         onPress: async () => {
           try {
-            const res = await fetch(
-              `http://54.180.238.252:8080/api/question/${questionId}`,
-              { method: "DELETE" }
-            );
-            if (!res.ok) throw new Error("삭제 실패");
+            await deleteQuestion(questionId);
             Alert.alert("삭제 완료", "게시글이 삭제되었습니다.");
             router.push("/(tabs)/board");
-          } catch (err) {
-            Alert.alert("삭제 실패");
+          } catch {
+            Alert.alert("게시글 삭제 실패");
           }
         },
       },
@@ -57,80 +110,196 @@ export default function PostDetail() {
     >
       <View style={styles.container}>
         <KeyboardAwareScrollView
-          style={styles.contentWrapper}
+          style={styles.scroll}
           keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always"
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
-
-            {/* ✅ 권한 체크 후 버튼 노출 */}
             {global.userInfo.username === nickname && (
-              <View style={styles.icons}>
+              <View style={styles.actions}>
                 <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => {
-                    if (typeof questionId === "string") {
-                      router.push({
-                        pathname: "/board/ask/edit/[id]",
-                        params: { id: questionId, title, content, imageUrl },
-                      });
-                    }
-                  }}
+                  style={styles.actionButton}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/board/ask/edit/[id]",
+                      params: { id: questionId, title, content, imageUrl },
+                    })
+                  }
                 >
-                  <Ionicons name="pencil-outline" size={20} />
+                  <Image source={icons.WriteIcon} style={{ width: 32, height: 32 }} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.iconButton, { marginLeft: 8 }]}
+                  style={[styles.actionButton, { marginLeft: 8 }]}
                   onPress={handleDeletePost}
                 >
-                  <Ionicons name="trash-outline" size={20} />
+                  <Image source={icons.DeleteIcon} style={{ width: 30, height: 30 }} />
                 </TouchableOpacity>
               </View>
             )}
           </View>
 
-          <Text style={styles.nickname}>작성자: {nickname || "익명"}</Text>
+          <Text style={styles.nickname}>작성자: {nickname}</Text>
 
           {validImage && (
             <>
-              <Pressable onPress={() => setIsVisible(true)}>
+              <Pressable onPress={() => setVisible(true)}>
                 <Image source={{ uri: validImage }} style={styles.image} />
               </Pressable>
               <ImageView
                 images={[{ uri: validImage }]}
                 imageIndex={0}
                 visible={visible}
-                onRequestClose={() => setIsVisible(false)}
+                onRequestClose={() => setVisible(false)}
               />
             </>
           )}
 
           <Text style={styles.content}>{content}</Text>
+          <Text style={styles.commentTitle}>💬 댓글</Text>
+
+          {comments.map((c) => (
+            <View key={c.commentId} style={styles.commentBox}>
+              <Ionicons name="person-circle-outline" size={30} color="#777" />
+              <View style={styles.commentRight}>
+                <View style={styles.commentTop}>
+                  <Text style={styles.commentNickname}>익명</Text>
+                  <View style={styles.commentActions}>
+                    <TouchableOpacity onPress={() => handleLikeToggle(c.commentId, c.liked)}>
+                      <Ionicons
+                        name="thumbs-up-outline"
+                        size={16}
+                        color={c.liked ? "#00D282" : "#bbb"}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.recommendCount}>{c.likeCount}</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setEditingCommentId(c.commentId);
+                        setEditingText(c.content);
+                      }}
+                    >
+                      <Ionicons name="create-outline" size={16} color="#666" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteComment(c.commentId)}>
+                      <Ionicons name="trash-outline" size={16} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {editingCommentId === c.commentId ? (
+                  <>
+                    <TextInput
+                      style={styles.commentEditInput}
+                      value={editingText}
+                      onChangeText={setEditingText}
+                      multiline
+                    />
+                    <View style={styles.editButtons}>
+                      <TouchableOpacity style={styles.saveButton} onPress={handleAddOrUpdateComment}>
+                        <Text style={styles.saveText}>완료</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => setEditingCommentId(null)}
+                      >
+                        <Text style={styles.cancelText}>취소</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.commentContent}>{c.content}</Text>
+                )}
+              </View>
+            </View>
+          ))}
         </KeyboardAwareScrollView>
+
+        {editingCommentId === null && (
+          <View style={styles.commentInputWrapper}>
+            <TextInput
+              style={styles.commentInput}
+              value={commentInput}
+              onChangeText={setCommentInput}
+              placeholder="댓글을 입력하세요..."
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity onPress={handleAddOrUpdateComment}>
+              <Ionicons name="send" size={22} color="#00A86B" />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  contentWrapper: { flex: 1, paddingHorizontal: 20, paddingTop: 40 },
+  container: { flex: 1, backgroundColor: "#fff" },
+  scroll: { paddingHorizontal: 20, paddingTop: 60 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
   },
-  icons: { flexDirection: "row" },
-  iconButton: {
-    padding: 4,
-    borderWidth: 1,
-    borderColor: "#aaa",
+  actions: { flexDirection: "row" },
+  actionButton: {
+    padding: 6,
     borderRadius: 6,
   },
-  title: { fontSize: 22, fontWeight: "bold", color: "#000", flexShrink: 1 },
-  nickname: { color: "#555", marginBottom: 20 },
-  image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 16 },
-  content: { fontSize: 16, color: "#333", lineHeight: 24, marginBottom: 24 },
+  title: { fontSize: 20, fontWeight: "bold", color: "#222", flexShrink: 1 },
+  nickname: { fontSize: 14, color: "#666", marginBottom: 20 },
+  image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 20 },
+  content: { fontSize: 16, lineHeight: 24, color: "#333", marginBottom: 30 },
+  commentTitle: { fontSize: 16, fontWeight: "bold", color: "#000", marginBottom: 12 },
+  commentBox: { flexDirection: "row", alignItems: "flex-start", marginBottom: 16 },
+  commentRight: {
+    flex: 1,
+    marginLeft: 10,
+    backgroundColor: "#D4EAE1",
+    borderRadius: 8,
+    padding: 10,
+  },
+  commentTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  commentNickname: { fontWeight: "bold", color: "#333" },
+  commentActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  recommendCount: { fontSize: 12, marginHorizontal: 4, color: "#666" },
+  commentContent: { fontSize: 14, color: "#000", marginTop: 6 },
+  commentInputWrapper: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+    padding: 12,
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: "#f1f1f1",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: "#000",
+    marginRight: 10,
+  },
+  commentEditInput: {
+    backgroundColor: "#fff",
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    fontSize: 14,
+    color: "#000",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  editButtons: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8, gap: 8 },
+  saveButton: { backgroundColor: "#00A86B", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
+  cancelButton: { backgroundColor: "#eee", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
+  saveText: { color: "#fff", fontWeight: "bold" },
+  cancelText: { color: "#666" },
 });
