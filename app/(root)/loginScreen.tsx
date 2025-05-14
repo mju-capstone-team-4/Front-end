@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ImageBackground,
+  Dimensions,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as LinkingModule from "expo-linking";
@@ -14,6 +15,12 @@ import { SplashScreen, useRouter } from "expo-router";
 import Constants from "expo-constants";
 import { handleOAuthLogin } from "@/service/auth";
 import { getToken } from "@/service/getToken";
+import { LinearGradient } from "expo-linear-gradient";
+import Back1 from "@/assets/images/back1.svg";
+import Back2 from "@/assets/images/back2.svg";
+import Back3 from "@/assets/images/back3.svg";
+
+const { width, height } = Dimensions.get("window");
 
 WebBrowser.maybeCompleteAuthSession();
 const API_URL = Constants?.expoConfig?.extra?.API_LOGIN_URL;
@@ -101,83 +108,92 @@ export default function LoginScreen() {
   }, []);
 
   return (
-    <ImageBackground
-      source={require("../../assets/images/background.png")}
+    <LinearGradient
+      colors={["#00D282", "#FDDB83"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.container}
-      resizeMode="cover"
     >
-      <View style={styles.centered}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.kakao]}
-            onPress={() => handleOAuthLogin("kakao")}
-          >
-            <Image
-              source={require("../../assets/images/kakao.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.kakaoText}>카카오톡 로그인</Text>
-          </TouchableOpacity>
+      <Text style={styles.title}>Planty</Text>
+      <Text style={styles.subtitle}>내 손 안의 반려식물 어플</Text>
 
-          <TouchableOpacity
-            style={[styles.button, styles.google]}
-            onPress={() => handleOAuthLogin("google")}
-          >
-            <Image
-              source={require("../../assets/images/google.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.buttonText}>구글로 로그인</Text>
-          </TouchableOpacity>
+      <Back1 style={styles.back1} />
+      <Back2 style={styles.back2} />
+      <Back3 style={styles.back3} />
 
-          <TouchableOpacity
-            style={[styles.button, styles.test]}
-            onPress={async () => {
-              const token = await getToken("test1@example.com");
-              await AsyncStorage.setItem("accessToken", token);
-              console.log("새로 저장됨");
-              router.replace("/(tabs)/board");
-            }}
-          >
-            <Text>테스트 계정 1로 시작</Text>
-          </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.kakao]}
+          onPress={() => handleOAuthLogin("kakao")}
+        >
+          <Image
+            source={require("../../assets/images/kakao.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.kakaoText}>카카오톡 로그인</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, styles.test]}
-            onPress={async () => {
-              const token = await getToken("test2@example.com");
-              await AsyncStorage.setItem("accessToken", token);
-              router.replace("/(tabs)/board");
-            }}
-          >
-            <Text>테스트 계정 2로 시작</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.test]}
-            onPress={async () => {
-              const token = await getToken("test3@example.com");
-              await AsyncStorage.setItem("accessToken", token);
-              router.replace("/(tabs)/board");
-            }}
-          >
-            <Text>테스트 계정 3로 시작</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.button, styles.google]}
+          onPress={() => handleOAuthLogin("google")}
+        >
+          <Image
+            source={require("../../assets/images/google.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.buttonText}>구글로 로그인</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.test]}
+          onPress={async () => {
+            const token = await getToken("test1@example.com");
+            await AsyncStorage.setItem("accessToken", token);
+            console.log("새로 저장됨");
+            router.replace("/(tabs)/board");
+          }}
+        >
+          <Text>테스트 계정 1로 시작</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.test]}
+          onPress={async () => {
+            const token = await getToken("test2@example.com");
+            await AsyncStorage.setItem("accessToken", token);
+            router.replace("/(tabs)/board");
+          }}
+        >
+          <Text>테스트 계정 2로 시작</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.test]}
+          onPress={async () => {
+            const token = await getToken("test3@example.com");
+            await AsyncStorage.setItem("accessToken", token);
+            router.replace("/(tabs)/board");
+          }}
+        >
+          <Text>테스트 계정 3로 시작</Text>
+        </TouchableOpacity>
       </View>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingHorizontal: 24,
-    paddingBottom: 180,
+  container: { flex: 1, alignItems: "center", justifyContent: "flex-start" },
+  title: { fontSize: 50, fontFamily: "Dunkin", color: "#fff", marginTop: 142 },
+  subtitle: {
+    fontFamily: "Pretendard-Medium",
+    color: "white",
+    fontSize: 24,
+    marginTop: 10,
+    marginBottom: 100,
   },
-  buttonContainer: { width: "100%" },
+
+  buttonContainer: { width: "80%" },
+
   button: {
     flexDirection: "row",
     alignItems: "center",
@@ -203,4 +219,19 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   icon: { width: 24, height: 24 },
+  back1: {
+    position: "absolute",
+    top: 0,
+    left: width / 15,
+  },
+  back2: {
+    position: "absolute",
+    top: height / 3.5,
+    right: width / 20,
+  },
+  back3: {
+    position: "absolute",
+    top: height / 2.1,
+    left: width / 8,
+  },
 });

@@ -15,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import PlusIcon from "@/assets/images/plus.svg";
 import PotIcon from "@/assets/images/pot.svg";
 import { getMyPlant } from "@/service/getMyPlant";
+import { deleteMyPlant } from "@/service/deleteMyPlant";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -26,11 +27,12 @@ const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 interface PlantData {
-  plantName: string;
-  plantNickname: string;
+  name: string;
+  description: string;
   wateringFrequency: string;
   photoUri: string;
   useFertilizer: boolean;
+  id: number;
 }
 
 export default function MyPlant(): React.JSX.Element {
@@ -59,14 +61,15 @@ export default function MyPlant(): React.JSX.Element {
     router.push("/plantRegistration");
   };
 
-  const handlePlantPress = (index: number) => {
+  const handlePlantPress = (plantId: number) => {
+    console.log("plantId:", plantId.toString());
     router.push({
       pathname: "/plantDetail",
-      params: { index: index.toString() },
+      params: { id: plantId.toString() },
     });
   };
   // 지정한 인덱스의 식물을 삭제하는 함수
-  const handleDeletePlant = async (index: number) => {
+  const handleDeletePlant = async (plantId: number) => {
     // 삭제 전에 사용자에게 확인
     Alert.alert(
       "삭제 확인",
@@ -81,12 +84,15 @@ export default function MyPlant(): React.JSX.Element {
           style: "destructive",
           onPress: async () => {
             try {
-              const newPlants = plants.filter((_, i) => i !== index);
-              setPlants(newPlants);
-              await AsyncStorage.setItem(
-                "myPlantData",
-                JSON.stringify(newPlants)
+              console.log("❌ 삭제 요청 plantId:", plantId);
+              console.log("❌ 요청 URL:", `/mypage/myplant/${plantId}`);
+              await deleteMyPlant(plantId); // ✅ 서버에 삭제 요청
+              const updatedPlants = plants.filter(
+                (plant) => plant.id !== plantId
               );
+
+              setPlants(updatedPlants); // 상태에서 제거
+              Alert.alert("완료", "식물이 삭제되었습니다.");
             } catch (error) {
               console.error("삭제 오류:", error);
               Alert.alert("오류", "식물 데이터를 삭제하는 데 실패했습니다.");
@@ -109,14 +115,14 @@ export default function MyPlant(): React.JSX.Element {
       <ScrollView style={styles.scrollArea}>
         {plants.map((plant, index) => (
           <TouchableOpacity
-            key={`${plant.plantNickname}-${index}`}
+            key={`${plant.description}-${index}`}
             style={styles.plantItem}
-            onPress={() => handlePlantPress(index)}
+            onPress={() => handlePlantPress(plant.id)}
           >
             <View style={styles.itemInfo}>
-              <Text style={styles.plantNickname}>{plant.plantNickname}</Text>
+              <Text style={styles.plantNickname}>{plant.description}</Text>
             </View>
-            <TouchableOpacity onPress={() => handleDeletePlant(index)}>
+            <TouchableOpacity onPress={() => handleDeletePlant(plant.id)}>
               <MaterialIcons name="delete" size={24} color="#00D282" />
             </TouchableOpacity>
           </TouchableOpacity>

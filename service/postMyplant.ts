@@ -1,7 +1,6 @@
-// service/postMyPlant.ts
 import apiClient from "./apiClient";
 
-interface postMyplantParams {
+interface PostMyplantParams {
   name: string;
   description: string;
   plantId: number;
@@ -19,31 +18,33 @@ export async function postMyplant({
   plantId,
   recommendTonic,
   image,
-}: postMyplantParams) {
+}: PostMyplantParams) {
   const formData = new FormData();
 
-  formData.append("name", name);
-  formData.append("description", description);
-  formData.append("plantId", String(plantId));
-  formData.append("recommendTonic", String(recommendTonic));
+  // ✅ 1. JSON 문자열을 'data'라는 키에 넣는다
+  const jsonPayload = {
+    name,
+    description,
+    plantId,
+    recommendTonic,
+  };
+  formData.append("data", JSON.stringify(jsonPayload));
 
+  // ✅ 2. 이미지가 있다면 'file'이라는 키로 추가
   if (image) {
     formData.append("file", {
-      uri: image.uri,
+      uri: image.uri, // e.g. file:///...
       name: image.fileName || "plant.jpg",
       type: image.type || "image/jpeg",
-    } as any);
+    } as any); // Expo에서는 Blob/File 대신 any로 강제 형변환
   }
 
-  try {
-    const response = await apiClient.post("/mypage/myplant", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("❌ 식물 등록 실패:", error);
-    throw error;
-  }
+  // ✅ 3. axios 전송 (Content-Type은 생략해야 함!)
+  const response = await apiClient.post("/mypage/myplant", formData, {
+    headers: {
+      Accept: "application/json", // 필요시 명시
+    },
+  });
+
+  return response.data;
 }

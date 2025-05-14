@@ -1,138 +1,122 @@
-import React, { useState, useEffect, JSX } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+// import { View, Text, StyleSheet, ScrollView } from "react-native";
+// import { useLocalSearchParams } from "expo-router";
+// import React, { useEffect, useState } from "react";
+// import { getMyPlantCalendar } from "@/service/getMyPlantCalendar";
+
+// export default function PlantDetail() {
+//   const { index } = useLocalSearchParams(); // id는 문자열로 들어옴
+//   const [calendarData, setCalendarData] = useState<any[]>([]);
+//   useEffect(() => {
+//     console.log(
+//       "📅 calendarData changed:\n",
+//       JSON.stringify(calendarData, null, 2)
+//     );
+//   }, [calendarData]);
+
+//   useEffect(() => {
+//     const fetchCalendar = async () => {
+//       try {
+//         const data = await getMyPlantCalendar(Number(index));
+//         setCalendarData(data);
+//       } catch (err) {
+//         console.error("❌ 달력 데이터 불러오기 실패:", err);
+//       }
+//     };
+
+//     if (index) fetchCalendar();
+//   }, [index]);
+
+//   return (
+//     <ScrollView style={styles.container}>
+//       <Text style={styles.title}>🌱 식물 ID: {index}</Text>
+//       {calendarData.length > 0 ? (
+//         calendarData.map((item, idx) => (
+//           <View key={idx} style={styles.entry}>
+//             <Text>
+//               {item.date} - {item.description}
+//             </Text>
+//           </View>
+//         ))
+//       ) : (
+//         <Text style={styles.empty}>데이터 없음</Text>
+//       )}
+//     </ScrollView>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1, padding: 20 },
+//   title: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+//   entry: {
+//     padding: 12,
+//     borderBottomWidth: 1,
+//     borderColor: "#ddd",
+//   },
+//   empty: {
+//     marginTop: 20,
+//     textAlign: "center",
+//     color: "#999",
+//   },
+// });
+
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Calendar } from "react-native-calendars";
+import { getMyPlantCalendar } from "@/service/getMyPlantCalendar";
 import { useLocalSearchParams } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-interface PlantData {
-  plantName: string;
-  plantNickname: string;
-  wateringFrequency: string;
-  photoUri: string;
-  useFertilizer: boolean;
-}
-
-export default function PlantDetail(): JSX.Element {
-  const { index } = useLocalSearchParams<{ index: string }>();
-  const [plantData, setPlantData] = useState<PlantData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function PlantDetail() {
+  const { id } = useLocalSearchParams();
+  const [markedDates, setMarkedDates] = useState<any>({});
 
   useEffect(() => {
-    const fetchPlantData = async () => {
+    console.log("id는?", id);
+    const fetchCalendar = async () => {
       try {
-        const storedData = await AsyncStorage.getItem("myPlantData");
-        if (storedData !== null) {
-          const parsedData = JSON.parse(storedData);
-          const plants = Array.isArray(parsedData) ? parsedData : [parsedData];
-          const idx = parseInt(index, 10);
-          if (isNaN(idx) || idx < 0 || idx >= plants.length) {
-            Alert.alert("오류", "유효하지 않은 식물 인덱스입니다.");
+        const data = await getMyPlantCalendar(Number(id));
+
+        const marks: any = {};
+
+        data.wateringDates.forEach((date: string) => {
+          if (!marks[date]) {
+            marks[date] = {
+              marked: true,
+              dots: [{ color: "#00D282", key: "watering" }],
+              markingType: "multi-dot",
+            };
           } else {
-            setPlantData(plants[idx]);
+            marks[date].dots.push({ color: "#00D282", key: "watering" });
           }
-        } else {
-          Alert.alert("알림", "저장된 식물 데이터가 없습니다.");
-        }
+        });
+
+        data.repottingDates.forEach((date: string) => {
+          if (!marks[date]) {
+            marks[date] = {
+              marked: true,
+              dots: [{ color: "#FFA500", key: "repotting" }],
+              markingType: "multi-dot",
+            };
+          } else {
+            marks[date].dots.push({ color: "#FFA500", key: "repotting" });
+          }
+        });
+
+        setMarkedDates(marks);
       } catch (error) {
-        console.error("데이터 불러오기 오류:", error);
-        Alert.alert("오류", "식물 데이터를 불러오지 못했습니다.");
-      } finally {
-        setLoading(false);
+        console.error("달력 불러오기 실패", error);
       }
     };
 
-    fetchPlantData();
-  }, [index]);
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6FA46F" />
-      </View>
-    );
-  }
+    if (id) fetchCalendar();
+  }, [id]);
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView
-        style={{ flex: 1 }}
-        edges={["top", "left", "right"]}
-      ></SafeAreaView>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.header}>식물 상세 정보</Text>
-        {plantData ? (
-          <>
-            <Text style={styles.info}>식물 이름: {plantData.plantName}</Text>
-            <Text style={styles.info}>
-              식물 별명: {plantData.plantNickname}
-            </Text>
-            <Text style={styles.info}>
-              물주는 주기: {plantData.wateringFrequency}일
-            </Text>
-            <Text style={styles.info}>
-              영양제 사용:{" "}
-              {plantData.useFertilizer ? "사용 추천" : "사용 비추천"}
-            </Text>
-            <Image
-              source={
-                typeof plantData.photoUri === "string"
-                  ? { uri: plantData.photoUri }
-                  : plantData.photoUri
-              }
-              style={styles.image}
-            />
-            <Text style={styles.extra}>
-              추가 설명: 여기에 임의의 추가 설명이 들어갑니다.
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.error}>식물 데이터를 불러올 수 없습니다.</Text>
-        )}
-      </ScrollView>
-    </SafeAreaProvider>
+    <View style={styles.container}>
+      <Calendar markedDates={markedDates} markingType="multi-dot" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    height: "100%",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  info: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  image: {
-    width: 200,
-    height: 200,
-    marginVertical: 16,
-  },
-  extra: {
-    fontSize: 14,
-    color: "#666",
-  },
-  error: {
-    color: "red",
-    fontSize: 16,
-  },
+  container: { flex: 1, padding: 20 },
 });
