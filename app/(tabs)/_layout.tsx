@@ -21,6 +21,7 @@ export default function TabLayout() {
     "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
     "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
     "Pretendard-SemiBold": require("../../assets/fonts/Pretendard-SemiBold.otf"),
+    Dunkin: require("@/assets/fonts/Dunkin.otf"),
   });
 
   if (!fontsLoaded) return null;
