@@ -28,7 +28,7 @@ export default function UserProfile() {
     id: number;
     email: string;
     username: string;
-    profileUrl: string;
+    profile_uri: string;
     plants: any[];
   } | null>(null);
   const router = useRouter();
@@ -73,8 +73,8 @@ export default function UserProfile() {
           {/* 이미지 */}
           <Image
             source={
-              user.profileUrl
-                ? { uri: user.profileUrl }
+              user.profile_uri && user.profile_uri.trim() !== ""
+                ? { uri: user.profile_uri }
                 : require("@/assets/images/woman.png")
             }
             style={styles.profileImage}
