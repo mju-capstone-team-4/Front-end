@@ -147,6 +147,8 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={[styles.button, styles.test]}
           onPress={async () => {
+            await AsyncStorage.removeItem("accessToken");
+
             const token = await getToken("test1@example.com");
             await AsyncStorage.setItem("accessToken", token);
             console.log("새로 저장됨");
