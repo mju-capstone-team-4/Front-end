@@ -88,13 +88,17 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         console.error("❌ 토큰이 없습니다. STOMP 연결 중단.");
         return;
       }
+      console.log(token)
       const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
         webSocketFactory: () => new WebSocket(wsUrl),
+        forceBinaryWSFrames: true,
+        appendMissingNULLonIncoming: true,
         reconnectDelay: 5000,
         onConnect: () => {
           console.log('✅ STOMP 연결 완료');
+        
           client.subscribe(`/topic/${roomId}`, (message) => {
             const newMsg = JSON.parse(message.body);
             console.log("📩 수신된 메시지:", newMsg);
@@ -103,6 +107,13 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         },
         onStompError: (frame) => {
           console.error("❌ STOMP 오류 발생:", frame);
+          console.error("↪️ 상세:", frame.body);
+        },
+        onWebSocketClose: (event) => {
+          console.warn("🔌 WebSocket 닫힘:", event.code, event.reason);
+        },
+        onWebSocketError: (event) => {
+          console.error("🛑 WebSocket 에러:", event);
         },
         debug: (str) => {
           console.log("🐛 STOMP 디버그:", str);
