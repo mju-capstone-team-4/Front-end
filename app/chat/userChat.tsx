@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import axios from 'axios';
-import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { decode as atob } from 'base-64';
@@ -9,7 +8,7 @@ import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
 
-const SERVER_URL = 'http://15.164.198.69:8080';
+const SERVER_URL = 'ws://15.164.198.69:8080';
 
 type Props = {
   roomId: string;
@@ -85,12 +84,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   useEffect(() => {
     const setupStomp = async () => {
       const token = await AsyncStorage.getItem("accessToken");
-      const socketUrl = `${SERVER_URL}/connect?token=${token}`; // ✅ 여기
-
-      const socket = new SockJS(socketUrl);
+      const wsUrl = `${SERVER_URL}/connect?token=${token}`;
 
       const client = new Client({
-        webSocketFactory: () => socket,
+        webSocketFactory: () => new WebSocket(wsUrl), 
+        reconnectDelay: 5000,
         onConnect: () => {
           console.log('✅ STOMP 연결 완료');
           client.subscribe(`/topic/${roomId}`, (message) => {
