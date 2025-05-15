@@ -84,10 +84,14 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   useEffect(() => {
     const setupStomp = async () => {
       const token = await AsyncStorage.getItem("accessToken");
-      const wsUrl = `${SERVER_URL}/connect?token=${token}`;
+      if (!token) {
+        console.error("❌ 토큰이 없습니다. STOMP 연결 중단.");
+        return;
+      }
+      const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
-        webSocketFactory: () => new WebSocket(wsUrl), 
+        webSocketFactory: () => new WebSocket(wsUrl),
         reconnectDelay: 5000,
         onConnect: () => {
           console.log('✅ STOMP 연결 완료');
