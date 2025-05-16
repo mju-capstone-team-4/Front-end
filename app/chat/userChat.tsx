@@ -302,12 +302,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     color: '#000000',
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
   name2: {
     fontSize: 12,
     color: '#9E9E9E',
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
   messageBubble: {
     padding: 10,
