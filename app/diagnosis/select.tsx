@@ -130,6 +130,17 @@ export default function DiagnosisSelectScreen() {
 
       const result = await response.json();
 
+      const predictedPlant = result.result.includes('_') ? result.result.split('_')[0] : null;
+      const isMismatch = plantName && predictedPlant && plantName !== predictedPlant;
+
+      console.log("📦 백엔드 응답 결과:");
+      console.log("🧪 진단 결과:", result.result);
+      console.log("📊 정확도:", result.confidence);
+      console.log("💬 질병 정보:", result.diseaseInfo);
+      console.log("💧 수분 관리:", result.watering);
+      console.log("🌿 환경 관리:", result.environment);
+      console.log("🍽️ 영양 관리:", result.nutrition);
+
       // 최소 로딩 시간 계산
       const elapsedTime = Date.now() - startTime;
       const minLoadingTime = 2000; // 최소 2초
@@ -141,8 +152,8 @@ export default function DiagnosisSelectScreen() {
 
       await saveToHistory({
         image,
-        result: result.result,
-        confidence: result.confidence,
+        result: isMismatch ? '진단 실패' : result.result,
+        confidence: isMismatch ? 0 : result.confidence,
       });
 
       router.push({
@@ -155,6 +166,7 @@ export default function DiagnosisSelectScreen() {
           watering: result.watering,
           environment: result.environment,
           nutrition: result.nutrition,
+          plantName: plantName,
         },
       });
 
@@ -191,7 +203,7 @@ export default function DiagnosisSelectScreen() {
                   : require('../../assets/images/picture.png') // 사진 아이콘
               }
               style={styles.image}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </TouchableOpacity>
 
@@ -277,7 +289,7 @@ const styles = StyleSheet.create({
   imageBox: {
     width: 250,
     height: 250,
-    borderRadius: 90,
+    borderRadius: 12,
     backgroundColor: '#EEEEEE',
     justifyContent: 'center',
     alignItems: 'center',
