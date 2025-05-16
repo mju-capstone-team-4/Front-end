@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet, Image } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Image, BackHandler } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'
@@ -78,6 +78,16 @@ export default function DiagnosisResultScreen() {
       console.log("🗂️ 진단 히스토리:", latest);
     };
     loadLatestDiagnosis();
+
+    const backAction = () => {
+      router.replace('/diagnosis');
+      return true; 
+    };
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+    return () => backHandler.remove(); // 언마운트 시 정리
   }, []); // 임시 이미지 출력
 
   return (
