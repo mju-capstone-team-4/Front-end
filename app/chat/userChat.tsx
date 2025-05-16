@@ -27,6 +27,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [myEmail, setMyEmail] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string | null>(null);
   const stompClientRef = useRef<Client | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
@@ -51,9 +52,12 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   useEffect(() => {
     const fetchEmail = async () => {
       try {
-        const me = await getMypage();
-        setMyEmail(me.username); // 혹은 me.email, 백엔드 반환값에 따라
-        console.log("📩 내 이메일:", me.username);
+        const me = await getMypage(); // 이름
+        const email = await getMyEmailFromToken(); // 이메일
+        setMyName(me.username);
+        setMyEmail(email);
+        console.log("📩 내 이름:", me.username);
+        console.log("📩 내 이메일:", email);
       } catch (err) {
         console.error("❌ 이메일 가져오기 실패:", err);
       }
@@ -72,13 +76,31 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
             'Authorization': `Bearer ${token}`,
           },
         });
-        setMessages(res.data);
+
+        const me = await getMypage();
+        const myEmail = me.email;
+        const myName = me.username;
+
+        const mapped = res.data.map((msg: ChatMessage) => {
+          if (msg.senderEmail?.toLowerCase() === myEmail?.toLowerCase()) {
+            return { ...msg, senderEmail: myName }; // ✅ 내 이름으로 강제 변경
+          }
+          return msg;
+        });
+
+        setMessages(mapped);
+
+        setTimeout(() => {
+          scrollRef.current?.scrollToEnd({ animated: false });
+        }, 100);
       } catch (err) {
         console.error('히스토리 로딩 실패:', err);
       }
     };
     fetchHistory();
   }, [roomId]);
+
+  const subscriptionRef = useRef<any>(null);
 
   // STOMP 연결 및 수신 처리
   useEffect(() => {
@@ -88,7 +110,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         console.error("❌ 토큰이 없습니다. STOMP 연결 중단.");
         return;
       }
-      console.log(token)
+      //console.log(token)
       const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
@@ -98,12 +120,15 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         reconnectDelay: 5000,
         onConnect: () => {
           console.log('✅ STOMP 연결 완료');
-        
-          client.subscribe(`/topic/${roomId}`, (message) => {
+
+          const subscription = client.subscribe(`/topic/${roomId}`, (message) => {
             const newMsg = JSON.parse(message.body);
             console.log("📩 수신된 메시지:", newMsg);
             setMessages((prev) => [...prev, newMsg]);
           });
+
+          subscriptionRef.current = subscription;
+
         },
         onStompError: (frame) => {
           console.error("❌ STOMP 오류 발생:", frame);
@@ -120,34 +145,43 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         },
       });
 
+
       client.activate();
       stompClientRef.current = client;
 
       return () => {
-        client.deactivate();
+        if (subscriptionRef.current) {
+          subscriptionRef.current.unsubscribe();
+          console.log("🔕 채팅방 구독 해제");
+        }
+        stompClientRef.current?.deactivate();
         console.log("🛑 STOMP 연결 종료");
       };
     };
-
     setupStomp();
   }, [roomId]);
 
   // 메시지 전송
   const sendMessage = () => {
-    console.log("🚀 전송 시도:", input);
+    /*console.log("🚀 전송 시도:", input);
 
     const connected = stompClientRef.current?.connected;
-    const client = stompClientRef.current;
     console.log("📡 STOMP 연결 상태:", connected);
     console.log("👤 내 이메일:", myEmail);
 
     if (!input.trim() || !connected || !myEmail) {
       console.warn("⚠️ 메시지 전송 조건 불충분. 전송 중단.");
       return;
+    }*/
+    const client = stompClientRef.current;
+
+    if (!input.trim() || !stompClientRef.current?.connected || !myName) {
+      console.warn("⚠️ 메시지 전송 조건 불충분. 전송 중단.");
+      return;
     }
 
     const messageDto = {
-      senderEmail: myEmail,
+      senderEmail: myName,
       message: input,
     };
 
@@ -161,22 +195,22 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       console.error("❌ 메시지 publish 실패:", err);
     }
 
-    setMessages((prev) => [
+    /*setMessages((prev) => [
       ...prev,
       { ...messageDto, timestamp: new Date().toISOString() },
-    ]);
+    ]);*/
     setInput('');
   };
 
   // 타임스탬프 포맷
-  const formatTime = (timestamp: string) => {
+  /*const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const period = hours < 12 ? '오전' : '오후';
     const hour12 = hours % 12 || 12;
     return `${period} ${hour12}:${minutes}`;
-  };
+  };*/
 
   return (
     <View style={styles.container}>
@@ -187,17 +221,18 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         </TouchableOpacity>
         <Image source={{ uri: partnerImage }} style={styles.avatar} />
         <Text style={styles.name}>{partnerName}</Text>
-        <Text style={styles.name2}>  님과의 대화</Text>
+        <Text style={styles.name2}> 님과의 대화</Text>
       </View>
 
       {/* 메시지 영역 */}
       <ScrollView
         ref={scrollRef}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
         style={styles.chatContainer}
+        contentContainerStyle={{ paddingBottom: 25 }}
       >
-        {messages.map((msg, idx) => {
-          const isMe = msg.senderEmail === myEmail;
+        {myName && messages.map((msg, idx) => {
+          const isMe = msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
           console.log(`💬 렌더링 메시지[${idx}]:`, msg.message, '| from:', msg.senderEmail, '| isMe:', isMe);
 
           return (
@@ -208,13 +243,13 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
                 isMe ? styles.myBubble : styles.otherBubble,
               ]}
             >
-              {!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>}
+              {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
               <Text style={styles.message}>{msg.message}</Text>
-              {msg.timestamp && (
+              {/*msg.timestamp && (
                 <Text style={styles.timestamp}>
                   {formatTime(msg.timestamp)} {isMe && (msg.isRead ? '✓✓' : '✓')}
                 </Text>
-              )}
+              )*/}
             </View>
           );
         })}
