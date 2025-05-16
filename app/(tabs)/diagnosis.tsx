@@ -1,14 +1,7 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import * as SecureStore from "expo-secure-store";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from "expo-constants";
 
 export default function DiagnosisScreen() {
@@ -33,7 +26,7 @@ export default function DiagnosisScreen() {
     name: string; // 식물 이름
     status: string; // 식물 상태
     image: string; // 식물 이미지 주소
-    description: string; // 임시
+    description: string; // 식물 설명 
   };
 
   useEffect(() => {
@@ -42,48 +35,25 @@ export default function DiagnosisScreen() {
 
   const fetchMyPlants = async () => {
     try {
-      const token = await SecureStore.getItemAsync("userToken");
+      const token = await AsyncStorage.getItem('accessToken');
       const response = await fetch(`${API_BASE}/mypage/myplant`, {
-        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       const data = await response.json();
-      //console.log("응답 데이터:", data); // 데이터 확인용
 
       if (Array.isArray(data)) {
+        console.log("식물 데이터:", data);
         setPlants(data); // 사용자의 식물 정보 받아오기
       } else {
-        //console.error("식물 데이터 에러:", data);
-        setPlants([
-          {
-            id: 1,
-            name: "딸기",
-            status: "건강",
-            image: "",
-            description: "test",
-          },
-          {
-            id: 2,
-            name: "토마토",
-            status: "조심",
-            image: "",
-            description: "test",
-          },
-          {
-            id: 3,
-            name: "가지",
-            status: "위험",
-            image: "",
-            description: "test",
-          },
-        ]);  // 임시 데이터
+        console.error("식물 데이터 에러:", data);
+        setPlants([]);
       }
     } catch (error) {
       console.error("식물 정보를 불러오기 실패:", error);
-      setPlants([]); // 오류 발생 시에도 안전하게 초기화
+      setPlants([]);
     }
   };
 
@@ -112,7 +82,7 @@ export default function DiagnosisScreen() {
                 </View>
                 <View style={styles.cardTextBox}>
                   <Text style={styles.plantName}>이름: {plant.name}</Text>
-                  <Text style={styles.plantStatus}>상태: {plant.status}</Text>
+                  <Text style={styles.plantStatus}>설명: {plant.description}</Text>
                   <TouchableOpacity
                     style={isAllowed ? styles.myPlantSelectButton : styles.myPlantSelectButton2}
                     activeOpacity={0.85}
