@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image, BackHandler } from 'react-native';
 import axios from 'axios';
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,7 @@ import { decode as atob } from 'base-64';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
+import { useFocusEffect } from '@react-navigation/native';
 
 const SERVER_URL = 'ws://15.164.198.69:8080';
 
@@ -33,6 +34,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
   const CHAT_BASE = API_BASE.replace("/api", "");
+  const [isConnected, setIsConnected] = useState(false);
 
   // JWT에서 이메일 추출
   const getMyEmailFromToken = async (): Promise<string | null> => {
@@ -120,7 +122,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         reconnectDelay: 5000,
         onConnect: () => {
           console.log('✅ STOMP 연결 완료');
-
+          setIsConnected(true);
           const subscription = client.subscribe(`/topic/${roomId}`, (message) => {
             const newMsg = JSON.parse(message.body);
             console.log("📩 수신된 메시지:", newMsg);
@@ -136,6 +138,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         },
         onWebSocketClose: (event) => {
           console.warn("🔌 WebSocket 닫힘:", event.code, event.reason);
+          setIsConnected(false);
         },
         onWebSocketError: (event) => {
           console.error("🛑 WebSocket 에러:", event);
@@ -202,6 +205,19 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     setInput('');
   };
 
+  useEffect(() => {
+    const onBackPress = () => {
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate(); // STOMP 연결 종료
+        console.log("🛑 [뒤로가기] STOMP 연결 종료");
+      }
+      return false; // false면 기본 뒤로가기 작동
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, []);
+
   // 타임스탬프 포맷
   /*const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -212,11 +228,30 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     return `${period} ${hour12}:${minutes}`;
   };*/
 
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (stompClientRef.current) {
+          stompClientRef.current.deactivate();  // STOMP 연결 종료
+          console.log("🛑 [화면 나감] STOMP 연결 종료");
+        }
+      };
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => {
+            if (stompClientRef.current) {
+              stompClientRef.current.deactivate(); // STOMP 연결 종료
+              console.log("🛑 [← 버튼] STOMP 연결 종료");
+            }
+            router.back();
+          }}
+        >
           <Text style={styles.back}>←</Text>
         </TouchableOpacity>
         <Image source={{ uri: partnerImage }} style={styles.avatar} />
