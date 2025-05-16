@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import {
+  View, Text, TextInput, Image, TouchableOpacity,
+  ScrollView, StyleSheet, Dimensions
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,10 +10,15 @@ import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
 import DefaultImage from '../../assets/images/plantylogo.svg';
 
+const screenWidth = Dimensions.get('window').width;
+const cardMargin = 12;
+const cardWidth = (screenWidth - cardMargin * 3) / 2;
+
 export default function ChatbotScreen() {
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const router = useRouter();
+
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
   const CHAT_BASE = API_BASE.replace("/api", "");
 
@@ -133,7 +141,7 @@ export default function ChatbotScreen() {
             <TouchableOpacity
               key={index}
               onPress={() => handleUserPressById(user.id)}
-              style={styles.userCard}
+              style={[styles.userCard, { width: cardWidth }]}
             >
               {user.profileUrl ? (
                 <Image
@@ -221,18 +229,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    paddingBottom: 40,
   },
   userCard: {
-    width: '46%',
     aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    marginLeft: 7,
-    marginRight: 7,
-    padding: 0,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
+    padding: 10,
+    margin: cardMargin / 2,
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatar: {
     width: 120,
