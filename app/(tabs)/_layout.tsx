@@ -15,12 +15,13 @@ const icons = {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  
+
   // 폰트 여기에 추가
   const [fontsLoaded] = useFonts({
     "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
     "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
     "Pretendard-SemiBold": require("../../assets/fonts/Pretendard-SemiBold.otf"),
+    Dunkin: require("@/assets/fonts/Dunkin.otf"),
   });
 
   if (!fontsLoaded) return null;
@@ -34,8 +35,7 @@ export default function TabLayout() {
           position: "absolute",
           bottom: insets.bottom + 1,
           left: "50%", // 👉 왼쪽 기준 중앙
-       
-       
+
           backgroundColor: "white",
           borderRadius: 50,
           height: 70,

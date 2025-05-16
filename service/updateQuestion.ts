@@ -17,7 +17,7 @@ export async function updateQuestion({
     type: string;
   };
 }) {
-  const token = await getToken(); // 토큰을 불러옵니다!!!
+  const token = await getToken(global.userInfo.username || "null user");
 
   const formData = new FormData();
   if (title) formData.append("title", title);

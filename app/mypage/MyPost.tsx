@@ -1,9 +1,19 @@
 // app/mypage/MyPost.tsx
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
+import PotIcon from "@/assets/images/pot.svg";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export default function MyPost(): JSX.Element {
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
+
+export default function MyPost(): React.JSX.Element {
   const router = useRouter();
 
   const handlePress = () => {
@@ -13,22 +23,45 @@ export default function MyPost(): JSX.Element {
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress}>
+      <PotIcon />
       <Text style={styles.title}>나의 게시글</Text>
     </TouchableOpacity>
   );
 }
+// /* Rectangle 34625143 */
+
+// position: absolute;
+// width: 366px;
+// height: 57px;
+// left: 24px;
+// top: 702px;
+
+// background: #FFFFFF;
+// box-shadow: 0px 0px 4px #E4E4E4;
+// border-radius: 20px;
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#fff",
-    paddingLeft: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    width: scaleWidth(366),
+    height: scaleHeight(70),
+    paddingLeft: 28,
+    marginTop: 30,
+    borderRadius: 20,
+    shadowColor: "#E4E4E4",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    gap: 10,
   },
+
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "left",
+    fontSize: 18,
+    fontFamily: "Pretendard-Medium",
   },
 });

@@ -13,11 +13,15 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { postMyplant } from "@/service/postMyplant";
+import axios from "axios";
+import { getPlantName } from "@/service/getPlantName";
+import DropDownPicker from "react-native-dropdown-picker";
+import { postPlantCycle } from "@/service/postPlantCycle";
 
 export default function PlantRegistration(): JSX.Element {
   const router = useRouter();
 
-  const [plantName, setPlantName] = useState("");
   const [plantNickname, setPlantNickname] = useState("");
   // 물주는 주기는 사용자가 숫자로 입력 (문자열 형태)
   const [wateringFrequency, setWateringFrequency] = useState("");
@@ -26,6 +30,17 @@ export default function PlantRegistration(): JSX.Element {
   // 사용자가 등록한 사진의 URI (선택 사항)
   const [photoUri, setPhotoUri] = useState<string | null>(null);
 
+  // DropDownPicker 관련 상태
+  const [open, setOpen] = useState(false);
+  const [plantOptions, setPlantOptions] = useState<
+    { label: string; value: number }[]
+  >([]);
+  const [selectedPlantId, setSelectedPlantId] = useState<number>(0);
+  const [plantNameSearch, setPlantNameSearch] = useState("");
+  const effectivePlantId = selectedPlantId > 0 ? selectedPlantId : 1;
+
+  const [manualPlantName, setManualPlantName] = useState("");
+  const [manualPlantId, setManualPlantId] = useState("");
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -34,26 +49,28 @@ export default function PlantRegistration(): JSX.Element {
       }
     })();
   }, []);
+  useEffect(() => {
+    const fetchPlantNames = async () => {
+      try {
+        if (plantNameSearch.trim() === "") return;
+        console.log("👉 검색어:", plantNameSearch); // ✅ 추가
+        const data = await getPlantName(plantNameSearch);
+        console.log("✅ 식물 이름 응답 데이터:", data); // ✅ 추가
+        const options = data.map((plant: any) => ({
+          label: plant.name,
+          value: plant.id,
+        }));
 
-  const handleRecommend = () => {
-    const recommended = "3";
-    Alert.alert(
-      "추천",
-      `플랜티가 추천하는 물주는 주기는 ${recommended}일 입니다.`
-    );
-    setWateringFrequency(recommended);
-  };
+        setPlantOptions(options);
+        console.log("옵션 :", options);
+      } catch (error) {
+        console.error("🌱 식물 이름 불러오기 실패:", error);
+      }
+    };
 
-  const handleFertilizerRecommend = () => {
-    const newValue = !useFertilizer;
-    setUseFertilizer(newValue);
-    Alert.alert(
-      "추천",
-      newValue
-        ? "영양제 사용을 추천합니다."
-        : "영양제 사용을 추천하지 않습니다."
-    );
-  };
+    const delay = setTimeout(fetchPlantNames, 300);
+    return () => clearTimeout(delay);
+  }, [plantNameSearch]);
 
   const handlePhotoRegistration = () => {
     Alert.alert(
@@ -98,57 +115,77 @@ export default function PlantRegistration(): JSX.Element {
   };
 
   const handleRegister = async () => {
-    if (
-      !plantName.trim() ||
-      !plantNickname.trim() ||
-      !wateringFrequency.trim()
-    ) {
-      Alert.alert("오류", "식물 이름, 별명, 물주는 주기를 모두 입력해주세요.");
+    if (!plantNickname.trim()) {
+      Alert.alert("오류", "식물 별명을 모두 입력해주세요.");
       return;
     }
-    // 기본 사진은 로컬 이미지로 지정 (require 사용)
-    const defaultPhotoUri = require("@/assets/images/react-logo.png");
-    const finalPhotoUri = photoUri ? photoUri : defaultPhotoUri;
-    console.log("finalPhotoUri:", finalPhotoUri);
-    const newPlantData = {
-      plantName,
-      plantNickname,
-      wateringFrequency,
-      useFertilizer,
-      photoUri: finalPhotoUri,
+    const selectedPlantName =
+      plantOptions.find((opt) => opt.value === selectedPlantId)?.label ||
+      plantNameSearch;
+
+    const payload = {
+      name: manualPlantName.trim(),
+      description: plantNickname,
+      plantId: Number(manualPlantId),
+      recommendTonic: useFertilizer,
+      image: photoUri
+        ? {
+            uri: photoUri,
+            fileName: "photo.jpg",
+            type: "image/jpeg",
+          }
+        : undefined,
     };
 
     try {
-      const storedPlantsString = await AsyncStorage.getItem("myPlantData");
-      let storedPlants = [];
-      if (storedPlantsString) {
-        storedPlants = JSON.parse(storedPlantsString);
-        if (!Array.isArray(storedPlants)) {
-          storedPlants = [storedPlants];
-        }
+      console.log("📦 요청 데이터:", payload); // ✅ 요청 파라미터 로그
+
+      const response = await postMyplant(payload);
+      console.log("✅ 등록 응답:", response);
+
+      const myPlantId = response.plantId;
+      if (!myPlantId) {
+        throw new Error("식물 ID를 찾지 못했습니다.");
       }
-      storedPlants.push(newPlantData);
-      await AsyncStorage.setItem("myPlantData", JSON.stringify(storedPlants));
-      console.log("식물 등록 완료:", storedPlants);
+
+      await postPlantCycle(myPlantId, Number(wateringFrequency), 12, 30);
+
+      Alert.alert("완료", "식물 등록이 완료되었습니다.");
       router.back();
     } catch (error) {
-      console.error("저장 오류:", error);
-      Alert.alert("저장 오류", "식물 데이터를 저장하는 데 실패했습니다.");
+      console.error("❌ 식물 등록 실패:", error); // ✅ 에러 전체 출력
+      Alert.alert("오류", "식물 등록에 실패했습니다." + String(error));
     }
   };
-
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
+    <View style={styles.container}>
       <Text style={styles.header}>식물 등록</Text>
-
+      {/* <DropDownPicker
+        open={open}
+        setOpen={setOpen}
+        value={selectedPlantId}
+        setValue={setSelectedPlantId as any}
+        items={plantOptions}
+        setItems={setPlantOptions}
+        searchable={true}
+        searchTextInputProps={{
+          onChangeText: (text) => setPlantNameSearch(text),
+          value: plantNameSearch,
+        }}
+        placeholder="식물 이름을 검색하거나 선택하세요"
+      /> */}
       <TextInput
         style={styles.input}
-        placeholder="식물 이름"
-        value={plantName}
-        onChangeText={setPlantName}
+        placeholder="식물 이름 입력 (직접)"
+        value={manualPlantName}
+        onChangeText={setManualPlantName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="식물 ID 입력 (예: 2)"
+        keyboardType="numeric"
+        value={manualPlantId}
+        onChangeText={setManualPlantId}
       />
 
       <TextInput
@@ -157,28 +194,20 @@ export default function PlantRegistration(): JSX.Element {
         value={plantNickname}
         onChangeText={setPlantNickname}
       />
-
-      <Text style={styles.label}>물주는 주기 (일 수, 숫자 입력)</Text>
       <TextInput
         style={styles.input}
-        placeholder="예: 3"
+        placeholder="물주기"
         value={wateringFrequency}
         onChangeText={setWateringFrequency}
-        keyboardType="numeric"
       />
 
       <TouchableOpacity
-        style={styles.recommendButton}
-        onPress={handleRecommend}
-      >
-        <Text style={styles.recommendButtonText}>플랜티의 추천 받을래요</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
         style={styles.fertilizerButton}
-        onPress={handleFertilizerRecommend}
+        onPress={() => setUseFertilizer((prev) => !prev)}
       >
-        <Text style={styles.fertilizerButtonText}>영양제 추천 받을래요</Text>
+        <Text style={styles.fertilizerButtonText}>
+          {useFertilizer ? "영양제 사용 안함" : "영양제 추천 받을래요"}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -195,7 +224,7 @@ export default function PlantRegistration(): JSX.Element {
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>등록하기</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 

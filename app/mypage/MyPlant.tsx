@@ -6,20 +6,36 @@ import {
   FlatList,
   Alert,
   TouchableOpacity,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import PlusIcon from "@/assets/images/plus.svg";
+import PotIcon from "@/assets/images/pot.svg";
+import { getMyPlant } from "@/service/getMyPlant";
+import { deleteMyPlant } from "@/service/deleteMyPlant";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 interface PlantData {
-  plantName: string;
-  plantNickname: string;
+  name: string;
+  description: string;
   wateringFrequency: string;
   photoUri: string;
   useFertilizer: boolean;
+  id: number;
 }
 
-export default function MyPlant(): JSX.Element {
+export default function MyPlant(): React.JSX.Element {
   const [plants, setPlants] = useState<PlantData[]>([]);
 
   // 화면이 포커스될 때마다 데이터 불러오기
@@ -27,17 +43,9 @@ export default function MyPlant(): JSX.Element {
     useCallback(() => {
       const fetchPlantData = async () => {
         try {
-          const data = await AsyncStorage.getItem("myPlantData");
-          if (data !== null) {
-            const parsedData = JSON.parse(data);
-            if (Array.isArray(parsedData)) {
-              setPlants(parsedData);
-            } else {
-              setPlants([parsedData]);
-            }
-          } else {
-            setPlants([]);
-          }
+          const data = await getMyPlant();
+          setPlants(data);
+          console.log("식물데이터 체크: ", data);
         } catch (error) {
           console.error("데이터 불러오기 오류:", error);
           Alert.alert("오류", "식물 데이터를 불러오지 못했습니다.");
@@ -53,14 +61,15 @@ export default function MyPlant(): JSX.Element {
     router.push("/plantRegistration");
   };
 
-  const handlePlantPress = (index: number) => {
+  const handlePlantPress = (plantId: number) => {
+    console.log("plantId:", plantId.toString());
     router.push({
       pathname: "/plantDetail",
-      params: { index: index.toString() },
+      params: { id: plantId.toString() },
     });
   };
   // 지정한 인덱스의 식물을 삭제하는 함수
-  const handleDeletePlant = async (index: number) => {
+  const handleDeletePlant = async (plantId: number) => {
     // 삭제 전에 사용자에게 확인
     Alert.alert(
       "삭제 확인",
@@ -75,12 +84,15 @@ export default function MyPlant(): JSX.Element {
           style: "destructive",
           onPress: async () => {
             try {
-              const newPlants = plants.filter((_, i) => i !== index);
-              setPlants(newPlants);
-              await AsyncStorage.setItem(
-                "myPlantData",
-                JSON.stringify(newPlants)
+              console.log("❌ 삭제 요청 plantId:", plantId);
+              console.log("❌ 요청 URL:", `/mypage/myplant/${plantId}`);
+              await deleteMyPlant(plantId); // ✅ 서버에 삭제 요청
+              const updatedPlants = plants.filter(
+                (plant) => plant.id !== plantId
               );
+
+              setPlants(updatedPlants); // 상태에서 제거
+              Alert.alert("완료", "식물이 삭제되었습니다.");
             } catch (error) {
               console.error("삭제 오류:", error);
               Alert.alert("오류", "식물 데이터를 삭제하는 데 실패했습니다.");
@@ -92,82 +104,98 @@ export default function MyPlant(): JSX.Element {
     );
   };
 
-  const renderPlant = ({ item, index }: { item: PlantData; index: number }) => (
-    <TouchableOpacity
-      style={styles.plantItem}
-      onPress={() => handlePlantPress(index)}
-    >
-      <View style={styles.itemInfo}>
-        <Text style={styles.plantNickname}>
-          식물 별명: {item.plantNickname}
-        </Text>
-        <Text style={styles.plantName}>식물 이름: {item.plantName}</Text>
-      </View>
-      <TouchableOpacity onPress={() => handleDeletePlant(index)}>
-        <MaterialIcons name="delete" size={24} color="grey" />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-
+  // MyPlant.tsx
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>나의 식물</Text>
-      <Text style={styles.plusButton} onPress={handlePlusPress}>
-        [+]
-      </Text>
-      {plants.length > 0 ? (
-        <FlatList
-          data={plants}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={renderPlant}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <Text>등록된 식물이 없습니다.</Text>
-      )}
+      <View style={styles.titleBox}>
+        <PotIcon />
+        <Text style={styles.title}>나의 식물</Text>
+      </View>
+
+      <ScrollView style={styles.scrollArea}>
+        {plants.map((plant, index) => (
+          <TouchableOpacity
+            key={`${plant.description}-${index}`}
+            style={styles.plantItem}
+            onPress={() => handlePlantPress(plant.id)}
+          >
+            <View style={styles.itemInfo}>
+              <Text style={styles.plantNickname}>{plant.description}</Text>
+            </View>
+            <TouchableOpacity onPress={() => handleDeletePlant(plant.id)}>
+              <MaterialIcons name="delete" size={24} color="#00D282" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <View style={styles.plusContainer}>
+        <TouchableOpacity onPress={handlePlusPress} style={styles.plusButton}>
+          <PlusIcon width={scaleWidth(44)} height={scaleHeight(44)} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
-    width: "100%",
+    width: scaleWidth(366),
+    height: scaleHeight(237),
+    backgroundColor: "white",
+    shadowColor: "#E4E4E4",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    borderRadius: 20,
+  },
+  scrollArea: {
+    flex: 1, // ✅ 고정 높이 내에서 스크롤
+  },
+  titleBox: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    padding: 12,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+    fontFamily: "Pretendard-Medium",
     textAlign: "left",
+    fontSize: 18,
   },
   plusButton: {
-    fontSize: 32,
-    color: "#6FA46F",
-    textAlign: "center",
-    marginBottom: 16,
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
   listContainer: {
     paddingBottom: 16,
+    flexGrow: 1,
   },
   plantItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderTopColor: "#eee",
+    borderTopWidth: 1,
   },
-  itemInfo: {
-    flex: 1,
-  },
+  itemInfo: {},
   plantNickname: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
+    fontFamily: "Pretendard-Medium",
   },
   plantName: {
     fontSize: 14,
     color: "#555",
+  },
+  plusContainer: {
+    position: "relative", // 생략해도 기본값이지만 명시해주는 게 좋음
+    alignItems: "center",
   },
 });

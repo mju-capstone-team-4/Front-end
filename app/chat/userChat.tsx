@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import axios from 'axios';
-import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { decode as atob } from 'base-64';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
+import { getMypage } from "@/service/getMypage";
 
-const SERVER_URL = 'http://15.164.198.69:8080';
+const SERVER_URL = 'ws://15.164.198.69:8080';
 
 type Props = {
   roomId: string;
@@ -31,10 +31,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
+  const CHAT_BASE = API_BASE.replace("/api", "");
 
   // JWT에서 이메일 추출
   const getMyEmailFromToken = async (): Promise<string | null> => {
-    const token = await SecureStore.getItemAsync('accessToken');
+    const token = await AsyncStorage.getItem('accessToken');
     if (!token) return null;
     try {
       const payloadBase64 = token.split('.')[1];
@@ -49,56 +50,121 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   // 내 이메일 가져오기
   useEffect(() => {
     const fetchEmail = async () => {
-      const email = await getMyEmailFromToken();
-      if (email) setMyEmail(email);
+      try {
+        const me = await getMypage();
+        setMyEmail(me.username); // 혹은 me.email, 백엔드 반환값에 따라
+        console.log("📩 내 이메일:", me.username);
+      } catch (err) {
+        console.error("❌ 이메일 가져오기 실패:", err);
+      }
     };
     fetchEmail();
   }, []);
 
   // 메시지 히스토리 불러오기
   useEffect(() => {
-    axios.get(`${API_BASE}/chat/history/${roomId}`)
-      .then(res => setMessages(res.data))
-      .catch(err => console.error('히스토리 로딩 실패:', err));
+    const fetchHistory = async () => {
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        const res = await axios.get(`${CHAT_BASE}/chat/history/${roomId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        setMessages(res.data);
+      } catch (err) {
+        console.error('히스토리 로딩 실패:', err);
+      }
+    };
+    fetchHistory();
   }, [roomId]);
 
   // STOMP 연결 및 수신 처리
   useEffect(() => {
-    const socket = new SockJS(`${SERVER_URL}/connect`);
-    const client = new Client({
-      webSocketFactory: () => socket,
-      onConnect: () => {
-        console.log('STOMP 연결됨');
-        client.subscribe(`/topic/${roomId}`, (message) => {
-          const newMsg = JSON.parse(message.body);
-          setMessages((prev) => [...prev, newMsg]);
-        });
-      },
-    });
+    const setupStomp = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        console.error("❌ 토큰이 없습니다. STOMP 연결 중단.");
+        return;
+      }
+      console.log(token)
+      const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
-    client.activate();
-    stompClientRef.current = client;
+      const client = new Client({
+        webSocketFactory: () => new WebSocket(wsUrl),
+        forceBinaryWSFrames: true,
+        appendMissingNULLonIncoming: true,
+        reconnectDelay: 5000,
+        onConnect: () => {
+          console.log('✅ STOMP 연결 완료');
+        
+          client.subscribe(`/topic/${roomId}`, (message) => {
+            const newMsg = JSON.parse(message.body);
+            console.log("📩 수신된 메시지:", newMsg);
+            setMessages((prev) => [...prev, newMsg]);
+          });
+        },
+        onStompError: (frame) => {
+          console.error("❌ STOMP 오류 발생:", frame);
+          console.error("↪️ 상세:", frame.body);
+        },
+        onWebSocketClose: (event) => {
+          console.warn("🔌 WebSocket 닫힘:", event.code, event.reason);
+        },
+        onWebSocketError: (event) => {
+          console.error("🛑 WebSocket 에러:", event);
+        },
+        debug: (str) => {
+          console.log("🐛 STOMP 디버그:", str);
+        },
+      });
 
-    return () => {
-      client.deactivate();
+      client.activate();
+      stompClientRef.current = client;
+
+      return () => {
+        client.deactivate();
+        console.log("🛑 STOMP 연결 종료");
+      };
     };
+
+    setupStomp();
   }, [roomId]);
 
   // 메시지 전송
   const sendMessage = () => {
-    if (!input.trim() || !stompClientRef.current?.connected || !myEmail) return;
+    console.log("🚀 전송 시도:", input);
+
+    const connected = stompClientRef.current?.connected;
+    const client = stompClientRef.current;
+    console.log("📡 STOMP 연결 상태:", connected);
+    console.log("👤 내 이메일:", myEmail);
+
+    if (!input.trim() || !connected || !myEmail) {
+      console.warn("⚠️ 메시지 전송 조건 불충분. 전송 중단.");
+      return;
+    }
 
     const messageDto = {
       senderEmail: myEmail,
       message: input,
     };
 
-    stompClientRef.current.publish({
-      destination: `/publish/${roomId}`,
-      body: JSON.stringify(messageDto),
-    });
+    try {
+      client?.publish({
+        destination: `/publish/${roomId}`,
+        body: JSON.stringify(messageDto),
+      });
+      console.log("✅ 메시지 publish 완료:", messageDto);
+    } catch (err) {
+      console.error("❌ 메시지 publish 실패:", err);
+    }
 
-    setMessages((prev) => [...prev, { ...messageDto, timestamp: new Date().toISOString() }]);
+    setMessages((prev) => [
+      ...prev,
+      { ...messageDto, timestamp: new Date().toISOString() },
+    ]);
     setInput('');
   };
 
@@ -121,6 +187,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         </TouchableOpacity>
         <Image source={{ uri: partnerImage }} style={styles.avatar} />
         <Text style={styles.name}>{partnerName}</Text>
+        <Text style={styles.name2}>  님과의 대화</Text>
       </View>
 
       {/* 메시지 영역 */}
@@ -131,6 +198,8 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       >
         {messages.map((msg, idx) => {
           const isMe = msg.senderEmail === myEmail;
+          console.log(`💬 렌더링 메시지[${idx}]:`, msg.message, '| from:', msg.senderEmail, '| isMe:', isMe);
+
           return (
             <View
               key={idx}
@@ -180,7 +249,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#00D282',
     paddingTop: 20,
-    paddingBottom: 0,
+    paddingBottom: 20,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
@@ -196,8 +265,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   name: {
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 20,
+    color: '#000000',
+    fontWeight: 'bold',
+  },
+  name2: {
+    fontSize: 12,
+    color: '#9E9E9E',
     fontWeight: 'bold',
   },
   messageBubble: {

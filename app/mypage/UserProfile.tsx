@@ -6,17 +6,29 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getMypage } from "@/service/getMypage";
 import { useRouter } from "expo-router";
+import EditButton from "../../assets/images/edit.svg";
+import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function UserProfile() {
   const [user, setUser] = useState<{
     id: number;
     email: string;
     username: string;
-    profileUrl: string;
+    profile_uri: string;
     plants: any[];
   } | null>(null);
   const router = useRouter();
@@ -24,14 +36,13 @@ export default function UserProfile() {
 
   const handleEditProfile = () => {
     console.log("프로필 편집 클릭");
-    // 여기서 프로필 편집 화면으로 이동하는 내비게이션 로직 등을 추가할 수 있습니다.
+    router.push("/editProfile");
   };
   useEffect(() => {
     async function fetchUser() {
       try {
         const data = await getMypage();
         setUser(data);
-        //console.log("사용자 데이터:", data);
       } catch (error) {
         console.error("사용자 데이터 불러오기 실패:", error);
       } finally {
@@ -56,20 +67,32 @@ export default function UserProfile() {
   }
   return (
     <View style={styles.container}>
-      <Image source={{ uri: user.profileUrl }} style={styles.profileImage} />
+      <View style={styles.profileWrapper}>
+        {/* 바깥 원형 테두리 */}
+        <View style={styles.profileBorder}>
+          {/* 이미지 */}
+          <Image
+            source={
+              user.profile_uri && user.profile_uri.trim() !== ""
+                ? { uri: user.profile_uri }
+                : require("@/assets/images/woman.png")
+            }
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
+        </View>
+      </View>
       <View style={styles.infoContainer}>
         <View style={styles.nameRow}>
           <Text style={styles.userName}>{user.username}</Text>
           <TouchableOpacity onPress={handleEditProfile}>
-            <MaterialIcons
-              name="edit"
-              size={20}
-              color="#777"
-              style={styles.editIcon}
-            />
+            <EditButton width={22} height={22} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.userEmail}>{user.email}</Text>
+        <View style={styles.emailContainer}>
+          <View style={styles.emailBackground} />
+          <Text style={styles.userEmail}>{user.email}</Text>
+        </View>
       </View>
     </View>
   );
@@ -78,12 +101,10 @@ export default function UserProfile() {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 250,
-    flexDirection: "column",
+    height: scaleHeight(350),
+    marginTop: scaleHeight(63),
+    position: "relative",
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
@@ -99,15 +120,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "red",
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    backgroundColor: "blue",
+  profileWrapper: {
+    position: "absolute",
+    top: 0,
+    width: scaleWidth(211),
+    height: scaleWidth(211),
+    // justifyContent: "center",
+    // alignItems: "center",
   },
-  infoContainer: {
+
+  profileBorder: {
+    width: scaleWidth(211),
+    height: scaleWidth(211),
+    borderRadius: scaleWidth(211) / 2,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
+    justifyContent: "center",
     alignItems: "center",
+  },
+
+  profileImage: {
+    width: scaleWidth(197),
+    height: scaleWidth(197),
+    borderRadius: scaleWidth(197) / 2,
+  },
+
+  infoContainer: {
+    position: "absolute",
+    alignItems: "center",
+    top: scaleHeight(265),
   },
   nameRow: {
     flexDirection: "row",
@@ -115,15 +156,34 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   userName: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Pretendard-Bold",
+    fontSize: scaleWidth(24),
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginRight: 5,
   },
-  editIcon: {
-    marginLeft: 8,
+  emailContainer: {
+    position: "relative",
+    width: scaleWidth(154),
+    height: scaleHeight(26),
+    justifyContent: "center",
+    alignItems: "center",
   },
+
+  emailBackground: {
+    position: "absolute",
+    width: scaleWidth(154),
+    height: scaleHeight(26),
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    borderRadius: 30,
+  },
+
   userEmail: {
-    fontSize: 14,
-    color: "black",
-    marginTop: 4,
+    fontFamily: "Pretendard-Medium",
+    fontSize: scaleWidth(10),
+    lineHeight: scaleHeight(12),
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textAlign: "center",
   },
 });

@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { createTrade } from "@/service/createTrade";
 
 const icons = {
   WriteIcon: require("../../../assets/images/write_button.png"),
@@ -68,25 +69,15 @@ export default function NewTradePostScreen() {
       Alert.alert("오류", "모든 항목을 입력해주세요.");
       return;
     }
-
-    const formData = new FormData();
-    formData.append("itemName", title);
-    formData.append("price", parseInt(price).toString());
-    formData.append("description", description);
-    formData.append("image", {
-      uri: image.uri,
-      name: image.name,
-      type: image.type,
-    } as any);
-
+  
     try {
-      const response = await fetch("http://54.180.238.252:8080/api/trade/create", {
-        method: "POST",
-        headers: { "Content-Type": "multipart/form-data" },
-        body: formData,
+      await createTrade({
+        itemName: title,
+        description,
+        price: parseInt(price),
+        image,
       });
-
-      if (!response.ok) throw new Error("서버 오류");
+  
       Alert.alert("성공", "거래글이 등록되었습니다!");
       router.push("/(tabs)/board");
     } catch (error) {

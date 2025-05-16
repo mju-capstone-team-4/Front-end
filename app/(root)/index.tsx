@@ -1,186 +1,97 @@
+import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ImageBackground,
-} from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as LinkingModule from "expo-linking";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import Constants from "expo-constants";
-import { handleOAuthLogin } from "@/service/auth";
-import { getToken } from "@/service/getToken";
+import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFonts } from "expo-font";
+import PlantyLogo from "@/assets/images/plantylogo.svg";
+import Back1 from "@/assets/images/back1.svg";
+import Back2 from "@/assets/images/back2.svg";
+import Back3 from "@/assets/images/back3.svg";
 
-WebBrowser.maybeCompleteAuthSession();
-const API_URL = Constants?.expoConfig?.extra?.API_LOGIN_URL;
+const { width, height } = Dimensions.get("window");
 
-// ✅ 글로벌 타입 선언 (global.d.ts에도 있으면 더 좋아요!)
-declare global {
-  var userInfo: {
-    username: string | null;
-    memberId: number | null;
-  };
-}
-
-// ✅ 전역 변수 초기화
-global.userInfo = {
-  username: null,
-  memberId: null,
-};
-
-// ✅ 토큰 디코딩 함수
-function decodeTokenPayload(token: string) {
-  try {
-    const base64Payload = token.split(".")[1];
-    if (!base64Payload) return null;
-
-    const decodedPayload = atob(base64Payload.replace(/-/g, "+").replace(/_/g, "/"));
-    const payload = JSON.parse(decodedPayload);
-    console.log("📦 디코딩된 Payload:", payload);
-    return payload;
-  } catch (error) {
-    console.error("❌ 토큰 디코딩 실패:", error);
-    return null;
-  }
-}
-
-export default function LoginScreen() {
-  const router = useRouter();
-
-  const processToken = async (token: string) => {
-    await AsyncStorage.setItem("accessToken", token);
-    console.log("💾 accessToken 저장 완료");
-
-    const payload = decodeTokenPayload(token);
-    if (payload) {
-      global.userInfo = {
-        username: payload.sub || null, // ✅ sub 값을 username으로 사용
-        memberId: payload.memberId || null, // 없는 경우 null 처리
-      };
-      console.log("👤 사용자 정보:", global.userInfo);
-    }
-
-    router.replace("/(tabs)/board");
-  };
-
+export default function Splash() {
   useEffect(() => {
-    const tryAutoLogin = async () => {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        console.log("🔐 저장된 토큰 발견! 자동 로그인 진행");
-        await processToken(token);
-      } else {
-        console.log("🕵️ 저장된 토큰 없음. 수동 로그인 필요");
-      }
-    };
+    console.log("스플래시");
 
-    tryAutoLogin();
-
-    const listener = LinkingModule.addEventListener("url", async ({ url }) => {
-      console.log("🔗 리디렉션 URL 수신됨:", url);
-      const parsed = LinkingModule.parse(url);
-      const accessToken = parsed.queryParams?.accessToken;
-
-      if (accessToken) {
-        console.log("✅ accessToken 수신:", accessToken);
-        await processToken(accessToken as string);
-      } else {
-        console.log("⚠️ accessToken 없음. 로그인 실패로 간주");
-      }
-    });
-
-    return () => {
-      listener.remove();
-    };
+    const timer = setTimeout(() => {
+      router.replace("/(root)/loginScreen");
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
+  const [fontsLoaded] = useFonts({
+    Dunkin: require("../../assets/fonts/Dunkin.otf"),
+    "Pretendard-ExtraBold": require("../../assets/fonts/Pretendard-ExtraBold.otf"),
+    "Pretendard-Regular": require("../../assets/fonts/Pretendard-Regular.otf"),
+    "Pretendard-SemiBold": require("../../assets/fonts/Pretendard-SemiBold.otf"),
+    "Pretendard-Bold": require("../../assets/fonts/Pretendard-Bold.otf"),
+    "Pretendard-Light": require("../../assets/fonts/Pretendard-Light.otf"),
+    "Pretendard-Thin": require("../../assets/fonts/Pretendard-Thin.otf"),
+    "Pretendard-Medium": require("../../assets/fonts/Pretendard-Medium.otf"),
+  });
+  if (!fontsLoaded) return null;
+
   return (
-    <ImageBackground
-      source={require("../../assets/images/background.png")}
+    <LinearGradient
+      colors={["#00D282", "#FDDB83"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.container}
-      resizeMode="cover"
     >
-      <View style={styles.centered}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.kakao]}
-            onPress={() => handleOAuthLogin("kakao")}
-          >
-            <Image
-              source={require("../../assets/images/kakao.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.kakaoText}>카카오톡 로그인</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.google]}
-            onPress={() => handleOAuthLogin("google")}
-          >
-            <Image
-              source={require("../../assets/images/google.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.buttonText}>구글로 로그인</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#999" }]}
-            onPress={async () => {
-              const token = await getToken();
-              if (token) {
-                console.log("✅ 테스트 토큰 수신:", token);
-                await processToken(token);
-              } else {
-                console.log("⚠️ 테스트 토큰을 받지 못했습니다.");
-              }
-            }}
-          >
-            <Text style={[styles.buttonText, { color: "#fff" }]}>
-              테스트 계정으로 시작
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ImageBackground>
+      <Back1 style={styles.back1} />
+      <Back2 style={styles.back2} />
+      <Back3 style={styles.back3} />
+      <Text style={styles.title}>Planty</Text>
+      <Text style={styles.subtitle}>내 손 안의 반려식물 어플</Text>
+      <View style={styles.circle} />
+      <PlantyLogo width={170} height={343} style={styles.logo} />
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: {
+  container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "flex-end",
-    paddingHorizontal: 24,
-    paddingBottom: 180,
+    justifyContent: "flex-start",
   },
-  buttonContainer: { width: "100%" },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginBottom: 16,
+  title: { fontSize: 50, fontFamily: "Dunkin", color: "#fff", marginTop: 142 },
+  subtitle: {
+    fontFamily: "Pretendard-Medium",
+    color: "white",
+    fontSize: 24,
+    marginTop: 10,
   },
-  kakao: { backgroundColor: "#FEE500" },
-  google: { backgroundColor: "#EA4335" },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-    marginLeft: 10,
+  circle: {
+    position: "absolute",
+    width: 607,
+    height: 607,
+    backgroundColor: "white",
+    borderRadius: 303.5,
+    top: height / 1.8,
   },
-  kakaoText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#000",
-    marginLeft: 10,
+  logo: {
+    position: "absolute",
+    top: height / 1.7,
+    shadowColor: "rgba(18, 107, 73, 0.27)",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6.6,
   },
-  icon: { width: 24, height: 24 },
+  back1: {
+    position: "absolute",
+    top: 0,
+    left: width / 15,
+  },
+  back2: {
+    position: "absolute",
+    top: height / 3.5,
+    right: width / 20,
+  },
+  back3: {
+    position: "absolute",
+    top: height / 2.1,
+    left: width / 8,
+  },
 });
