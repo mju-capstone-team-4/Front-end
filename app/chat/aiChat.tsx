@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,10 @@ export default function AiChat() {
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
+
+  useEffect(() => {
+    setMessages([{ from: 'ai', text: '식물에 대해 궁금하신 점이 있으신가요?' }]);
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -54,7 +58,7 @@ export default function AiChat() {
       <ScrollView
         ref={scrollRef}
         style={styles.chatContainer}
-        contentContainerStyle={{ paddingBottom:25 }} // 메시지 박스 공간 확보
+        contentContainerStyle={{ paddingBottom: 25 }} // 메시지 박스 공간 확보
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
