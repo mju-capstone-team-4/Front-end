@@ -106,6 +106,11 @@ export default function DiagnosisSelectScreen() {
     const fileName = image.split('/').pop(); // 이미지 이름 추출
     const fileType = fileName?.split('.').pop() || 'jpg'; // 이미지 타입 추출
 
+    const token = await AsyncStorage.getItem('accessToken');
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
     const formData = new FormData();
     formData.append('file', {
       uri: image, // 이미지 파일 경로 
@@ -119,10 +124,22 @@ export default function DiagnosisSelectScreen() {
     try {
       const response = await fetch(`${API_BASE}/disease/predict`, { //백엔드 ip
         method: 'POST',
+        headers,
         body: formData,
       });
 
       const result = await response.json();
+
+      const predictedPlant = result.result.includes('_') ? result.result.split('_')[0] : null;
+      const isMismatch = plantName && predictedPlant && plantName !== predictedPlant;
+
+      console.log("📦 백엔드 응답 결과:");
+      console.log("🧪 진단 결과:", result.result);
+      console.log("📊 정확도:", result.confidence);
+      console.log("💬 질병 정보:", result.diseaseInfo);
+      console.log("💧 수분 관리:", result.watering);
+      console.log("🌿 환경 관리:", result.environment);
+      console.log("🍽️ 영양 관리:", result.nutrition);
 
       // 최소 로딩 시간 계산
       const elapsedTime = Date.now() - startTime;
@@ -135,17 +152,21 @@ export default function DiagnosisSelectScreen() {
 
       await saveToHistory({
         image,
-        result: result.result,
-        confidence: result.confidence,
+        result: isMismatch ? '진단 실패' : result.result,
+        confidence: isMismatch ? 0 : result.confidence,
       });
 
       router.push({
         pathname: '/diagnosis/result',
         params: {
-          image: image, // 식물 이미지 
-          result: result.result, // 식물의 진단명 
-          confidence: result.confidence, // 병명 정확도
-          //image: result.image_url // 이미지 url
+          image,
+          result: result.result,
+          confidence: result.confidence,
+          diseaseInfo: result.diseaseInfo,
+          watering: result.watering,
+          environment: result.environment,
+          nutrition: result.nutrition,
+          plantName: plantName,
         },
       });
 
@@ -169,7 +190,7 @@ export default function DiagnosisSelectScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName} 진단` : '식물 진단'}</Text>
+          <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
         </View>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
@@ -182,7 +203,7 @@ export default function DiagnosisSelectScreen() {
                   : require('../../assets/images/picture.png') // 사진 아이콘
               }
               style={styles.image}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </TouchableOpacity>
 
@@ -268,8 +289,8 @@ const styles = StyleSheet.create({
   imageBox: {
     width: 250,
     height: 250,
-    borderRadius: 90,
-    backgroundColor: '#D4EAE1',
+    borderRadius: 12,
+    backgroundColor: '#EEEEEE',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
