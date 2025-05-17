@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AiChat() {
   const [messages, setMessages] = useState<{ from: 'user' | 'ai'; text: string }[]>([]);
@@ -22,10 +23,17 @@ export default function AiChat() {
     setInput(''); // 입력창 초기화 
 
     try {
-      const res = await axios.post(`${API_BASE}/chat/bot/ask`,
+      const token = await AsyncStorage.getItem('accessToken'); 
+
+      const res = await axios.post(
+        `${API_BASE}/chat/bot/ask`,
+        { message: input },
         {
-          message: input
-        }); // AI 서버 요청
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
 
       const aiMessage = res.data.message || 'AI 응답 없음';
 
