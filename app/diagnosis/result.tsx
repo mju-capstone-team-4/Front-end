@@ -143,7 +143,7 @@ export default function DiagnosisResultScreen() {
           </View>
         </View>
 
-        {!isMismatch && (
+        {!isMismatch && formattedResult !== "정상" && (
           <View style={styles.section}>
             <View style={styles.sectionTitleContainer}>
               <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
