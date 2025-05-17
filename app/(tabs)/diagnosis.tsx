@@ -3,27 +3,12 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from "expo-constants";
+import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
-  const allowedPlants = [
-    "사과",
-    "블루베리",
-    "체리",
-    "옥수수",
-    "포도",
-    "오렌지",
-    "복숭아",
-    "피망",
-    "감자",
-    "라즈베리",
-    "대두",
-    "호박",
-    "딸기",
-    "토마토",
-  ]; // 진단 가능 식물 목록
 
   type Plant = {
     // 필요한 식물 정보 타입
