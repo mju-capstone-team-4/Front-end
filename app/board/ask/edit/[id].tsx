@@ -6,15 +6,14 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { updateQuestion } from "../../../../service/updateQuestion";
 
 const icons = {
@@ -27,12 +26,8 @@ export default function EditQuestionScreen() {
   const router = useRouter();
   const { id, title, content, imageUrl } = useLocalSearchParams();
 
-  const [newTitle, setNewTitle] = useState(
-    typeof title === "string" ? title : ""
-  );
-  const [newContent, setNewContent] = useState(
-    typeof content === "string" ? content : ""
-  );
+  const [newTitle, setNewTitle] = useState(typeof title === "string" ? title : "");
+  const [newContent, setNewContent] = useState(typeof content === "string" ? content : "");
   const [image, setImage] = useState<{
     uri: string;
     name: string;
@@ -57,7 +52,6 @@ export default function EditQuestionScreen() {
 
     if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
-
       const resized = await ImageManipulator.manipulateAsync(
         asset.uri,
         [{ resize: { width: 800 } }],
@@ -75,7 +69,7 @@ export default function EditQuestionScreen() {
 
   const handleUpdate = async () => {
     if (!id || typeof id !== "string") {
-      Alert.alert("질문 ID가 없습니다");
+      Alert.alert("질문 ID가 없습니다.");
       return;
     }
 
@@ -101,78 +95,74 @@ export default function EditQuestionScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          {/* 상단 제목 + 수정 버튼 */}
-          <View style={styles.header}>
-            <Text style={styles.title}>질문 수정</Text>
-            <TouchableOpacity onPress={handleUpdate}>
-              <Image source={icons.WriteIcon} style={styles.writeButton} />
-            </TouchableOpacity>
-          </View>
-
-          {/* 안내 문구 */}
-          <Text style={styles.uploadGuide}>
-            질문내용에 해당하는 사진을 업로드해주세요
-          </Text>
-
-          {/* 사진 업로드 */}
-          <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
-            {image ? (
-              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-            ) : (
-              <Image source={icons.PictureIcon} style={styles.pictureButton} />
-            )}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        extraScrollHeight={50}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* 상단 제목 + 수정 버튼 */}
+        <View style={styles.header}>
+          <Text style={styles.title}>질문 수정</Text>
+          <TouchableOpacity onPress={handleUpdate}>
+            <Image source={icons.WriteIcon} style={styles.writeButton} />
           </TouchableOpacity>
-
-          {/* 제목 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>제목</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={newTitle}
-              onChangeText={(text) => {
-                if (text.length <= 40) setNewTitle(text);
-              }}
-              placeholder="제목을 입력하세요"
-              maxLength={40}
-            />
-            <Text style={styles.charCount}>{newTitle.length}/40</Text>
-          </View>
-
-          {/* 내용 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>내용</Text>
-            </View>
-            <TextInput
-              style={[styles.input, { height: 120 }]}
-              value={newContent}
-              onChangeText={(text) => {
-                if (text.length <= 500) setNewContent(text);
-              }}
-              placeholder="내용을 입력하세요"
-              multiline
-              maxLength={500}
-            />
-            <Text style={styles.charCount}>{newContent.length}/500</Text>
-          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+
+        {/* 안내 문구 */}
+        <Text style={styles.uploadGuide}>
+          질문 내용에 해당하는 사진을 업로드해주세요
+        </Text>
+
+        {/* 사진 업로드 */}
+        <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
+          {image ? (
+            <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+          ) : (
+            <Image source={icons.PictureIcon} style={styles.pictureButton} />
+          )}
+        </TouchableOpacity>
+
+        {/* 제목 */}
+        <View style={styles.inputBox}>
+          <View style={styles.labelRow}>
+            <Image source={icons.PlantIcon} style={styles.labelIcon} />
+            <Text style={styles.label}>제목</Text>
+          </View>
+          <TextInput
+            style={styles.input}
+            value={newTitle}
+            onChangeText={(text) => text.length <= 40 && setNewTitle(text)}
+            placeholder="제목을 입력하세요"
+            maxLength={40}
+          />
+          <Text style={styles.charCount}>{newTitle.length}/40</Text>
+        </View>
+
+        {/* 내용 */}
+        <View style={styles.inputBox}>
+          <View style={styles.labelRow}>
+            <Image source={icons.PlantIcon} style={styles.labelIcon} />
+            <Text style={styles.label}>내용</Text>
+          </View>
+          <TextInput
+            style={[styles.input, { height: 120 }]}
+            value={newContent}
+            onChangeText={(text) => text.length <= 500 && setNewContent(text)}
+            placeholder="내용을 입력하세요"
+            multiline
+            maxLength={500}
+          />
+          <Text style={styles.charCount}>{newContent.length}/500</Text>
+        </View>
+      </KeyboardAwareScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
+  container: { flexGrow: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -183,10 +173,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Pretendard-SemiBold",
   },
-  writeButton: {
-    width: 32,
-    height: 32,
-  },
+  writeButton: { width: 32, height: 32 },
   uploadGuide: {
     fontSize: 16,
     fontFamily: "Pretendard-Regular",
@@ -194,37 +181,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#555",
   },
-  pictureButton: {
-    width: 140,
-    height: 140,
-  },
-  imageIconButton: {
-    alignSelf: "center",
-    marginBottom: 30,
-  },
+  pictureButton: { width: 140, height: 140 },
+  imageIconButton: { alignSelf: "center", marginBottom: 30 },
   imagePreview: {
     width: 140,
     height: 140,
     borderRadius: 8,
     backgroundColor: "#eee",
   },
-  inputBox: {
-    marginBottom: 20,
-  },
+  inputBox: { marginBottom: 20 },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
     gap: 6,
   },
-  labelIcon: {
-    width: 15,
-    height: 15,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: "Pretendard-SemiBold",
-  },
+  labelIcon: { width: 15, height: 15 },
+  label: { fontSize: 16, fontFamily: "Pretendard-SemiBold" },
   input: {
     backgroundColor: "#F3F3F3",
     borderRadius: 8,

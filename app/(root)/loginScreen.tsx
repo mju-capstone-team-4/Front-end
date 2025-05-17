@@ -61,9 +61,6 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const processToken = async (token: string) => {
-    await AsyncStorage.setItem("accessToken", token);
-    console.log("💾 accessToken 저장 완료");
-
     const payload = decodeTokenPayload(token);
     if (payload) {
       global.userInfo = {
@@ -147,8 +144,11 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={[styles.button, styles.test]}
           onPress={async () => {
+            await AsyncStorage.removeItem("accessToken");
+
             const token = await getToken("test1@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             console.log("새로 저장됨");
             router.replace("/(tabs)/board");
           }}
@@ -161,6 +161,7 @@ export default function LoginScreen() {
           onPress={async () => {
             const token = await getToken("test2@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             router.replace("/(tabs)/board");
           }}
         >
@@ -171,6 +172,7 @@ export default function LoginScreen() {
           onPress={async () => {
             const token = await getToken("test3@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             router.replace("/(tabs)/board");
           }}
         >

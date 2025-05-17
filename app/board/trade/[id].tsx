@@ -3,18 +3,23 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
   Image,
   Pressable,
   TouchableOpacity,
   Alert,
-
   ScrollView,
+  Dimensions,
 } from "react-native";
 import React, { useState } from "react";
 import ImageView from "react-native-image-viewing";
-import { Ionicons } from "@expo/vector-icons";
 import { deleteTradePost } from "../../../service/tradeService";
+
+const { width } = Dimensions.get("window");
+
+const icons = {
+  WriteIcon: require("../../../assets/images/write_button.png"),
+  DeleteIcon: require("../../../assets/images/trash_icon.png"),
+};
 
 export default function TradeDetail() {
   const router = useRouter();
@@ -56,61 +61,57 @@ export default function TradeDetail() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.postBox}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{displayTitle}</Text>
-
-            
-
-            {/* ✅ 권한 제어: 작성자만 버튼 보이게 */}
-            {global.userInfo.username === nickname && (
-              <View style={styles.iconButtons}>
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => {
-                    if (typeof id === "string") {
-                      router.push({
-                        pathname: "/board/trade/edit/[id]",
-                        params: { id, itemName, description, price, imageUrl },
-                      });
-                    }
-                  }}
-                >
-                  <Ionicons name="create-outline" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.iconButton, { marginLeft: 8 }]}
-                  onPress={handleDelete}
-                >
-                  <Ionicons name="trash-outline" size={20} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <Text style={styles.meta}>작성자: {displayNickname}</Text>
-          <Text style={styles.meta_price}>가격: {displayPrice}</Text>
-
-          {validImage && (
-            <>
-              <Pressable onPress={() => setVisible(true)}>
-                <Image source={{ uri: validImage }} style={styles.image} />
-              </Pressable>
-              <ImageView
-                images={[{ uri: validImage }]}
-                imageIndex={0}
-                visible={visible}
-                onRequestClose={() => setVisible(false)}
-              />
-            </>
+        <View style={styles.header}>
+          <Text style={styles.title}>{displayTitle}</Text>
+          {global.userInfo.username === nickname && (
+            <View style={styles.iconButtons}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  if (typeof id === "string") {
+                    router.push({
+                      pathname: "/board/trade/edit/[id]",
+                      params: { id, itemName, description, price, imageUrl },
+                    });
+                  }
+                }}
+              >
+                <Image source={icons.WriteIcon} style={{ width: 32, height: 32 }} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { marginLeft: 8 }]}
+                onPress={handleDelete}
+              >
+                <Image source={icons.DeleteIcon} style={{ width: 30, height: 30 }} />
+              </TouchableOpacity>
+            </View>
           )}
-
-          <Text style={styles.content}>{displayContent}</Text>
         </View>
+
+        <Text style={styles.meta}>작성자: {displayNickname}</Text>
+        <Text style={styles.metaPrice}>가격: {displayPrice}</Text>
+
+        {validImage && (
+          <>
+            <Pressable onPress={() => setVisible(true)}>
+              <Image source={{ uri: validImage }} style={styles.image} resizeMode="cover" />
+            </Pressable>
+            <ImageView
+              images={[{ uri: validImage }]}
+              imageIndex={0}
+              visible={visible}
+              onRequestClose={() => setVisible(false)}
+            />
+          </>
+        )}
+
+        <Text style={styles.content}>{displayContent}</Text>
       </ScrollView>
 
       <View style={styles.buttonBox}>
-        <Button title="채팅하기" onPress={() => alert("채팅 준비 중")} />
+        <TouchableOpacity style={styles.chatButton} onPress={() => alert("채팅 준비 중")}>
+          <Text style={styles.chatButtonText}>💬 채팅하기</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -118,15 +119,63 @@ export default function TradeDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingTop: 60 },
-  scrollContent: { padding: 20 },
-  postBox: { backgroundColor: "#f9f9f9", borderRadius: 8, padding: 24, marginBottom: 30 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 30 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   iconButtons: { flexDirection: "row" },
-  iconButton: { padding: 4, borderWidth: 1, borderColor: "#888", borderRadius: 6 },
-  title: { fontSize: 22, fontWeight: "bold", flexShrink: 1, marginRight: 10 },
-  meta: { fontSize: 14, color: "#555", marginBottom: 4 },
-  meta_price: { fontSize: 14, color: "#555", marginBottom: 16 },
-  content: { fontSize: 16, lineHeight: 24, marginTop: 12 },
-  image: { marginTop: 12, width: "100%", height: 200, borderRadius: 8 },
-  buttonBox: { backgroundColor: "#fff", padding: 20, borderTopWidth: 1, borderColor: "#ddd" },
+  iconButton: { padding: 4, borderRadius: 6 },
+  title: {
+    fontSize: 22,
+    fontFamily: "Pretendard-SemiBold",
+    color: "#222",
+    flexShrink: 1,
+    marginRight: 10,
+  },
+  meta: {
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    color: "#555",
+    marginBottom: 4,
+  },
+  metaPrice: {
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    color: "#555",
+    marginBottom: 16,
+  },
+  image: {
+    width: width - 40,
+    height: 250,
+    borderRadius: 8,
+    marginBottom: 15,
+    alignSelf: "center",
+  },
+  content: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontFamily: "Pretendard-Regular",
+    color: "#333",
+    marginTop: 12,
+  },
+  buttonBox: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  chatButton: {
+    backgroundColor: "#00D282",
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  chatButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Pretendard-SemiBold",
+  },
 });

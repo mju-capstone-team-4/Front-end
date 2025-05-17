@@ -6,17 +6,14 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { createTrade } from "@/service/createTrade";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const icons = {
   WriteIcon: require("../../../assets/images/write_button.png"),
@@ -69,7 +66,7 @@ export default function NewTradePostScreen() {
       Alert.alert("오류", "모든 항목을 입력해주세요.");
       return;
     }
-  
+
     try {
       await createTrade({
         itemName: title,
@@ -77,7 +74,7 @@ export default function NewTradePostScreen() {
         price: parseInt(price),
         image,
       });
-  
+
       Alert.alert("성공", "거래글이 등록되었습니다!");
       router.push("/(tabs)/board");
     } catch (error) {
@@ -90,81 +87,79 @@ export default function NewTradePostScreen() {
   const formattedPrice = numericPrice.toLocaleString();
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.container}
+      extraScrollHeight={50}
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Text style={styles.title}>거래 게시글 작성</Text>
-            <TouchableOpacity onPress={handleSubmit}>
-              <Image source={icons.WriteIcon} style={styles.writeButton} />
-            </TouchableOpacity>
-          </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>거래 게시글 작성</Text>
+        <TouchableOpacity onPress={handleSubmit}>
+          <Image source={icons.WriteIcon} style={styles.writeButton} />
+        </TouchableOpacity>
+      </View>
 
-          <Text style={styles.uploadText}>거래와 관련된 사진을 업로드해주세요</Text>
+      <Text style={styles.uploadText}>거래와 관련된 사진을 업로드해주세요</Text>
 
-          {!image && (
-            <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
-              <Image source={icons.PictureIcon} style={styles.pictureButton} />
-            </TouchableOpacity>
-          )}
-          {image && (
-            <TouchableOpacity onPress={pickImage}>
-              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-            </TouchableOpacity>
-          )}
+      {!image && (
+        <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
+          <Image source={icons.PictureIcon} style={styles.pictureButton} />
+        </TouchableOpacity>
+      )}
+      {image && (
+        <TouchableOpacity onPress={pickImage}>
+          <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+        </TouchableOpacity>
+      )}
 
-          {/* 제목 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>제목</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={(text) => text.length <= 40 && setTitle(text)}
-              placeholder="제목을 입력하세요"
-            />
-            <Text style={styles.charCount}>{title.length}/40</Text>
-          </View>
+      {/* 제목 입력 */}
+      <View style={styles.inputBox}>
+        <View style={styles.labelRow}>
+          <Image source={icons.PlantIcon} style={styles.labelIcon} />
+          <Text style={styles.label}>제목</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={(text) => text.length <= 40 && setTitle(text)}
+          placeholder="제목을 입력하세요"
+        />
+        <Text style={styles.charCount}>{title.length}/40</Text>
+      </View>
 
-          {/* 가격 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>가격(원)</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={formattedPrice}
-              onChangeText={handlePriceChange}
-              placeholder="예: 10000"
-              keyboardType="numeric"
-            />
-            <Text style={styles.charCount}>{formattedPrice} / 10,000,000</Text>
-          </View>
+      {/* 가격 입력 */}
+      <View style={styles.inputBox}>
+        <View style={styles.labelRow}>
+          <Image source={icons.PlantIcon} style={styles.labelIcon} />
+          <Text style={styles.label}>가격(원)</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={formattedPrice}
+          onChangeText={handlePriceChange}
+          placeholder="예: 10000"
+          keyboardType="numeric"
+        />
+        <Text style={styles.charCount}>{formattedPrice} / 10,000,000</Text>
+      </View>
 
-          {/* 내용 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>내용</Text>
-            </View>
-            <TextInput
-              style={[styles.input, { height: 120 }]}
-              value={description}
-              onChangeText={(text) => text.length <= 500 && setDescription(text)}
-              placeholder="내용을 입력하세요"
-              multiline
-            />
-            <Text style={styles.charCount}>{description.length}/500</Text>
-          </View>
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+      {/* 내용 입력 */}
+      <View style={styles.inputBox}>
+        <View style={styles.labelRow}>
+          <Image source={icons.PlantIcon} style={styles.labelIcon} />
+          <Text style={styles.label}>내용</Text>
+        </View>
+        <TextInput
+          style={[styles.input, { height: 120 }]}
+          value={description}
+          onChangeText={(text) => text.length <= 500 && setDescription(text)}
+          placeholder="내용을 입력하세요"
+          multiline
+        />
+        <Text style={styles.charCount}>{description.length}/500</Text>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
