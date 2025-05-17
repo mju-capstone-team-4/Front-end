@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
 
 export default function DiagnosisSelectScreen() {
   useFocusEffect(
@@ -27,7 +28,6 @@ export default function DiagnosisSelectScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const allowedPlants = ['딸기', '토마토', '포도', '호박', '오이', '상추', '고추', '감자', '파프리카']; // 진단 가능 식물 목록 
   const isFromMyPlant = !!selectedPlantName;
   const [plantName, setPlantName] = useState<string | null>(isFromMyPlant ? selectedPlantName : null);
 
