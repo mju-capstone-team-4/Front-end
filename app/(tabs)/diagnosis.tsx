@@ -9,15 +9,20 @@ export default function DiagnosisScreen() {
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
   const allowedPlants = [
+    "사과",
+    "블루베리",
+    "체리",
+    "옥수수",
+    "포도",
+    "오렌지",
+    "복숭아",
+    "피망",
+    "감자",
+    "라즈베리",
+    "대두",
+    "호박",
     "딸기",
     "토마토",
-    "포도",
-    "호박",
-    "오이",
-    "상추",
-    "고추",
-    "감자",
-    "파프리카",
   ]; // 진단 가능 식물 목록
 
   type Plant = {
