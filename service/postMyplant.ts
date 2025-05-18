@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient";
 
 interface PostMyplantParams {
@@ -19,32 +20,41 @@ export async function postMyplant({
   recommendTonic,
   image,
 }: PostMyplantParams) {
+  const token = await AsyncStorage.getItem("accessToken");
+
   const formData = new FormData();
 
-  // ✅ 1. JSON 문자열을 'data'라는 키에 넣는다
-  const jsonPayload = {
-    name,
-    description,
-    plantId,
-    recommendTonic,
-  };
-  formData.append("data", JSON.stringify(jsonPayload));
+  // ✅ JSON을 Blob처럼 전달 (서버에서 multipart/form-data의 json 인식 위해)
+  formData.append(
+    "data",
+    JSON.stringify({
+      name,
+      description,
+      plantId,
+      recommendTonic,
+    }) as any
+  ); // string으로도 되면 그대로
 
-  // ✅ 2. 이미지가 있다면 'file'이라는 키로 추가
   if (image) {
     formData.append("file", {
-      uri: image.uri, // e.g. file:///...
+      uri: image.uri,
       name: image.fileName || "plant.jpg",
       type: image.type || "image/jpeg",
-    } as any); // Expo에서는 Blob/File 대신 any로 강제 형변환
+    } as any);
   }
 
-  // ✅ 3. axios 전송 (Content-Type은 생략해야 함!)
-  const response = await apiClient.post("/mypage/myplant", formData, {
-    headers: {
-      Accept: "application/json", // 필요시 명시
-    },
-  });
+  try {
+    const response = await apiClient.post("/mypage/myplant", formData, {
+      headers: {
+        // Content-Type 자동 설정됨 → 생략!
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  return response.data;
+    console.log("✅ 식물 등록 성공:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ 식물 등록 실패:", error);
+    throw error;
+  }
 }

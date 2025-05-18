@@ -59,7 +59,7 @@ export default function UserProfile() {
         text: "카메라",
         onPress: async () => {
           const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: "images",
             allowsEditing: true,
             quality: 1,
           });
@@ -72,7 +72,7 @@ export default function UserProfile() {
         text: "앨범",
         onPress: async () => {
           const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: "images",
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             quality: 1,
           });
@@ -97,8 +97,12 @@ export default function UserProfile() {
           fileName: image.fileName || "profile.jpg",
         },
       });
+      // 🔄 상태에서 직접 이미지 URI 갱신
+      if (user) {
+        setUser({ ...user, profile_uri: image.uri });
+      }
+
       Alert.alert("✅ 변경 완료", "프로필 이미지가 변경되었습니다.");
-      fetchUser();
     } catch (error) {
       console.error("프로필 업로드 실패:", error);
       Alert.alert("❌ 실패", "프로필 이미지를 업로드하지 못했습니다.");

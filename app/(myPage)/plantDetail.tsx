@@ -4,7 +4,8 @@ import { Calendar } from "react-native-calendars";
 import { getMyPlantCalendar } from "@/service/getMyPlantCalendar";
 import { useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import Pot from "@/assets/images/pot.svg";
+import Back2 from "@/assets/images/back2.svg";
+import Back3 from "@/assets/images/back3.svg";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -102,6 +103,9 @@ export default function PlantDetail() {
         <View style={styles.circle}>
           <Text style={styles.description}>{description}</Text>
         </View>
+        <Back2 style={styles.back2} />
+
+        <Back3 style={styles.back3} />
       </LinearGradient>
 
       <Calendar
@@ -209,5 +213,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "flex-start",
     marginBottom: 10,
+  },
+  back2: {
+    position: "absolute",
+    left: scaleWidth(220),
+  },
+  back3: {
+    position: "absolute",
+    right: scaleWidth(200),
+    top: 35,
   },
 });

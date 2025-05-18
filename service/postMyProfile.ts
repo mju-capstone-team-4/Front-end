@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient";
 
 interface PostMyProfileParams {
@@ -9,20 +10,21 @@ interface PostMyProfileParams {
 }
 
 export async function postMyProfile({ profileImage }: PostMyProfileParams) {
-  const formData = new FormData();
+  if (!profileImage) return;
+  const token = await AsyncStorage.getItem("accessToken");
 
-  if (profileImage) {
-    formData.append("file", {
-      uri: profileImage.uri,
-      name: profileImage.fileName || "profile.jpg",
-      type: profileImage.type || "image/jpeg",
-    } as any);
-  }
+  const formData = new FormData();
+  formData.append("file", {
+    uri: profileImage.uri,
+    name: profileImage.fileName || "profile.jpg",
+    type: profileImage.type || "image/jpeg",
+  } as any);
 
   try {
-    const response = await apiClient.post("/mypage/me/profile", formData, {
+    const response = await apiClient.post("/mypage/profile", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     });
 
