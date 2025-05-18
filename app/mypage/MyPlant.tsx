@@ -61,11 +61,12 @@ export default function MyPlant(): React.JSX.Element {
     router.push("/plantRegistration");
   };
 
-  const handlePlantPress = (plantId: number) => {
+  const handlePlantPress = (plantId: number, description: string) => {
     console.log("plantId:", plantId.toString());
+
     router.push({
       pathname: "/plantDetail",
-      params: { id: plantId.toString() },
+      params: { id: plantId.toString(), description },
     });
   };
   // 지정한 인덱스의 식물을 삭제하는 함수
@@ -117,7 +118,7 @@ export default function MyPlant(): React.JSX.Element {
           <TouchableOpacity
             key={`${plant.description}-${index}`}
             style={styles.plantItem}
-            onPress={() => handlePlantPress(plant.id)}
+            onPress={() => handlePlantPress(plant.id, plant.description)}
           >
             <View style={styles.itemInfo}>
               <Text style={styles.plantNickname}>{plant.description}</Text>
