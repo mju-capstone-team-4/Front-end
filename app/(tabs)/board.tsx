@@ -140,7 +140,7 @@ export default function BoardScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
 
-        <Back1 width={100} height={100} style={styles.back1} fill="black" />
+        <Back1 style={styles.back1} />
         <Back2 style={styles.back2} />
         <Back3 style={styles.back3} />
 
