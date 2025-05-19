@@ -1,20 +1,18 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Pressable,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-  Dimensions,
+  View, Text, StyleSheet, Image, Pressable, TouchableOpacity, Alert,
+  ScrollView, Dimensions
 } from "react-native";
 import React, { useState } from "react";
 import ImageView from "react-native-image-viewing";
 import { deleteTradePost } from "../../../service/tradeService";
+import axios from "axios";
+import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
+const API_BASE = Constants.expoConfig?.extra?.API_URL;
+const CHAT_BASE = API_BASE.replace("/api", "");
 
 const icons = {
   WriteIcon: require("../../../assets/images/write_button.png"),
@@ -51,11 +49,44 @@ export default function TradeDetail() {
             router.replace("/(tabs)/board");
           } catch (error) {
             Alert.alert("에러", "삭제에 실패했습니다.");
-            console.error("❌ 삭제 실패:", error);
           }
         },
       },
     ]);
+  };
+
+  const handleChat = async () => {
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        Alert.alert("로그인 필요", "로그인 후 이용해주세요.");
+        return;
+      }
+      
+      console.log("👤 memberId:", global.userInfo.memberId); 
+      
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.post(
+        `${CHAT_BASE}/chat/room/private/create?otherMemberId=${global.userInfo.memberId}`,
+        {},
+        { headers }
+      );
+
+      const roomId = res.data;
+      console.log("✅ 채팅방 생성 성공, roomId:", roomId);
+
+      router.push({
+        pathname: "/chat/[roomId]",
+        params: {
+          roomId: roomId.toString(),
+          partnerName: displayNickname,
+          partnerImage: validImage,
+        },
+      });
+    } catch (error) {
+      console.error("❌ 채팅방 생성 실패:", error);
+      Alert.alert("에러", "채팅방 생성에 실패했습니다.");
+    }
   };
 
   return (
@@ -109,7 +140,7 @@ export default function TradeDetail() {
       </ScrollView>
 
       <View style={styles.buttonBox}>
-        <TouchableOpacity style={styles.chatButton} onPress={() => alert("채팅 준비 중")}>
+        <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
           <Text style={styles.chatButtonText}>💬 채팅하기</Text>
         </TouchableOpacity>
       </View>

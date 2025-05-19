@@ -19,6 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Back1 from "@/assets/images/back1.svg";
 import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
+import { getMypage } from "@/service/getMypage";
 
 const { width, height } = Dimensions.get("window");
 
@@ -64,12 +65,20 @@ export default function LoginScreen() {
     const payload = decodeTokenPayload(token);
     if (payload) {
       global.userInfo = {
-        username: payload.sub || null, // ✅ sub 값을 username으로 사용
-        memberId: payload.memberId || null, // 없는 경우 null 처리
+        username: payload.sub || null,
+        memberId: null, // 일단 null로 두고, 아래에서 업데이트
       };
-      console.log("👤 사용자 정보:", global.userInfo);
+      console.log("👤 [1차] 사용자 정보 (토큰에서):", global.userInfo);
+  
+      try {
+        const userInfo = await getMypage();  // ✅ 서버에서 memberId 가져오기
+        global.userInfo.memberId = userInfo.id;
+        console.log("👤 [2차] 사용자 정보 (서버에서):", global.userInfo);
+      } catch (error) {
+        console.error("❌ getMypage 호출 실패:", error);
+      }
     }
-
+  
     router.replace("/(tabs)/board");
   };
 
