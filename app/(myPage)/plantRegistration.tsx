@@ -119,9 +119,9 @@ export default function PlantRegistration(): JSX.Element {
       Alert.alert("오류", "식물 별명을 모두 입력해주세요.");
       return;
     }
-    const selectedPlantName =
-      plantOptions.find((opt) => opt.value === selectedPlantId)?.label ||
-      plantNameSearch;
+    // const selectedPlantName =
+    //   plantOptions.find((opt) => opt.value === selectedPlantId)?.label ||
+    //   plantNameSearch;
 
     const payload = {
       name: manualPlantName.trim(),

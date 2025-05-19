@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import EditButton from "../../assets/images/edit.svg";
 import { getMypage } from "@/service/getMypage";
 import { postMyProfile } from "@/service/postMyProfile";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const BASE_WIDTH = 414;
@@ -26,11 +27,12 @@ export default function UserProfile() {
     id: number;
     email: string;
     username: string;
-    profile_uri: string;
+    profileUrl: string;
     plants: any[];
   } | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [image, setImage] = useState<any>(null);
 
   const fetchUser = async () => {
     try {
@@ -47,45 +49,34 @@ export default function UserProfile() {
     fetchUser();
   }, []);
 
-  const pickAndUploadImage = async () => {
+  const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("권한 필요", "앨범 접근 권한이 필요합니다.");
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
       return;
     }
 
-    Alert.alert("사진 선택", "어디서 가져올까요?", [
-      {
-        text: "카메라",
-        onPress: async () => {
-          const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: "images",
-            allowsEditing: true,
-            quality: 1,
-          });
-          if (!result.canceled) {
-            await uploadProfileImage(result.assets[0]);
-          }
-        },
-      },
-      {
-        text: "앨범",
-        onPress: async () => {
-          const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-          });
-          if (!result.canceled) {
-            await uploadProfileImage(result.assets[0]);
-          }
-        },
-      },
-      {
-        text: "취소",
-        style: "cancel",
-      },
-    ]);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const resized = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const finalImage = {
+        uri: resized.uri,
+        fileName: "image.jpg",
+        type: "image/jpeg",
+      };
+
+      setImage(finalImage);
+      await uploadProfileImage(finalImage);
+    }
   };
 
   const uploadProfileImage = async (image: any) => {
@@ -99,7 +90,7 @@ export default function UserProfile() {
       });
       // 🔄 상태에서 직접 이미지 URI 갱신
       if (user) {
-        setUser({ ...user, profile_uri: image.uri });
+        setUser({ ...user, profileUrl: image.uri });
       }
 
       Alert.alert("✅ 변경 완료", "프로필 이미지가 변경되었습니다.");
@@ -133,11 +124,11 @@ export default function UserProfile() {
     <View style={styles.container}>
       <View style={styles.profileWrapper}>
         <View style={styles.profileBorder}>
-          <TouchableOpacity onPress={pickAndUploadImage}>
+          <TouchableOpacity onPress={pickImage}>
             <Image
               source={
-                user.profile_uri && user.profile_uri.trim() !== ""
-                  ? { uri: user.profile_uri }
+                user.profileUrl && user.profileUrl.trim() !== ""
+                  ? { uri: user.profileUrl }
                   : require("@/assets/images/flower.png")
               }
               style={styles.profileImage}
