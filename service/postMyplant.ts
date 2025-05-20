@@ -1,55 +1,56 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient";
 
-interface MyPlantPayload {
-  image?: {
-    uri: string;
-    type: string;
-    fileName: string;
-  };
+interface PostMyplantParams {
   name: string;
   description: string;
   plantId: number;
   recommendTonic: boolean;
+  image?: {
+    uri: string;
+    type?: string;
+    fileName?: string;
+  };
 }
 
 export async function postMyplant({
-  image,
   name,
   description,
   plantId,
   recommendTonic,
-}: MyPlantPayload) {
-  const token = await AsyncStorage.getItem("accessToken");
+  image,
+}: PostMyplantParams) {
+  try {
+    const token = await AsyncStorage.getItem("accessToken");
 
-  const formData = new FormData();
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("plantId", plantId.toString());
+    formData.append("recommendTonic", recommendTonic.toString());
 
-  // ✅ 1. 파일 추가
-  if (image) {
-    formData.append("file", {
-      uri: image.uri,
-      type: image.type,
-      name: image.fileName,
-    } as any);
+    if (image) {
+      formData.append("image", {
+        uri: image.uri, // e.g. file:///...
+        name: image.fileName,
+        type: image.type,
+      } as any); // Expo에서는 Blob/File 대신 any로 강제 형변환
+    }
+
+    const response = await apiClient.post("/mypage/myplant", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error(`Unexpected response status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("❌ 식물 등록 실패:", error);
+    throw error;
   }
-
-  // ✅ 2. JSON 문자열 형태로 data 필드 추가
-  formData.append(
-    "data",
-    JSON.stringify({
-      name,
-      description,
-      plantId,
-      recommendTonic,
-    })
-  );
-
-  // ✅ 3. API 요청
-  const response = await apiClient.post("/mypage/myplant", formData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return response.data;
 }
