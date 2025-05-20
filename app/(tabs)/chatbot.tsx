@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
 import DefaultImage from '../../assets/images/plantylogo.svg';
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 const cardMargin = 12;
@@ -97,65 +98,67 @@ export default function ChatbotScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={styles.tabActive}
-            onPress={() => { }} // 현재 화면
-          >
-            <Text style={styles.tabTextActive}>거래 채팅</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabInactive}
-            onPress={() => router.push('/chat/aiChat')} // AI 채팅 클릭 시 이동
-          >
-            <Text style={styles.tabTextInactive}>AI 채팅</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.searchWrapper}>
-        <Image
-          source={require('../../assets/images/search_button.png')}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="사용자를 검색하세요"
-          value={search}
-          onChangeText={setSearch}
-          placeholderTextColor="#9E9E9E"
-        />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.userList}>
-        {users
-          .filter(
-            (u) =>
-              u.username &&
-              u.username.includes(search) &&
-              u.id !== global.userInfo.memberId // 자신 제외
-          )
-          .map((user, index) => (
+    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.tabContainer}>
             <TouchableOpacity
-              key={index}
-              onPress={() => handleUserPressById(user.id)}
-              style={[styles.userCard, { width: cardWidth }]}
+              style={styles.tabActive}
+              onPress={() => { }} // 현재 화면
             >
-              {user.profileUrl ? (
-                <Image
-                  source={{ uri: user.profileUrl }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <DefaultImage width={100} height={100} />
-              )}
-              <Text style={styles.userName}>{user.username}</Text>
+              <Text style={styles.tabTextActive}>거래 채팅</Text>
             </TouchableOpacity>
-          ))}
-      </ScrollView>
-    </View>
+            <TouchableOpacity
+              style={styles.tabInactive}
+              onPress={() => router.push('/chat/aiChat')} // AI 채팅 클릭 시 이동
+            >
+              <Text style={styles.tabTextInactive}>AI 채팅</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.searchWrapper}>
+          <Image
+            source={require('../../assets/images/search_button.png')}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="사용자를 검색하세요"
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor="#9E9E9E"
+          />
+        </View>
+
+        <ScrollView contentContainerStyle={styles.userList}>
+          {users
+            .filter(
+              (u) =>
+                u.username &&
+                u.username.includes(search) &&
+                u.id !== global.userInfo.memberId // 자신 제외
+            )
+            .map((user, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleUserPressById(user.id)}
+                style={[styles.userCard, { width: cardWidth }]}
+              >
+                {user.profileUrl ? (
+                  <Image
+                    source={{ uri: user.profileUrl }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <DefaultImage width={100} height={100} />
+                )}
+                <Text style={styles.userName}>{user.username}</Text>
+              </TouchableOpacity>
+            ))}
+        </ScrollView>
+      </View>
+    </SafeAreaViewContext>
   );
 }
 
