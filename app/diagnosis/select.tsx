@@ -12,6 +12,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function DiagnosisSelectScreen() {
   useFocusEffect(
@@ -181,71 +182,73 @@ export default function DiagnosisSelectScreen() {
   return (
     <>
       {isLoading && <LoadingSplash />}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
+      <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
 
-          <TouchableOpacity style={styles.imageBox} onPress={handleImageSelect}>
-            <Image
-              source={
-                image
-                  ? { uri: image }
-                  : require('../../assets/images/picture.png') // 사진 아이콘
-              }
-              style={styles.image}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.imageBox} onPress={handleImageSelect}>
+              <Image
+                source={
+                  image
+                    ? { uri: image }
+                    : require('../../assets/images/picture.png') // 사진 아이콘
+                }
+                style={styles.image}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
 
-          {!isFromMyPlant && (
-            <View style={styles.dropdownContainer}>
-              <Text style={styles.dropdownLabel}>식물 선택</Text>
-              <RNPickerSelect
-                onValueChange={(value) => setPlantName(value)}
-                placeholder={{ label: '식물을 선택하세요', value: null }}
-                value={plantName}
-                items={allowedPlants.map((name) => ({ label: name, value: name }))}
-                style={pickerSelectStyles}
-                useNativeAndroidPickerStyle={false}
-                Icon={() => <Ionicons name="chevron-down" size={20} color="#555" />}
+            {!isFromMyPlant && (
+              <View style={styles.dropdownContainer}>
+                <Text style={styles.dropdownLabel}>식물 선택</Text>
+                <RNPickerSelect
+                  onValueChange={(value) => setPlantName(value)}
+                  placeholder={{ label: '식물을 선택하세요', value: null }}
+                  value={plantName}
+                  items={allowedPlants.map((name) => ({ label: name, value: name }))}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="#555" />}
+                />
+              </View>
+            )}
+            <View style={styles.section}>
+              <View style={styles.sectionTitleContainer}>
+                <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
+                <Text style={styles.sectionTitle}>부가설명</Text>
+              </View>
+
+              <TextInput
+                style={styles.input}
+                placeholder="작성 시 진단 정확도가 올라갑니다"
+                placeholderTextColor="#9E9E9E"
+                multiline
+                value={description}
+                onChangeText={setDescription}
               />
             </View>
-          )}
-          <View style={styles.section}>
-            <View style={styles.sectionTitleContainer}>
-              <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
-              <Text style={styles.sectionTitle}>부가설명</Text>
-            </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="작성 시 진단 정확도가 올라갑니다"
-              placeholderTextColor="#9E9E9E"
-              multiline
-              value={description}
-              onChangeText={setDescription}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.submitButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>진단하기</Text>}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.disabledButton]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>진단하기</Text>}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaViewContext>
     </>
   );
 }
@@ -275,7 +278,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 10,
     paddingBottom: 40,
     alignItems: 'center',
   },

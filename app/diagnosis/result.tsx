@@ -6,6 +6,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { useEffect, useState } from 'react';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function DiagnosisResultScreen() {
   const {
@@ -81,7 +82,7 @@ export default function DiagnosisResultScreen() {
 
     const backAction = () => {
       router.replace('/diagnosis');
-      return true; 
+      return true;
     };
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -91,113 +92,115 @@ export default function DiagnosisResultScreen() {
   }, []); // 임시 이미지 출력
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace('/diagnosis')} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{headerTitle}</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.section}>
-          <View style={styles.sectionTitleContainer}>
-            <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
-            <Text style={styles.sectionTitle}>진단 결과</Text>
-          </View>
-
-          <View style={styles.gaugeContainer}>
-            <AnimatedCircularProgress // 반달 게이지
-              size={180}
-              width={15}
-              fill={finalPercentage}
-              tintColor="#00D282"
-              backgroundColor="#EEEEEE"
-              rotation={-90} // 90도 회전
-              arcSweepAngle={180}
-              lineCap="round"
-            >
-              {() => (
-                <View style={styles.labelContainer}>
-                  <Text style={styles.statusText}>정확도</Text>
-                  <Text style={styles.percentText}>{finalPercentage}%</Text>
-                </View>
-              )}
-            </AnimatedCircularProgress>
-            <Text style={styles.labelText}>진단명</Text>
-            <Text style={styles.diagnosisText}>{finalResultText}</Text>
-          </View>
-
-          <View style={styles.imageBox}>
-            {diagnosis?.image ? ( // {imageUri? (
-              <Image
-                //source={{ uri: imageUri }}
-                source={{ uri: diagnosis.image }}
-                style={styles.image}
-                resizeMode="cover"
-                onError={(e) => console.log('이미지 로드 실패:', e.nativeEvent.error)} // 이미지 출력 확인
-              />
-            ) : (
-              <Text>이미지가 없습니다.</Text>
-            )}
-          </View>
+    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.replace('/diagnosis')} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{headerTitle}</Text>
         </View>
 
-        {!isMismatch && formattedResult !== "정상" && (
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.section}>
             <View style={styles.sectionTitleContainer}>
               <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
-              <Text style={styles.sectionTitle}>진단과 관련된 치료방법</Text>
+              <Text style={styles.sectionTitle}>진단 결과</Text>
             </View>
 
-            {cleanedDiseaseInfo && (
-              <View style={styles.detailItem}>
-                <View style={styles.detailHeader}>
-                  <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.detailTitle}>질병 정보</Text>
-                  <Text style={styles.detailText}>{cleanedDiseaseInfo}</Text>
-                </View>
-              </View>
-            )}
-            {cleanedWatering && (
-              <View style={styles.detailItem}>
-                <View style={styles.detailHeader}>
-                  <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.detailTitle}>수분 관리</Text>
-                  <Text style={styles.detailText}>{cleanedWatering}</Text>
-                </View>
-              </View>
-            )}
-            {cleanedEnvironment && (
-              <View style={styles.detailItem}>
-                <View style={styles.detailHeader}>
-                  <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.detailTitle}>환경 관리</Text>
-                  <Text style={styles.detailText}>{cleanedEnvironment}</Text>
-                </View>
-              </View>
-            )}
-            {cleanedNutrition && (
-              <View style={styles.detailItem}>
-                <View style={styles.detailHeader}>
-                  <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.detailTitle}>영양 관리</Text>
-                  <Text style={styles.detailText}>{cleanedNutrition}</Text>
-                </View>
-              </View>
-            )}
+            <View style={styles.gaugeContainer}>
+              <AnimatedCircularProgress // 반달 게이지
+                size={180}
+                width={15}
+                fill={finalPercentage}
+                tintColor="#00D282"
+                backgroundColor="#EEEEEE"
+                rotation={-90} // 90도 회전
+                arcSweepAngle={180}
+                lineCap="round"
+              >
+                {() => (
+                  <View style={styles.labelContainer}>
+                    <Text style={styles.statusText}>정확도</Text>
+                    <Text style={styles.percentText}>{finalPercentage}%</Text>
+                  </View>
+                )}
+              </AnimatedCircularProgress>
+              <Text style={styles.labelText}>진단명</Text>
+              <Text style={styles.diagnosisText}>{finalResultText}</Text>
+            </View>
+
+            <View style={styles.imageBox}>
+              {diagnosis?.image ? ( // {imageUri? (
+                <Image
+                  //source={{ uri: imageUri }}
+                  source={{ uri: diagnosis.image }}
+                  style={styles.image}
+                  resizeMode="cover"
+                  onError={(e) => console.log('이미지 로드 실패:', e.nativeEvent.error)} // 이미지 출력 확인
+                />
+              ) : (
+                <Text>이미지가 없습니다.</Text>
+              )}
+            </View>
           </View>
-        )}
-      </ScrollView>
-    </View>
+
+          {!isMismatch && formattedResult !== "정상" && (
+            <View style={styles.section}>
+              <View style={styles.sectionTitleContainer}>
+                <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
+                <Text style={styles.sectionTitle}>진단과 관련된 치료방법</Text>
+              </View>
+
+              {cleanedDiseaseInfo && (
+                <View style={styles.detailItem}>
+                  <View style={styles.detailHeader}>
+                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.detailTitle}>질병 정보</Text>
+                    <Text style={styles.detailText}>{cleanedDiseaseInfo}</Text>
+                  </View>
+                </View>
+              )}
+              {cleanedWatering && (
+                <View style={styles.detailItem}>
+                  <View style={styles.detailHeader}>
+                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.detailTitle}>수분 관리</Text>
+                    <Text style={styles.detailText}>{cleanedWatering}</Text>
+                  </View>
+                </View>
+              )}
+              {cleanedEnvironment && (
+                <View style={styles.detailItem}>
+                  <View style={styles.detailHeader}>
+                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.detailTitle}>환경 관리</Text>
+                    <Text style={styles.detailText}>{cleanedEnvironment}</Text>
+                  </View>
+                </View>
+              )}
+              {cleanedNutrition && (
+                <View style={styles.detailItem}>
+                  <View style={styles.detailHeader}>
+                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.detailTitle}>영양 관리</Text>
+                    <Text style={styles.detailText}>{cleanedNutrition}</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaViewContext>
   );
 }
 

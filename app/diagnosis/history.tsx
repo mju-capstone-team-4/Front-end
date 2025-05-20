@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function DiagnosisHistoryScreen() {
   const [history, setHistory] = useState<DiagnosisHistoryItem[]>([]);
@@ -46,53 +47,55 @@ export default function DiagnosisHistoryScreen() {
 
   return (
     <>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>진단 이력</Text>
-      </View>
-      <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {history.length === 0 ? (
-          <Text style={styles.emptyText}>진단 이력이 없습니다.</Text>
-        ) : (
-          history.map((item, index) => (
-            <View key={index} style={styles.card}>
-              <Image source={{ uri: item.image }} style={styles.image} />
-              <View style={styles.textBox}>
-                <Text style={styles.resultLabel}>진단 결과</Text>
-                <Text style={styles.resultValue}>{item.result}</Text>
-                <Text style={styles.resultLabel}>정확도</Text>
-                <Text style={styles.resultValue}>
-                  {item.confidence ? `${(item.confidence * 100).toFixed(1)}%` : 'N/A'}
-                </Text>
-                <Text style={styles.resultLabel}>진단 일시</Text>
-                <Text style={styles.resultValue}>
-                  {item.createdAt ? new Date(item.createdAt).toLocaleString() : '알 수 없음'}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Alert.alert(
-                      '진단 기록 삭제',
-                      '해당 진단 기록을 삭제하시겠습니까?',
-                      [
-                        { text: '아니오', style: 'cancel' },
-                        { text: '예', onPress: () => deleteHistoryItem(index), style: 'destructive' },
-                      ]
-                    );
-                  }}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteText}>진단기록 삭제</Text>
-                </TouchableOpacity>
+      <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>진단 이력</Text>
+        </View>
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {history.length === 0 ? (
+            <Text style={styles.emptyText}>진단 이력이 없습니다.</Text>
+          ) : (
+            history.map((item, index) => (
+              <View key={index} style={styles.card}>
+                <Image source={{ uri: item.image }} style={styles.image} />
+                <View style={styles.textBox}>
+                  <Text style={styles.resultLabel}>진단 결과</Text>
+                  <Text style={styles.resultValue}>{item.result}</Text>
+                  <Text style={styles.resultLabel}>정확도</Text>
+                  <Text style={styles.resultValue}>
+                    {item.confidence ? `${(item.confidence * 100).toFixed(1)}%` : 'N/A'}
+                  </Text>
+                  <Text style={styles.resultLabel}>진단 일시</Text>
+                  <Text style={styles.resultValue}>
+                    {item.createdAt ? new Date(item.createdAt).toLocaleString() : '알 수 없음'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Alert.alert(
+                        '진단 기록 삭제',
+                        '해당 진단 기록을 삭제하시겠습니까?',
+                        [
+                          { text: '아니오', style: 'cancel' },
+                          { text: '예', onPress: () => deleteHistoryItem(index), style: 'destructive' },
+                        ]
+                      );
+                    }}
+                    style={styles.deleteButton}
+                  >
+                    <Text style={styles.deleteText}>진단기록 삭제</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
+            ))
+          )}
+        </ScrollView>
+      </SafeAreaViewContext >
     </>
   );
 }
