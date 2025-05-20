@@ -110,7 +110,7 @@ export default function DiagnosisScreen() {
           <TouchableOpacity
             style={styles.historyButton}
             activeOpacity={0.85}
-            onPress={() => router.push("/diagnosis/LoadingSplash")}
+            onPress={() => router.push("/diagnosis/history")}
           >
             <Text style={styles.historyButtonText}>진단기록 확인</Text>
           </TouchableOpacity>
