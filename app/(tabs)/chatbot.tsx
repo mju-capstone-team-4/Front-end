@@ -101,6 +101,11 @@ export default function ChatbotScreen() {
     <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
       <View style={styles.container}>
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/header.png')}
+            style={styles.headerImage}
+            resizeMode="cover"
+          />
           <View style={styles.tabContainer}>
             <TouchableOpacity
               style={styles.tabActive}
@@ -168,14 +173,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 0,
+    height: 80,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
   },
   tabActive: {
     flex: 1,

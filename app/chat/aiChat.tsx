@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, 
-  StyleSheet, Platform, KeyboardAvoidingView,} from 'react-native';
+import {
+  View, Text, TextInput, ScrollView, TouchableOpacity,
+  StyleSheet, Platform, KeyboardAvoidingView, Image
+} from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
@@ -55,6 +57,11 @@ export default function AiChat() {
       >
         <View style={styles.container}>
           <View style={styles.header}>
+            <Image
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
             <View style={styles.tabContainer}>
               <TouchableOpacity
                 style={styles.tabInactive}
@@ -111,14 +118,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 0,
+    height: 80,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
   },
   tabActive: {
     flex: 1,

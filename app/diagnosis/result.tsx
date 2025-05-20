@@ -95,6 +95,11 @@ export default function DiagnosisResultScreen() {
     <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
       <View style={styles.container}>
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/header.png')}
+            style={styles.headerImage}
+            resizeMode="cover"
+          />
           <TouchableOpacity onPress={() => router.replace('/diagnosis')} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -210,15 +215,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 20,
+    height: 70,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+    padding: 8,
+    zIndex: 1,
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    zIndex: 1,
   },
   scrollContent: {
     paddingBottom: 20,
@@ -318,12 +335,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#555',
     lineHeight: 20,
-  },
-  backButton: {
-    position: 'absolute',
-    left: 10,
-    top: 15,
-    padding: 8,
   },
   diseaseButton: {
     color: '#FFFFFF',

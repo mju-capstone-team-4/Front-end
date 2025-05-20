@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const SERVER_URL = 'ws://15.164.198.69:8080';
 
@@ -240,7 +241,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     }, [])
   );
 
-  
+
   useEffect(() => {
     const showSub = Keyboard.addListener('keyboardDidShow', () => {
       setTimeout(() => {
@@ -260,6 +261,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         <View style={styles.container}>
           {/* 상단 헤더 */}
           <View style={styles.header}>
+            <Image
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
             <TouchableOpacity
               onPress={() => {
                 if (stompClientRef.current) {
@@ -268,8 +274,9 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
                 }
                 router.back();
               }}
+              style={styles.backButton}
             >
-              <Text style={styles.back}>←</Text>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
             <Image source={{ uri: partnerImage }} style={styles.avatar} />
             <Text style={styles.name}>{partnerName}</Text>
@@ -335,23 +342,32 @@ const styles = StyleSheet.create({
     padding: 12
   },
   header: {
+    height: 80,
     flexDirection: 'row',
-    backgroundColor: '#00D282',
-    paddingTop: (Constants.statusBarHeight || 0) - 10,
-    paddingBottom: 20,
-    paddingHorizontal: 12,
+    //paddingTop: (Constants.statusBarHeight || 0) - 10,
+    //paddingBottom: 20,
+    //paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    position: 'relative',
   },
-  back: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    marginRight: 12,
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+    padding: 8,
+    zIndex: 1,
   },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
     marginRight: 8,
+    marginLeft: 60,
   },
   name: {
     fontSize: 20,

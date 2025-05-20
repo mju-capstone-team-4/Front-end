@@ -189,6 +189,11 @@ export default function DiagnosisSelectScreen() {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
         >
           <View style={styles.header}>
+            <Image
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
@@ -260,21 +265,27 @@ const styles = StyleSheet.create({
     paddingTop: 50
   },
   header: {
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 20,
+    height: 70,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   },
   backButton: {
     position: 'absolute',
     left: 10,
-    top: 15,
     padding: 8,
+    zIndex: 1,
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    zIndex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
