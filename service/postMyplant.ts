@@ -20,39 +20,35 @@ export async function postMyplant({
   recommendTonic,
   image,
 }: PostMyplantParams) {
-  const token = await AsyncStorage.getItem("accessToken");
-
-  const formData = new FormData();
-
-  // ✅ JSON을 Blob처럼 전달 (서버에서 multipart/form-data의 json 인식 위해)
-  formData.append(
-    "data",
-    JSON.stringify({
-      name,
-      description,
-      plantId,
-      recommendTonic,
-    }) as any
-  ); // string으로도 되면 그대로
-
-  if (image) {
-    formData.append("file", {
-      uri: image.uri,
-      name: image.fileName || "plant.jpg",
-      type: image.type || "image/jpeg",
-    } as any);
-  }
-
   try {
+    const token = await AsyncStorage.getItem("accessToken");
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("plantId", plantId.toString());
+    formData.append("recommendTonic", recommendTonic.toString());
+
+    if (image) {
+      formData.append("image", {
+        uri: image.uri, // e.g. file:///...
+        name: image.fileName,
+        type: image.type,
+      } as any); // Expo에서는 Blob/File 대신 any로 강제 형변환
+    }
+
     const response = await apiClient.post("/mypage/myplant", formData, {
       headers: {
-        // Content-Type 자동 설정됨 → 생략!
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
       },
     });
 
-    console.log("✅ 식물 등록 성공:", response.data);
-    return response.data;
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error(`Unexpected response status: ${response.status}`);
+    }
   } catch (error) {
     console.error("❌ 식물 등록 실패:", error);
     throw error;

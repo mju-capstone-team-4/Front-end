@@ -7,9 +7,11 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { getPlantDetail, PlantDetailItem } from "@/service/getPlantDetail";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function PlantDetailScreen() {
   const { plantPilbkNo } = useLocalSearchParams();
@@ -43,32 +45,42 @@ export default function PlantDetailScreen() {
   }
 
   if (!plant) {
-    return <Text>식물 정보를 불러올 수 없습니다.</Text>;
+    return (
+      <Text
+        style={{
+          fontFamily: "Pretendard-Light",
+          alignSelf: "center",
+          marginTop: SCREEN_HEIGHT / 2,
+        }}
+      >
+        식물 정보를 불러올 수 없습니다.
+      </Text>
+    );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={{ uri: plant.imgUrl }} style={styles.image} />
       <Text style={styles.title}>{plant.plantGnrlNm}</Text>
-      <Text style={styles.label}>학명:</Text>
+      <Text style={styles.label}>학명</Text>
       <Text style={styles.text}>{plant.plantSpecsScnm}</Text>
 
-      <Text style={styles.label}>꽃 설명:</Text>
+      <Text style={styles.label}>꽃 설명</Text>
       <Text style={styles.text}>{plant.flwrDesc || "정보 없음"}</Text>
 
-      <Text style={styles.label}>잎 설명:</Text>
+      <Text style={styles.label}>잎 설명</Text>
       <Text style={styles.text}>{plant.leafDesc || "정보 없음"}</Text>
 
-      <Text style={styles.label}>열매 설명:</Text>
+      <Text style={styles.label}>열매 설명</Text>
       <Text style={styles.text}>{plant.fritDesc || "정보 없음"}</Text>
 
-      <Text style={styles.label}>서식지:</Text>
+      <Text style={styles.label}>서식지</Text>
       <Text style={styles.text}>{plant.dstrb || "정보 없음"}</Text>
 
-      <Text style={styles.label}>생육 환경:</Text>
+      <Text style={styles.label}>생육 환경</Text>
       <Text style={styles.text}>{plant.grwEvrntDesc || "정보 없음"}</Text>
 
-      <Text style={styles.label}>이용 방법:</Text>
+      <Text style={styles.label}>이용 방법</Text>
       <Text style={styles.text}>{plant.useMthdDesc || "정보 없음"}</Text>
     </ScrollView>
   );
@@ -99,10 +111,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
     color: "#00D282",
+    fontFamily: "Pretendard-Bold",
   },
   text: {
     fontSize: 14,
     color: "#444",
     lineHeight: 20,
+    fontFamily: "Pretendard-Light",
   },
 });

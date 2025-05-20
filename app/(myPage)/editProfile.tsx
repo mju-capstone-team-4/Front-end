@@ -7,23 +7,22 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { updateMyInfo } from "@/service/updateMyInfo"; // 작성한 API 함수 import
+import { updateMyInfo } from "@/service/updateMyInfo";
 import { useRouter } from "expo-router";
 
 export default function EditProfile() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
 
   const handleUpdate = async () => {
-    if (!username.trim() || !email.trim()) {
-      Alert.alert("오류", "이름과 이메일을 모두 입력해주세요.");
+    if (!username.trim()) {
+      Alert.alert("오류", "새로운 이름을 입력해주세요.");
       return;
     }
 
     try {
-      await updateMyInfo({ username, email });
+      await updateMyInfo({ username });
       Alert.alert("성공", "내 정보가 성공적으로 변경되었습니다.");
       router.back(); // 뒤로 이동
     } catch (error) {
@@ -40,13 +39,6 @@ export default function EditProfile() {
         placeholder="이름"
         value={username}
         onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="이메일"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
       />
 
       <TouchableOpacity style={styles.button} onPress={handleUpdate}>

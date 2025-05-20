@@ -2,14 +2,12 @@ import apiClient from "./apiClient";
 
 interface UpdateMyInfoParams {
   username: string;
-  email: string;
 }
 
-export async function updateMyInfo({ username, email }: UpdateMyInfoParams) {
+export async function updateMyInfo({ username }: UpdateMyInfoParams) {
   try {
     const response = await apiClient.post("/mypage/me", {
       username,
-      email,
     });
 
     if (response.status === 200) {
