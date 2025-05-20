@@ -197,7 +197,9 @@ export default function DiagnosisSelectScreen() {
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+            </View>
           </View>
           <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
@@ -274,6 +276,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'absolute',
+  },
+  titleContainer: {
+    paddingVertical: 10,
+    paddingRight: 40,
+    paddingLeft: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
   backButton: {
     position: 'absolute',

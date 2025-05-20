@@ -57,7 +57,9 @@ export default function DiagnosisHistoryScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>진단 기록</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.headerTitle}>진단 기록</Text>
+          </View>
         </View>
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
@@ -127,6 +129,15 @@ const styles = StyleSheet.create({
     left: 10,
     padding: 8,
     zIndex: 1,
+  },
+  titleContainer: {
+    paddingVertical: 10,
+    paddingRight: 40,
+    paddingLeft: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
   headerTitle: {
     color: '#FFFFFF',
