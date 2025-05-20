@@ -62,24 +62,20 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const processToken = async (token: string) => {
-    const payload = decodeTokenPayload(token);
-    if (payload) {
+    try {
+      await AsyncStorage.setItem("accessToken", token);
+      const userInfo = await getMypage(); // ✅ 서버에서 username과 memberId 모두 가져옴
+  
       global.userInfo = {
-        username: payload.sub || null,
-        memberId: null, // 일단 null로 두고, 아래에서 업데이트
+        username: userInfo.username,
+        memberId: userInfo.id,
       };
-      console.log("👤 [1차] 사용자 정보 (토큰에서):", global.userInfo);
   
-      try {
-        const userInfo = await getMypage();  // ✅ 서버에서 memberId 가져오기
-        global.userInfo.memberId = userInfo.id;
-        console.log("👤 [2차] 사용자 정보 (서버에서):", global.userInfo);
-      } catch (error) {
-        console.error("❌ getMypage 호출 실패:", error);
-      }
+      console.log("👤 사용자 정보:", global.userInfo);
+      router.replace("/(tabs)/board");
+    } catch (error) {
+      console.error("❌ 사용자 정보 가져오기 실패:", error);
     }
-  
-    router.replace("/(tabs)/board");
   };
 
   useEffect(() => {

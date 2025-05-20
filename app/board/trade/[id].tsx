@@ -21,15 +21,24 @@ const icons = {
 
 export default function TradeDetail() {
   const router = useRouter();
-  const { id, itemName, description, nickname, price, imageUrl } = useLocalSearchParams();
+  const {
+    id,
+    itemName,
+    description,
+    price,
+    imageUrl,
+    username,     // ✅ 게시글 작성자의 username
+    memberId,     // ✅ 게시글 작성자의 memberId
+  } = useLocalSearchParams();
 
   const [visible, setVisible] = useState(false);
 
   const displayTitle = typeof itemName === "string" ? itemName : "제목 없음";
   const displayContent = typeof description === "string" ? description : "내용 없음";
-  const displayNickname = typeof nickname === "string" ? nickname : "익명";
   const displayPrice = typeof price === "string" ? `${parseInt(price).toLocaleString()}원` : "가격 미정";
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
+  const writerUsername = typeof username === "string" ? username : "익명";
+  const writerId = typeof memberId === "string" ? parseInt(memberId) : null;
 
   const handleDelete = async () => {
     if (typeof id !== "string") {
@@ -62,24 +71,28 @@ export default function TradeDetail() {
         Alert.alert("로그인 필요", "로그인 후 이용해주세요.");
         return;
       }
-      
-      console.log("👤 memberId:", global.userInfo.memberId); 
-      
+
+      if (!writerId || writerId === global.userInfo.memberId) {
+        Alert.alert("알림", "본인과는 채팅할 수 없습니다.");
+        return;
+      }
+
       const headers = { Authorization: `Bearer ${token}` };
+
       const res = await axios.post(
-        `${CHAT_BASE}/chat/room/private/create?otherMemberId=${global.userInfo.memberId}`,
+        `${CHAT_BASE}/chat/room/private/create?otherMemberId=${writerId}`,
         {},
         { headers }
       );
 
       const roomId = res.data;
-      console.log("✅ 채팅방 생성 성공, roomId:", roomId);
+      console.log("✅ 채팅방 생성 성공 - roomId:", roomId);
 
       router.push({
         pathname: "/chat/[roomId]",
         params: {
           roomId: roomId.toString(),
-          partnerName: displayNickname,
+          partnerName: writerUsername,
           partnerImage: validImage,
         },
       });
@@ -94,7 +107,7 @@ export default function TradeDetail() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>{displayTitle}</Text>
-          {global.userInfo.username === nickname && (
+          {global.userInfo.username === writerUsername && (
             <View style={styles.iconButtons}>
               <TouchableOpacity
                 style={styles.iconButton}
@@ -119,7 +132,7 @@ export default function TradeDetail() {
           )}
         </View>
 
-        <Text style={styles.meta}>작성자: {displayNickname}</Text>
+        <Text style={styles.meta}>작성자: {writerUsername}</Text>
         <Text style={styles.metaPrice}>가격: {displayPrice}</Text>
 
         {validImage && (

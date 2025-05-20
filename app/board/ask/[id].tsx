@@ -145,10 +145,10 @@ export default function PostDetail() {
           {validImage && (
             <>
               <Pressable onPress={() => setVisible(true)}>
-                <Image 
-                  source={{ uri: validImage }} 
-                  style={{ width: '100%', height: undefined, aspectRatio: 1, borderRadius: 8,marginBottom: 20 }} 
-                  resizeMode="contain" 
+                <Image
+                  source={{ uri: validImage }}
+                  style={{ width: "100%", aspectRatio: 1, borderRadius: 8, marginBottom: 20 }}
+                  resizeMode="contain"
                 />
               </Pressable>
               <ImageView
@@ -165,7 +165,7 @@ export default function PostDetail() {
           <View style={styles.separator} />
 
           <Text style={styles.commentTitle}>💬 댓글</Text>
-          
+
           {comments.length === 0 && (
             <View style={styles.noCommentBox}>
               <Text style={styles.noCommentText}>첫 댓글을 달아보세요!</Text>
@@ -177,7 +177,7 @@ export default function PostDetail() {
               <Ionicons name="person-circle-outline" size={30} color="#777" />
               <View style={styles.commentRight}>
                 <View style={styles.commentTop}>
-                  <Text style={styles.commentNickname}>{c.email}</Text>
+                  <Text style={styles.commentNickname}>{c.username}</Text>
                   <View style={styles.commentActions}>
                     <TouchableOpacity onPress={() => handleLikeToggle(c.commentId, c.liked)}>
                       <Ionicons
@@ -187,7 +187,7 @@ export default function PostDetail() {
                       />
                     </TouchableOpacity>
                     <Text style={styles.recommendCount}>{c.likeCount}</Text>
-                    {global.userInfo.username === c.email && (
+                    {String(global.userInfo.username) === String(nickname) && (
                       <>
                         <TouchableOpacity
                           onPress={() => {
@@ -267,8 +267,13 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: "bold", color: "#222", flexShrink: 1 },
   nickname: { fontSize: 14, color: "#666", marginBottom: 20 },
-  image: { width: "100%", height: 300, borderRadius: 8, marginBottom: 20 },
   content: { fontSize: 16, lineHeight: 24, color: "#333", marginBottom: 5 },
+  separator: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginVertical: 20,
+    width: "100%",
+  },
   commentTitle: { fontSize: 16, fontWeight: "bold", color: "#000", marginBottom: 12 },
   commentBox: { flexDirection: "row", alignItems: "flex-start", marginBottom: 16 },
   commentRight: {
@@ -294,7 +299,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     alignItems: "center",
-    marginBottom: 15, 
+    marginBottom: 15,
   },
   commentInput: {
     flex: 1,
@@ -317,17 +322,20 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
   },
   editButtons: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8, gap: 8 },
-  saveButton: { backgroundColor: "#00A86B", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
-  cancelButton: { backgroundColor: "#eee", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
+  saveButton: {
+    backgroundColor: "#00A86B",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+  },
+  cancelButton: {
+    backgroundColor: "#eee",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+  },
   saveText: { color: "#fff", fontWeight: "bold" },
   cancelText: { color: "#666" },
-  
-  separator: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginVertical: 20,
-    width: "100%",
-  },
   noCommentBox: {
     backgroundColor: "#F3F9ED",
     borderRadius: 8,
@@ -341,4 +349,3 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
-

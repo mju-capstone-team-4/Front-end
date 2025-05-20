@@ -79,7 +79,7 @@ export default function BoardScreen() {
             id: item.questionId,
             title: item.title,
             content: item.content,
-            nickname: item.email, 
+            nickname: item.username, 
             imageUrl: item.image_url, 
           },
         })
@@ -110,7 +110,8 @@ export default function BoardScreen() {
             id: item.tradePostId,
             itemName: item.itemName,
             description: item.description,
-            nickname: item.email,
+            username: item.username,     // ✅ 사용자명 전달
+            memberId: item.memberId.toString(), // ✅ 작성자 ID 전달 (string 형태로)
             price: item.price,
             imageUrl: item.imageUrl,
           },
