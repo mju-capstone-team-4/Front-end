@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, 
+  StyleSheet, Platform, KeyboardAvoidingView,} from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function AiChat() {
   const [messages, setMessages] = useState<{ from: 'user' | 'ai'; text: string }[]>([]);
@@ -23,14 +25,14 @@ export default function AiChat() {
     setInput(''); // 입력창 초기화 
 
     try {
-      const token = await AsyncStorage.getItem('accessToken'); 
+      const token = await AsyncStorage.getItem('accessToken');
 
       const res = await axios.post(
         `${API_BASE}/chat/bot/ask`,
         { message: input },
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -45,51 +47,58 @@ export default function AiChat() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={styles.tabInactive}
-            onPress={() => router.push('/(tabs)/chatbot')} // 거래 채팅 클릭 시 이동
-          >
-            <Text style={styles.tabTextInactive}>거래 채팅</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabActive}
-            onPress={() => { }} // 현재 화면
-          >
-            <Text style={styles.tabTextActive}>AI 채팅</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ScrollView
-        ref={scrollRef}
-        style={styles.chatContainer}
-        contentContainerStyle={{ paddingBottom: 25 }} // 메시지 박스 공간 확보
-        keyboardShouldPersistTaps="handled"
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? (Constants.statusBarHeight || 0) : 0}
       >
-        {messages.map((msg, idx) => (
-          <View key={idx} style={[styles.bubble, msg.from === 'user' ? styles.myBubble : styles.aiBubble]}>
-            <Text style={styles.text}>{msg.text}</Text>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={styles.tabInactive}
+                onPress={() => router.push('/(tabs)/chatbot')} // 거래 채팅 클릭 시 이동
+              >
+                <Text style={styles.tabTextInactive}>거래 채팅</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.tabActive}
+                onPress={() => { }} // 현재 화면
+              >
+                <Text style={styles.tabTextActive}>AI 채팅</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        ))}
-      </ScrollView>
 
-      <View style={styles.inputArea}>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          style={styles.input}
-          placeholder="질문을 입력하세요"
-        />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-          <Text style={{ color: '#FFFFFF' }}>전송</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          <ScrollView
+            ref={scrollRef}
+            style={styles.chatContainer}
+            contentContainerStyle={{ paddingBottom: 25 }} // 메시지 박스 공간 확보
+            keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+          >
+            {messages.map((msg, idx) => (
+              <View key={idx} style={[styles.bubble, msg.from === 'user' ? styles.myBubble : styles.aiBubble]}>
+                <Text style={styles.text}>{msg.text}</Text>
+              </View>
+            ))}
+          </ScrollView>
 
+          <View style={styles.inputArea}>
+            <TextInput
+              value={input}
+              onChangeText={setInput}
+              style={styles.input}
+              placeholder="질문을 입력하세요"
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+              <Text style={{ color: '#FFFFFF' }}>전송</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaViewContext>
   );
 }
 const styles = StyleSheet.create({
