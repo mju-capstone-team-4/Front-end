@@ -37,8 +37,7 @@ export default function DiagnosisScreen() {
       const data = await response.json();
 
       if (Array.isArray(data)) {
-        console.log("식물 데이터:", data);
-        console.log("11111식물 리스트:", plants);
+        //console.log("식물 데이터:", data);
         setPlants(data); // 사용자의 식물 정보 받아오기
       } else {
         console.error("식물 데이터 에러:", data);
@@ -61,8 +60,15 @@ export default function DiagnosisScreen() {
           showsVerticalScrollIndicator={false}
         >
           {plants.length === 0 ? (
-            <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
-          ) : (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
+              <TouchableOpacity
+                style={styles.addPlantButton}
+                onPress={() => router.push('/mypage')}
+              >
+                <Text style={styles.addPlantButtonText}>내 식물 추가하러 가기</Text>
+              </TouchableOpacity>
+            </View>) : (
             plants.map((plant, index) => {
               const isAllowed = allowedPlants.includes(plant.name);
               return (
@@ -240,5 +246,18 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: -15,
     marginBottom: 20,
+  },
+  addPlantButton: {
+    marginTop: 12,
+    backgroundColor: '#00D282',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  addPlantButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
