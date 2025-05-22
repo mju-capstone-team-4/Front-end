@@ -162,7 +162,7 @@ export default function DiagnosisResultScreen() {
               {cleanedDiseaseInfo && (
                 <View style={styles.detailItem}>
                   <View style={styles.detailHeader}>
-                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                    <Image source={require('../../assets/images/information.png')} style={styles.detailIcon} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.detailTitle}>질병 정보</Text>
@@ -173,7 +173,7 @@ export default function DiagnosisResultScreen() {
               {cleanedWatering && (
                 <View style={styles.detailItem}>
                   <View style={styles.detailHeader}>
-                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                    <Image source={require('../../assets/images/water.png')} style={styles.detailIcon} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.detailTitle}>수분 관리</Text>
@@ -184,7 +184,7 @@ export default function DiagnosisResultScreen() {
               {cleanedEnvironment && (
                 <View style={styles.detailItem}>
                   <View style={styles.detailHeader}>
-                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                    <Image source={require('../../assets/images/environment.png')} style={styles.detailIcon} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.detailTitle}>환경 관리</Text>
@@ -195,7 +195,7 @@ export default function DiagnosisResultScreen() {
               {cleanedNutrition && (
                 <View style={styles.detailItem}>
                   <View style={styles.detailHeader}>
-                    <Image source={require('../../assets/images/plant_icon.png')} style={styles.detailIcon} />
+                    <Image source={require('../../assets/images/nutrient.png')} style={styles.detailIcon} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.detailTitle}>영양 관리</Text>
