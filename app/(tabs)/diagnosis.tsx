@@ -10,6 +10,7 @@ export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
+  const DEFAULT_IMAGE = require('../../assets/images/appicon.png');
 
   type Plant = {
     // 필요한 식물 정보 타입
@@ -70,7 +71,8 @@ export default function DiagnosisScreen() {
                     {plant.image ? (
                       <Image source={{ uri: plant.image }} style={styles.image} resizeMode="cover" />
                     ) : (
-                      <Text style={styles.imageText}>사진 없음</Text>
+                      <Image source={DEFAULT_IMAGE} style={styles.image}></Image>
+                      /*<Text style={styles.imageText}>사진 없음</Text>*/
                     )}
                   </View>
                   <View style={styles.cardTextBox}>
