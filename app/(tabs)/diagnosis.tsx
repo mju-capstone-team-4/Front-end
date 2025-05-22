@@ -4,15 +4,17 @@ import React, { useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from "expo-constants";
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const router = useRouter();
   const API_BASE = Constants.expoConfig?.extra?.API_URL;
+  const DEFAULT_IMAGE = require('../../assets/images/appicon.png');
 
   type Plant = {
     // 필요한 식물 정보 타입
-    id: number; // 식물 id
+    myPlantId: number; // 식물 id
     name: string; // 식물 이름
     status: string; // 식물 상태
     image: string; // 식물 이미지 주소
@@ -35,7 +37,7 @@ export default function DiagnosisScreen() {
       const data = await response.json();
 
       if (Array.isArray(data)) {
-        console.log("식물 데이터:", data);
+        //console.log("식물 데이터:", data);
         setPlants(data); // 사용자의 식물 정보 받아오기
       } else {
         console.error("식물 데이터 에러:", data);
@@ -48,72 +50,82 @@ export default function DiagnosisScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>진단이 필요한 친구를 선택해주세요</Text>
+    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <View style={styles.container}>
+        <Text style={styles.title}>진단이 필요한 친구를 선택해주세요</Text>
 
-      <ScrollView
-        style={styles.scrollArea}
-        contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {plants.length === 0 ? (
-          <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
-        ) : (
-          plants.map((plant) => {
-            const isAllowed = allowedPlants.includes(plant.name);
-            return (
-              <View key={plant.id} style={styles.card}>
-                <View style={styles.imageBox}>
-                  {plant.image ? (
-                    <Image source={{ uri: plant.image }} style={styles.image} resizeMode="cover" />
-                  ) : (
-                    <Text style={styles.imageText}>사진 없음</Text>
-                  )}
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {plants.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
+              <TouchableOpacity
+                style={styles.addPlantButton}
+                onPress={() => router.push('/mypage')}
+              >
+                <Text style={styles.addPlantButtonText}>내 식물 추가하러 가기</Text>
+              </TouchableOpacity>
+            </View>) : (
+            plants.map((plant, index) => {
+              const isAllowed = allowedPlants.includes(plant.name);
+              return (
+                <View key={`${plant.myPlantId}-${plant.name || 'unknown'}-${index}`} style={styles.card}>
+                  <View style={styles.imageBox}>
+                    {plant.image ? (
+                      <Image source={{ uri: plant.image }} style={styles.image} resizeMode="cover" />
+                    ) : (
+                      <Image source={DEFAULT_IMAGE} style={styles.image}></Image>
+                      /*<Text style={styles.imageText}>사진 없음</Text>*/
+                    )}
+                  </View>
+                  <View style={styles.cardTextBox}>
+                    <Text style={styles.plantName}>이름: {plant.name}</Text>
+                    <Text style={styles.plantStatus}>설명: {plant.description}</Text>
+                    <TouchableOpacity
+                      style={isAllowed ? styles.myPlantSelectButton : styles.myPlantSelectButton2}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        if (isAllowed) {
+                          router.push({
+                            pathname: '/diagnosis/select',
+                            params: { name: plant.name },
+                          });
+                        }
+                      }}
+                      disabled={!isAllowed}
+                    >
+                      <Text style={styles.myPlantSelectButtonText}>
+                        {isAllowed ? '선택하기' : '진단 불가'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View style={styles.cardTextBox}>
-                  <Text style={styles.plantName}>이름: {plant.name}</Text>
-                  <Text style={styles.plantStatus}>설명: {plant.description}</Text>
-                  <TouchableOpacity
-                    style={isAllowed ? styles.myPlantSelectButton : styles.myPlantSelectButton2}
-                    activeOpacity={0.85}
-                    onPress={() => {
-                      if (isAllowed) {
-                        router.push({
-                          pathname: '/diagnosis/select',
-                          params: { name: plant.name },
-                        });
-                      }
-                    }}
-                    disabled={!isAllowed}
-                  >
-                    <Text style={styles.myPlantSelectButtonText}>
-                      {isAllowed ? '선택하기' : '진단 불가'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          })
-        )}
-      </ScrollView>
+              );
+            })
+          )}
+        </ScrollView>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.selectButton}
-          activeOpacity={0.85}
-          onPress={() => router.push("/diagnosis/select")}
-        >
-          <Text style={styles.selectButtonText}>사진으로 진단</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.historyButton}
-          activeOpacity={0.85}
-          onPress={() => router.push("/diagnosis/history")}
-        >
-          <Text style={styles.historyButtonText}>진단기록 확인</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.selectButton}
+            activeOpacity={0.85}
+            onPress={() => router.push("/diagnosis/select")}
+          >
+            <Text style={styles.selectButtonText}>사진으로 진단</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.historyButton}
+            activeOpacity={0.85}
+            onPress={() => router.push("/diagnosis/history")}
+          >
+            <Text style={styles.historyButtonText}>진단기록 확인</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaViewContext>
   );
 }
 
@@ -234,5 +246,18 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: -15,
     marginBottom: 20,
+  },
+  addPlantButton: {
+    marginTop: 12,
+    backgroundColor: '#00D282',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  addPlantButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

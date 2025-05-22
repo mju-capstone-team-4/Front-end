@@ -12,6 +12,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 export default function DiagnosisSelectScreen() {
   useFocusEffect(
@@ -71,22 +72,42 @@ export default function DiagnosisSelectScreen() {
     ]);
   };
 
-  const saveToHistory = async (item: { image: string, result: string, confidence: number }) => {
-    try {
-      const existing = await AsyncStorage.getItem('diagnosisHistory');
-      const parsed = existing ? JSON.parse(existing) : [];
-      const updated = [
-        ...parsed,
-        {
-          ...item,
-          createdAt: new Date().toISOString(), // 진단 시각 추가
-        },
-      ];
-      await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
-    } catch (e) {
-      console.error('로컬 저장 실패:', e);
-    }
-  };
+  const saveToHistory = async (item: {
+  image: string;
+  result: string;
+  confidence: number;
+  originalResult: string;
+  originalConfidence: number;
+}) => {
+  try {
+    const token = await AsyncStorage.getItem('accessToken');
+    const userRes = await fetch(`${API_BASE}/mypage/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const currentUser = await userRes.json();
+    const currentEmail = currentUser.email;
+
+    const existing = await AsyncStorage.getItem('diagnosisHistory');
+    const parsed = existing ? JSON.parse(existing) : [];
+
+    const updated = [
+      ...parsed,
+      {
+        result: item.result,
+        confidence: item.confidence,
+        image: item.image,
+        createdAt: new Date().toISOString(),
+        originalResult: item.originalResult,
+        originalConfidence: item.originalConfidence,
+        userEmail: currentEmail, // 사용자 구분
+      },
+    ];
+
+    await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
+  } catch (e) {
+    console.error('로컬 저장 실패:', e);
+  }
+};
 
   const handleSubmit = async () => {
     if (!image) {
@@ -154,6 +175,8 @@ export default function DiagnosisSelectScreen() {
         image,
         result: isMismatch ? '진단 실패' : result.result,
         confidence: isMismatch ? 0 : result.confidence,
+        originalResult: result.result,
+        originalConfidence: result.confidence,
       });
 
       router.push({
@@ -181,71 +204,80 @@ export default function DiagnosisSelectScreen() {
   return (
     <>
       {isLoading && <LoadingSplash />}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
-
-          <TouchableOpacity style={styles.imageBox} onPress={handleImageSelect}>
+      <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        >
+          <View style={styles.header}>
             <Image
-              source={
-                image
-                  ? { uri: image }
-                  : require('../../assets/images/picture.png') // 사진 아이콘
-              }
-              style={styles.image}
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
               resizeMode="cover"
             />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <View style={styles.titleContainer}>
+              <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+            </View>
+          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
 
-          {!isFromMyPlant && (
-            <View style={styles.dropdownContainer}>
-              <Text style={styles.dropdownLabel}>식물 선택</Text>
-              <RNPickerSelect
-                onValueChange={(value) => setPlantName(value)}
-                placeholder={{ label: '식물을 선택하세요', value: null }}
-                value={plantName}
-                items={allowedPlants.map((name) => ({ label: name, value: name }))}
-                style={pickerSelectStyles}
-                useNativeAndroidPickerStyle={false}
-                Icon={() => <Ionicons name="chevron-down" size={20} color="#555" />}
+            <TouchableOpacity style={styles.imageBox} onPress={handleImageSelect}>
+              <Image
+                source={
+                  image
+                    ? { uri: image }
+                    : require('../../assets/images/picture.png') // 사진 아이콘
+                }
+                style={styles.image}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+
+            {!isFromMyPlant && (
+              <View style={styles.dropdownContainer}>
+                <Text style={styles.dropdownLabel}>식물 선택</Text>
+                <RNPickerSelect
+                  onValueChange={(value) => setPlantName(value)}
+                  placeholder={{ label: '식물을 선택하세요', value: null }}
+                  value={plantName}
+                  items={allowedPlants.map((name) => ({ label: name, value: name }))}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => <Ionicons name="chevron-down" size={20} color="#555" />}
+                />
+              </View>
+            )}
+            <View style={styles.section}>
+              <View style={styles.sectionTitleContainer}>
+                <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
+                <Text style={styles.sectionTitle}>부가설명</Text>
+              </View>
+
+              <TextInput
+                style={styles.input}
+                placeholder="작성 시 진단 정확도가 올라갑니다"
+                placeholderTextColor="#9E9E9E"
+                multiline
+                value={description}
+                onChangeText={setDescription}
               />
             </View>
-          )}
-          <View style={styles.section}>
-            <View style={styles.sectionTitleContainer}>
-              <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
-              <Text style={styles.sectionTitle}>부가설명</Text>
-            </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="작성 시 진단 정확도가 올라갑니다"
-              placeholderTextColor="#9E9E9E"
-              multiline
-              value={description}
-              onChangeText={setDescription}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.submitButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>진단하기</Text>}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.disabledButton]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>진단하기</Text>}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaViewContext>
     </>
   );
 }
@@ -257,25 +289,40 @@ const styles = StyleSheet.create({
     paddingTop: 50
   },
   header: {
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 20,
+    height: 70,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  titleContainer: {
+    paddingVertical: 10,
+    paddingRight: 40,
+    paddingLeft: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
   backButton: {
     position: 'absolute',
     left: 10,
-    top: 15,
     padding: 8,
+    zIndex: 1,
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    zIndex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 10,
     paddingBottom: 40,
     alignItems: 'center',
   },

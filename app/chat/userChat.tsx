@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image, BackHandler } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image, BackHandler, SafeAreaView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import axios from 'axios';
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,6 +8,8 @@ import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { getMypage } from "@/service/getMypage";
 import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const SERVER_URL = 'ws://15.164.198.69:8080';
 
@@ -239,70 +241,94 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     }, [])
   );
 
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 50);
+    });
+    return () => showSub.remove();
+  }, []); // 키보드가 열릴 때 마지막 메시지로 스크롤
+
   return (
-    <View style={styles.container}>
-      {/* 상단 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => {
-            if (stompClientRef.current) {
-              stompClientRef.current.deactivate(); // STOMP 연결 종료
-              console.log("🛑 [← 버튼] STOMP 연결 종료");
-            }
-            router.back();
-          }}
-        >
-          <Text style={styles.back}>←</Text>
-        </TouchableOpacity>
-        <Image source={{ uri: partnerImage }} style={styles.avatar} />
-        <Text style={styles.name}>{partnerName}</Text>
-        <Text style={styles.name2}> 님과의 대화</Text>
-      </View>
-
-      {/* 메시지 영역 */}
-      <ScrollView
-        ref={scrollRef}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
-        style={styles.chatContainer}
-        contentContainerStyle={{ paddingBottom: 25 }}
+    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? (Constants.statusBarHeight || 0) : 0}
       >
-        {myName && messages.map((msg, idx) => {
-          const isMe = msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
-          console.log(`💬 렌더링 메시지[${idx}]:`, msg.message, '| from:', msg.senderEmail, '| isMe:', isMe);
-
-          return (
-            <View
-              key={idx}
-              style={[
-                styles.messageBubble,
-                isMe ? styles.myBubble : styles.otherBubble,
-              ]}
+        <View style={styles.container}>
+          {/* 상단 헤더 */}
+          <View style={styles.header}>
+            <Image
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              onPress={() => {
+                if (stompClientRef.current) {
+                  stompClientRef.current.deactivate(); // STOMP 연결 종료
+                  console.log("🛑 [← 버튼] STOMP 연결 종료");
+                }
+                router.back();
+              }}
+              style={styles.backButton}
             >
-              {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
-              <Text style={styles.message}>{msg.message}</Text>
-              {/*msg.timestamp && (
-                <Text style={styles.timestamp}>
-                  {formatTime(msg.timestamp)} {isMe && (msg.isRead ? '✓✓' : '✓')}
-                </Text>
-              )*/}
-            </View>
-          );
-        })}
-      </ScrollView>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Image source={{ uri: partnerImage }} style={styles.avatar} />
+            <Text style={styles.name}>{partnerName}</Text>
+            <Text style={styles.name2}> 님과의 대화</Text>
+          </View>
 
-      {/* 입력창 */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          style={styles.input}
-          placeholder="메시지를 입력하세요"
-        />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-          <Text style={{ color: 'white' }}>전송</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          {/* 메시지 영역 */}
+          <ScrollView
+            ref={scrollRef}
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+            style={styles.chatContainer}
+            contentContainerStyle={{ paddingBottom: 25 }}
+          >
+            {myName && messages.map((msg, idx) => {
+              const isMe = msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
+              console.log(`💬 렌더링 메시지[${idx}]:`, msg.message, '| from:', msg.senderEmail, '| isMe:', isMe);
+
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.messageBubble,
+                    isMe ? styles.myBubble : styles.otherBubble,
+                  ]}
+                >
+                  {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
+                  <Text style={styles.message}>{msg.message}</Text>
+                  {/*msg.timestamp && (
+                    <Text style={styles.timestamp}>
+                      {formatTime(msg.timestamp)} {isMe && (msg.isRead ? '✓✓' : '✓')}
+                    </Text>
+                  )*/}
+                </View>
+              );
+            })}
+          </ScrollView>
+
+          {/* 입력창 */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={input}
+              onChangeText={setInput}
+              style={styles.input}
+              placeholder="메시지를 입력하세요"
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+              <Text style={{ color: 'white' }}>전송</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaViewContext>
   );
 }
 
@@ -316,23 +342,32 @@ const styles = StyleSheet.create({
     padding: 12
   },
   header: {
+    height: 80,
     flexDirection: 'row',
-    backgroundColor: '#00D282',
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 12,
+    //paddingTop: (Constants.statusBarHeight || 0) - 10,
+    //paddingBottom: 20,
+    //paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    position: 'relative',
   },
-  back: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    marginRight: 12,
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+    padding: 8,
+    zIndex: 1,
   },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
     marginRight: 8,
+    marginLeft: 60,
   },
   name: {
     fontSize: 20,
