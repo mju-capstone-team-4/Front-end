@@ -13,7 +13,7 @@ export default function DiagnosisScreen() {
 
   type Plant = {
     // 필요한 식물 정보 타입
-    id: number; // 식물 id
+    myPlantId: number; // 식물 id
     name: string; // 식물 이름
     status: string; // 식물 상태
     image: string; // 식물 이미지 주소
@@ -37,6 +37,7 @@ export default function DiagnosisScreen() {
 
       if (Array.isArray(data)) {
         console.log("식물 데이터:", data);
+        console.log("11111식물 리스트:", plants);
         setPlants(data); // 사용자의 식물 정보 받아오기
       } else {
         console.error("식물 데이터 에러:", data);
@@ -61,10 +62,10 @@ export default function DiagnosisScreen() {
           {plants.length === 0 ? (
             <Text style={styles.emptyMessage}>내 식물이 없습니다.</Text>
           ) : (
-            plants.map((plant) => {
+            plants.map((plant, index) => {
               const isAllowed = allowedPlants.includes(plant.name);
               return (
-                <View key={plant.id} style={styles.card}>
+                <View key={`${plant.myPlantId}-${plant.name || 'unknown'}-${index}`} style={styles.card}>
                   <View style={styles.imageBox}>
                     {plant.image ? (
                       <Image source={{ uri: plant.image }} style={styles.image} resizeMode="cover" />
