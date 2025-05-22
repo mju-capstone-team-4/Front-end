@@ -72,22 +72,42 @@ export default function DiagnosisSelectScreen() {
     ]);
   };
 
-  const saveToHistory = async (item: { image: string, result: string, confidence: number }) => {
-    try {
-      const existing = await AsyncStorage.getItem('diagnosisHistory');
-      const parsed = existing ? JSON.parse(existing) : [];
-      const updated = [
-        ...parsed,
-        {
-          ...item,
-          createdAt: new Date().toISOString(), // 진단 시각 추가
-        },
-      ];
-      await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
-    } catch (e) {
-      console.error('로컬 저장 실패:', e);
-    }
-  };
+  const saveToHistory = async (item: {
+  image: string;
+  result: string;
+  confidence: number;
+  originalResult: string;
+  originalConfidence: number;
+}) => {
+  try {
+    const token = await AsyncStorage.getItem('accessToken');
+    const userRes = await fetch(`${API_BASE}/mypage/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const currentUser = await userRes.json();
+    const currentEmail = currentUser.email;
+
+    const existing = await AsyncStorage.getItem('diagnosisHistory');
+    const parsed = existing ? JSON.parse(existing) : [];
+
+    const updated = [
+      ...parsed,
+      {
+        result: item.result,
+        confidence: item.confidence,
+        image: item.image,
+        createdAt: new Date().toISOString(),
+        originalResult: item.originalResult,
+        originalConfidence: item.originalConfidence,
+        userEmail: currentEmail, // 사용자 구분
+      },
+    ];
+
+    await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
+  } catch (e) {
+    console.error('로컬 저장 실패:', e);
+  }
+};
 
   const handleSubmit = async () => {
     if (!image) {
@@ -155,6 +175,8 @@ export default function DiagnosisSelectScreen() {
         image,
         result: isMismatch ? '진단 실패' : result.result,
         confidence: isMismatch ? 0 : result.confidence,
+        originalResult: result.result,
+        originalConfidence: result.confidence,
       });
 
       router.push({
