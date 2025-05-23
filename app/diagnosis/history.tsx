@@ -84,32 +84,46 @@ export default function DiagnosisHistoryScreen() {
     }
   };*/
 
-  const fetchHistoryOnlyFromAPI = async () => {
+  const fetchAllHistoryFromAPI = async () => {
     try {
-      const token = await AsyncStorage.getItem('accessToken');
+      const token = await AsyncStorage.getItem("accessToken");
+      let allRecords: DiagnosisHistoryItem[] = [];
+      let currentPage = 0;
+      let totalPages = 1;
 
-      const response = await fetch(`${API_BASE}/disease/record?page=0&size=10`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      while (currentPage < totalPages) {
+        const response = await fetch(`${API_BASE}/disease/record?page=${currentPage}&size=10&sort=createdAt,desc`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-      const backendData = await response.json();
-      const diagnosisList = backendData.content || [];
+        const data = await response.json();
 
-      //console.log("🛰️ 서버에서 가져온 진단 기록:", diagnosisList);
-      setHistory(diagnosisList);
+        if (data.content) {
+          allRecords = [...allRecords, ...data.content];
+        }
+
+        totalPages = data.totalPages ?? 1;
+        currentPage++;
+      }
+
+      console.log("🧾 전체 진단 기록 개수:", allRecords.length);
+      setHistory(allRecords);
     } catch (error) {
-      console.error('서버 진단 기록 불러오기 실패:', error);
-      Alert.alert('진단 기록을 불러오는 데 실패했습니다.');
+      console.error("❌ 전체 진단 기록 불러오기 실패:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const parseResult = (fullResult: string) => {
+  const parseResult = (fullResult: string | null | undefined) => {
+    if (!fullResult || typeof fullResult !== 'string') {
+      return { plant: '알 수 없음', disease: '알 수 없음' };
+    }
+
     if (!fullResult.includes('_')) {
       return { plant: '알 수 없음', disease: fullResult };
     }
@@ -122,7 +136,7 @@ export default function DiagnosisHistoryScreen() {
   };
 
   useEffect(() => {
-    fetchHistoryOnlyFromAPI();
+    fetchAllHistoryFromAPI();
     //fetchAndMergeHistory();
   }, []);
 
