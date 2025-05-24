@@ -48,11 +48,14 @@ export default function DiagnosisResultScreen() {
   const cleanedEnvironment = parsedEnvironment ? removePlantPrefix(parsedEnvironment) : '';
   const cleanedNutrition = parsedNutrition ? removePlantPrefix(parsedNutrition) : '';
 
-  const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크 
-  const headerTitle = isMismatch ? '식물 진단 결과' : plantName ? `${plantName} 진단 결과` : '식물 진단 결과';
+  // const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크  // 진단 실패 주석처리(isMismatch)
+  //const headerTitle = isMismatch ? '식물 진단 결과' : plantName ? `${plantName} 진단 결과` : '식물 진단 결과'; // 진단 실패 주석처리(isMismatch)
+  const headerTitle = plantName ? `${predictedPlant} 진단 결과` : '식물 진단 결과';
 
-  const finalResultText = isMismatch ? '진단 실패' : formattedResult;
-  const finalPercentage = isMismatch ? 0 : percentage;
+  //const finalResultText = isMismatch ? '진단 실패' : formattedResult; // 진단 실패 주석처리(isMismatch)
+  //const finalPercentage = isMismatch ? 0 : percentage; // 진단 실패 주석처리(isMismatch)
+  const finalResultText = formattedResult;
+  const finalPercentage = percentage;
 
   console.log("🧪 전달된 진단 결과:", formattedResult);
   console.log("📊 정확도:", percentage);
@@ -152,7 +155,8 @@ export default function DiagnosisResultScreen() {
             </View>
           </View>
 
-          {!isMismatch && formattedResult !== "정상" && (
+          {/* {!isMismatch && formattedResult !== "정상" && ( */}{/*진단 실패 주석처리(isMismatch) */}
+          {formattedResult !== "정상" && (
             <View style={styles.section}>
               <View style={styles.sectionTitleContainer}>
                 <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
