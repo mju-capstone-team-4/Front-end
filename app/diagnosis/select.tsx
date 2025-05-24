@@ -150,6 +150,13 @@ export default function DiagnosisSelectScreen() {
         body: formData,
       });
 
+      if (!response.ok) {
+        const errorText = await response.text(); 
+        console.error(response.status, errorText); // 에러 체크
+        return;
+      }
+
+
       const result = await response.json();
 
       const predictedPlant = result.result.includes('_') ? result.result.split('_')[0] : null;
@@ -228,7 +235,7 @@ export default function DiagnosisSelectScreen() {
             contentContainerStyle={styles.scrollContent}
             enableOnAndroid={true}
             keyboardShouldPersistTaps="handled"
-            extraScrollHeight={200} 
+            extraScrollHeight={200}
           >
             <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
 
