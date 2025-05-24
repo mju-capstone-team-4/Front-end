@@ -58,6 +58,7 @@ export default function DiagnosisSelectScreen() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 1,
+      base64: false,
     });
 
     if (!result.canceled) {
