@@ -323,8 +323,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
     zIndex: 1,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -334,10 +334,10 @@ const styles = StyleSheet.create({
   },
   mainText: {
     fontSize: 20,
-    fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
     alignSelf: 'center',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   imageBox: {
     width: 250,
@@ -374,8 +374,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
     color: '#363636',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   input: {
     borderRadius: 10,
@@ -384,6 +384,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     fontSize: 14,
     color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
   submitButton: {
     marginTop: 30,
@@ -395,8 +396,8 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   disabledButton: {
     backgroundColor: '#999',
@@ -407,9 +408,9 @@ const styles = StyleSheet.create({
   },
   dropdownLabel: {
     fontSize: 14,
-    fontWeight: 'bold',
     marginBottom: 10,
     color: '#363636',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   dropdownItem: {
     paddingVertical: 10,
@@ -420,10 +421,6 @@ const styles = StyleSheet.create({
   },
   dropdownItemSelected: {
     backgroundColor: '#00D282',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#363636',
   },
 });
 
@@ -438,6 +435,7 @@ const pickerSelectStyles = {
     color: '#363636',
     backgroundColor: '#fff',
     paddingRight: 30, // to ensure the text is never behind the icon
+    fontFamily: 'Pretendard-Medium',
   },
   inputAndroid: {
     fontSize: 16,
@@ -449,6 +447,7 @@ const pickerSelectStyles = {
     color: '#363636',
     backgroundColor: '#fff',
     paddingRight: 30,
+    fontFamily: 'Pretendard-Medium',
   },
   iconContainer: {
     top: 15,

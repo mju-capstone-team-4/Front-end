@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   card: {
     backgroundColor: '#F8F8F8',
@@ -260,13 +260,14 @@ const styles = StyleSheet.create({
   cardPlantName: {
     fontSize: 16,
     color: '#000000',
-    fontWeight: 'bold',
     marginTop: 10,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   cardPlantDisease: {
     fontSize: 14,
     color: '#363636',
     textAlign: 'left',
+    fontFamily: 'Pretendard-Medium',
   },
   image: {
     width: '100%',
@@ -285,8 +286,8 @@ const styles = StyleSheet.create({
   detailButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   textBox: {
     padding: 15,
@@ -294,19 +295,21 @@ const styles = StyleSheet.create({
   resultLabel: {
     fontSize: 16,
     color: '#000000',
-    fontWeight: 'bold',
     marginTop: 10,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   resultValue: {
     fontSize: 14,
     color: '#363636',
     textAlign: 'left',
+    fontFamily: 'Pretendard-Medium',
   },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
     color: '#9E9E9E',
     marginTop: 40,
+    fontFamily: 'Pretendard-Medium',
   },
   loadingContainer: {
     flex: 1,
@@ -338,7 +341,7 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontSize: 16,
     color: '#FFFFFF',
-    fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: 'Pretendard-ExtraBold',
   },
 });

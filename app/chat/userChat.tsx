@@ -323,7 +323,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
               placeholder="메시지를 입력하세요"
             />
             <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-              <Text style={{ color: 'white' }}>전송</Text>
+              <Text style={{ color: 'white', fontFamily: 'Pretendard-Medium', }}>전송</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -372,12 +372,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     color: '#000000',
-    //fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
   },
   name2: {
     fontSize: 12,
     color: '#9E9E9E',
-    //fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
   },
   messageBubble: {
     padding: 10,
@@ -400,6 +400,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
   },
   timestamp: {
     fontSize: 10,
@@ -421,6 +422,7 @@ const styles = StyleSheet.create({
     borderColor: '#D9D9D9',
     borderRadius: 20,
     paddingHorizontal: 16,
+    fontFamily: 'Pretendard-Medium',
   },
   sendButton: {
     marginLeft: 8,

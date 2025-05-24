@@ -245,8 +245,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
     zIndex: 1,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   scrollContent: {
     paddingBottom: 20,
@@ -268,15 +268,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#363636',
-  },
-  sectionBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 30,
-    marginBottom: 8,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   gaugeContainer: {
     alignItems: 'center',
@@ -291,22 +284,24 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     color: '#9E9E9E',
+    fontFamily: 'Pretendard-Medium',
   },
   percentText: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#00D282',
+    fontFamily: 'Pretendard-SemiBold',
   },
   labelText: {
     fontSize: 14,
     marginTop: -70,
     color: '#363636',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   diagnosisText: {
     fontSize: 16,
     color: '#363636',
     marginTop: 10,
+    fontFamily: 'Pretendard-Medium',
   },
   imageBox: {
     alignItems: 'center',
@@ -337,19 +332,15 @@ const styles = StyleSheet.create({
   },
   detailTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: '#363636',
     marginBottom: 4,
+    fontFamily: 'Pretendard-SemiBold',
   },
   detailText: {
     flex: 1,
     fontSize: 13,
     color: '#555',
     lineHeight: 20,
-  },
-  diseaseButton: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
   },
 });
