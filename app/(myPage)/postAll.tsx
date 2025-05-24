@@ -15,6 +15,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { getAllQuestions } from "../../service/getAllQuestions";
 import { getAllTrades } from "../../service/getAllTrades";
+import { getMyQuestions } from "@/service/getMyQuestion";
+import { getMyTrades } from "@/service/getMyTrade";
 
 const icons = {
   ChevronIcon: require("../../assets/images/chevron.png"),
@@ -36,8 +38,8 @@ export default function postAll() {
 
   const fetchQuestions = async () => {
     try {
-      const data = await getAllQuestions();
-      setQuestions(data);
+      const data = await getMyQuestions(0, 50);
+      setQuestions(data.content || []);
     } catch (error) {
       console.error("❌ 질문 목록 가져오기 실패:", error);
     }
@@ -45,8 +47,8 @@ export default function postAll() {
 
   const fetchTrades = async () => {
     try {
-      const data = await getAllTrades();
-      setTrades(data);
+      const data = await getMyTrades(0, 50);
+      setTrades(data.content || []);
     } catch (error) {
       console.error("❌ 거래 목록 가져오기 실패:", error);
     }

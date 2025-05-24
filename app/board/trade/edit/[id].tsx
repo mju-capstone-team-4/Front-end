@@ -6,8 +6,6 @@ import {
   Alert,
   Image,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
@@ -15,6 +13,7 @@ import React, { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { updateTrade } from "../../../../service/updateTrade";
 
 const icons = {
@@ -30,11 +29,7 @@ export default function TradeEditScreen() {
   const [title, setTitle] = useState(itemName as string);
   const [content, setContent] = useState(description as string);
   const [priceText, setPriceText] = useState(price as string);
-  const [image, setImage] = useState<{
-    uri: string;
-    name: string;
-    type: string;
-  } | null>(
+  const [image, setImage] = useState<{ uri: string; name: string; type: string } | null>(
     imageUrl && typeof imageUrl === "string"
       ? { uri: imageUrl, name: "origin.jpg", type: "image/jpeg" }
       : null
@@ -56,7 +51,6 @@ export default function TradeEditScreen() {
       );
 
       const fileName = resized.uri.split("/").pop() || "image.jpg";
-
       setImage({
         uri: resized.uri,
         name: fileName,
@@ -95,89 +89,85 @@ export default function TradeEditScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          {/* 상단 헤더 */}
-          <View style={styles.header}>
-            <Text style={styles.title}>거래글 수정</Text>
-            <TouchableOpacity onPress={handleUpdate}>
-              <Image source={icons.WriteIcon} style={styles.writeButton} />
-            </TouchableOpacity>
-          </View>
-
-          {/* 이미지 안내 + 업로드 */}
-          <Text style={styles.uploadGuide}>상품 이미지를 업로드해주세요</Text>
-          <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
-            {image ? (
-              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-            ) : (
-              <Image source={icons.PictureIcon} style={styles.pictureButton} />
-            )}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        extraScrollHeight={50} // 💡 키보드 올라올 때 화면 밀어주는 높이 조정
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* 상단 헤더 */}
+        <View style={styles.header}>
+          <Text style={styles.title}>거래글 수정</Text>
+          <TouchableOpacity onPress={handleUpdate}>
+            <Image source={icons.WriteIcon} style={styles.writeButton} />
           </TouchableOpacity>
-
-          {/* 제목 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>제목</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={(text) => {
-                if (text.length <= 40) setTitle(text);
-              }}
-              placeholder="제목을 입력하세요"
-              maxLength={40}
-            />
-            <Text style={styles.charCount}>{title.length}/40</Text>
-          </View>
-
-          {/* 가격 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>가격</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={priceText}
-              onChangeText={setPriceText}
-              placeholder="가격을 입력하세요"
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* 내용 */}
-          <View style={styles.inputBox}>
-            <View style={styles.labelRow}>
-              <Image source={icons.PlantIcon} style={styles.labelIcon} />
-              <Text style={styles.label}>내용</Text>
-            </View>
-            <TextInput
-              style={[styles.input, { height: 100 }]}
-              value={content}
-              onChangeText={(text) => {
-                if (text.length <= 500) setContent(text);
-              }}
-              placeholder="내용을 입력하세요"
-              multiline
-              maxLength={500}
-            />
-            <Text style={styles.charCount}>{content.length}/500</Text>
-          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+
+        {/* 이미지 업로드 */}
+        <Text style={styles.uploadGuide}>상품 이미지를 업로드해주세요</Text>
+        <TouchableOpacity onPress={pickImage} style={styles.imageIconButton}>
+          {image ? (
+            <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+          ) : (
+            <Image source={icons.PictureIcon} style={styles.pictureButton} />
+          )}
+        </TouchableOpacity>
+
+        {/* 제목 입력 */}
+        <View style={styles.inputBox}>
+          <View style={styles.labelRow}>
+            <Image source={icons.PlantIcon} style={styles.labelIcon} />
+            <Text style={styles.label}>제목</Text>
+          </View>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={(text) => text.length <= 40 && setTitle(text)}
+            placeholder="제목을 입력하세요"
+            maxLength={40}
+          />
+          <Text style={styles.charCount}>{title.length}/40</Text>
+        </View>
+
+        {/* 가격 입력 */}
+        <View style={styles.inputBox}>
+          <View style={styles.labelRow}>
+            <Image source={icons.PlantIcon} style={styles.labelIcon} />
+            <Text style={styles.label}>가격</Text>
+          </View>
+          <TextInput
+            style={styles.input}
+            value={priceText}
+            onChangeText={setPriceText}
+            placeholder="가격을 입력하세요"
+            keyboardType="numeric"
+          />
+        </View>
+
+        {/* 내용 입력 */}
+        <View style={styles.inputBox}>
+          <View style={styles.labelRow}>
+            <Image source={icons.PlantIcon} style={styles.labelIcon} />
+            <Text style={styles.label}>내용</Text>
+          </View>
+          <TextInput
+            style={[styles.input, { height: 100 }]}
+            value={content}
+            onChangeText={(text) => text.length <= 500 && setContent(text)}
+            placeholder="내용을 입력하세요"
+            multiline
+            maxLength={500}
+          />
+          <Text style={styles.charCount}>{content.length}/500</Text>
+        </View>
+      </KeyboardAwareScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
+  container: { flexGrow: 1, padding: 20, paddingTop: 60, backgroundColor: "#fff" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -188,10 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Pretendard-SemiBold",
   },
-  writeButton: {
-    width: 32,
-    height: 32,
-  },
+  writeButton: { width: 32, height: 32 },
   uploadGuide: {
     fontSize: 16,
     fontFamily: "Pretendard-Regular",
@@ -199,37 +186,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#555",
   },
-  pictureButton: {
-    width: 140,
-    height: 140,
-  },
-  imageIconButton: {
-    alignSelf: "center",
-    marginBottom: 30,
-  },
+  pictureButton: { width: 140, height: 140 },
+  imageIconButton: { alignSelf: "center", marginBottom: 30 },
   imagePreview: {
     width: 140,
     height: 140,
     borderRadius: 8,
     backgroundColor: "#eee",
   },
-  inputBox: {
-    marginBottom: 20,
-  },
+  inputBox: { marginBottom: 20 },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
     gap: 6,
   },
-  labelIcon: {
-    width: 15,
-    height: 15,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: "Pretendard-SemiBold",
-  },
+  labelIcon: { width: 15, height: 15 },
+  label: { fontSize: 16, fontFamily: "Pretendard-SemiBold" },
   input: {
     backgroundColor: "#F3F3F3",
     borderRadius: 8,

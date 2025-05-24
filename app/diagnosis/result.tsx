@@ -48,11 +48,14 @@ export default function DiagnosisResultScreen() {
   const cleanedEnvironment = parsedEnvironment ? removePlantPrefix(parsedEnvironment) : '';
   const cleanedNutrition = parsedNutrition ? removePlantPrefix(parsedNutrition) : '';
 
-  const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크 
-  const headerTitle = isMismatch ? '식물 진단 결과' : plantName ? `${plantName} 진단 결과` : '식물 진단 결과';
+  // const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크  // 진단 실패 주석처리(isMismatch)
+  //const headerTitle = isMismatch ? '식물 진단 결과' : plantName ? `${plantName} 진단 결과` : '식물 진단 결과'; // 진단 실패 주석처리(isMismatch)
+  const headerTitle = plantName ? `${predictedPlant} 진단 결과` : '식물 진단 결과';
 
-  const finalResultText = isMismatch ? '진단 실패' : formattedResult;
-  const finalPercentage = isMismatch ? 0 : percentage;
+  //const finalResultText = isMismatch ? '진단 실패' : formattedResult; // 진단 실패 주석처리(isMismatch)
+  //const finalPercentage = isMismatch ? 0 : percentage; // 진단 실패 주석처리(isMismatch)
+  const finalResultText = formattedResult;
+  const finalPercentage = percentage;
 
   console.log("🧪 전달된 진단 결과:", formattedResult);
   console.log("📊 정확도:", percentage);
@@ -152,7 +155,8 @@ export default function DiagnosisResultScreen() {
             </View>
           </View>
 
-          {!isMismatch && formattedResult !== "정상" && (
+          {/* {!isMismatch && formattedResult !== "정상" && ( */}{/*진단 실패 주석처리(isMismatch) */}
+          {formattedResult !== "정상" && (
             <View style={styles.section}>
               <View style={styles.sectionTitleContainer}>
                 <Image source={require('../../assets/images/plant_icon.png')} style={styles.icon} />
@@ -245,8 +249,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
     zIndex: 1,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   scrollContent: {
     paddingBottom: 20,
@@ -268,15 +272,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#363636',
-  },
-  sectionBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 30,
-    marginBottom: 8,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   gaugeContainer: {
     alignItems: 'center',
@@ -291,22 +288,24 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     color: '#9E9E9E',
+    fontFamily: 'Pretendard-Medium',
   },
   percentText: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#00D282',
+    fontFamily: 'Pretendard-SemiBold',
   },
   labelText: {
     fontSize: 14,
     marginTop: -70,
     color: '#363636',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   diagnosisText: {
     fontSize: 16,
     color: '#363636',
     marginTop: 10,
+    fontFamily: 'Pretendard-Medium',
   },
   imageBox: {
     alignItems: 'center',
@@ -337,19 +336,15 @@ const styles = StyleSheet.create({
   },
   detailTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: '#363636',
     marginBottom: 4,
+    fontFamily: 'Pretendard-SemiBold',
   },
   detailText: {
     flex: 1,
     fontSize: 13,
     color: '#555',
     lineHeight: 20,
-  },
-  diseaseButton: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
   },
 });

@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: "#363636",
     textAlign: "center",
+    fontFamily: 'Pretendard-Medium',
   },
   card: {
     flexDirection: "row",
@@ -163,27 +164,24 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     objectFit: "cover",
   },
-  imageText: {
-    color: "#9E9E9E",
-    fontSize: 14,
-  },
   cardTextBox: {
     flex: 1,
     justifyContent: "center",
   },
   plantName: {
     fontSize: 12,
-    fontWeight: "bold",
     color: "#363636",
     marginTop: 30,
     marginBottom: 10,
     textAlign: "center",
+    fontFamily: 'Pretendard-SemiBold',
   },
   plantStatus: {
     fontSize: 10,
     color: "#9E9E9E",
     marginBottom: 30,
     textAlign: "center",
+    fontFamily: 'Pretendard-Medium',
   },
   myPlantSelectButton: {
     backgroundColor: "#00D282",
@@ -203,8 +201,8 @@ const styles = StyleSheet.create({
   },
   myPlantSelectButtonText: {
     color: "#FFFFFF",
-    fontWeight: "bold",
     fontSize: 12,
+    fontFamily: 'Pretendard-SemiBold',
   },
   selectButton: {
     marginTop: 10,
@@ -215,8 +213,8 @@ const styles = StyleSheet.create({
   },
   selectButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "#FFFFFF",
+    fontFamily: 'Pretendard-ExtraBold',
   },
   historyButton: {
     marginTop: 5,
@@ -228,8 +226,8 @@ const styles = StyleSheet.create({
   },
   historyButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "#FFFFFF",
+    fontFamily: 'Pretendard-ExtraBold',
   },
   emptyMessage: {
     textAlign: "center",
@@ -237,6 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#9E9E9E",
     marginBottom: 30,
+    fontFamily: 'Pretendard-Medium',
   },
   scrollArea: {
     flex: 1,
@@ -256,8 +255,8 @@ const styles = StyleSheet.create({
   },
   addPlantButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 14,
     textAlign: 'center',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });

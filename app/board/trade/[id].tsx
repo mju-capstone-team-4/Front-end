@@ -1,32 +1,44 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  Image,
-  Pressable,
-  TouchableOpacity,
-  Alert,
-
-  ScrollView,
+  View, Text, StyleSheet, Image, Pressable, TouchableOpacity, Alert,
+  ScrollView, Dimensions
 } from "react-native";
 import React, { useState } from "react";
 import ImageView from "react-native-image-viewing";
-import { Ionicons } from "@expo/vector-icons";
 import { deleteTradePost } from "../../../service/tradeService";
+import axios from "axios";
+import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const { width } = Dimensions.get("window");
+const API_BASE = Constants.expoConfig?.extra?.API_URL;
+const CHAT_BASE = API_BASE.replace("/api", "");
+
+const icons = {
+  WriteIcon: require("../../../assets/images/write_button.png"),
+  DeleteIcon: require("../../../assets/images/trash_icon.png"),
+};
 
 export default function TradeDetail() {
   const router = useRouter();
-  const { id, itemName, description, nickname, price, imageUrl } = useLocalSearchParams();
+  const {
+    id,
+    itemName,
+    description,
+    price,
+    imageUrl,
+    username,     // ✅ 게시글 작성자의 username
+    memberId,     // ✅ 게시글 작성자의 memberId
+  } = useLocalSearchParams();
 
   const [visible, setVisible] = useState(false);
 
   const displayTitle = typeof itemName === "string" ? itemName : "제목 없음";
   const displayContent = typeof description === "string" ? description : "내용 없음";
-  const displayNickname = typeof nickname === "string" ? nickname : "익명";
   const displayPrice = typeof price === "string" ? `${parseInt(price).toLocaleString()}원` : "가격 미정";
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
+  const writerUsername = typeof username === "string" ? username : "익명";
+  const writerId = typeof memberId === "string" ? parseInt(memberId) : null;
 
   const handleDelete = async () => {
     if (typeof id !== "string") {
@@ -46,71 +58,104 @@ export default function TradeDetail() {
             router.replace("/(tabs)/board");
           } catch (error) {
             Alert.alert("에러", "삭제에 실패했습니다.");
-            console.error("❌ 삭제 실패:", error);
           }
         },
       },
     ]);
   };
 
+  const handleChat = async () => {
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        Alert.alert("로그인 필요", "로그인 후 이용해주세요.");
+        return;
+      }
+
+      if (!writerId || writerId === global.userInfo.memberId) {
+        Alert.alert("알림", "본인과는 채팅할 수 없습니다.");
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axios.post(
+        `${CHAT_BASE}/chat/room/private/create?otherMemberId=${writerId}`,
+        {},
+        { headers }
+      );
+
+      const roomId = res.data;
+      console.log("✅ 채팅방 생성 성공 - roomId:", roomId);
+
+      router.push({
+        pathname: "/chat/[roomId]",
+        params: {
+          roomId: roomId.toString(),
+          partnerName: writerUsername,
+          partnerImage: validImage,
+        },
+      });
+    } catch (error) {
+      console.error("❌ 채팅방 생성 실패:", error);
+      Alert.alert("에러", "채팅방 생성에 실패했습니다.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.postBox}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{displayTitle}</Text>
-
-            
-
-            {/* ✅ 권한 제어: 작성자만 버튼 보이게 */}
-            {global.userInfo.username === nickname && (
-              <View style={styles.iconButtons}>
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => {
-                    if (typeof id === "string") {
-                      router.push({
-                        pathname: "/board/trade/edit/[id]",
-                        params: { id, itemName, description, price, imageUrl },
-                      });
-                    }
-                  }}
-                >
-                  <Ionicons name="create-outline" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.iconButton, { marginLeft: 8 }]}
-                  onPress={handleDelete}
-                >
-                  <Ionicons name="trash-outline" size={20} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <Text style={styles.meta}>작성자: {displayNickname}</Text>
-          <Text style={styles.meta_price}>가격: {displayPrice}</Text>
-
-          {validImage && (
-            <>
-              <Pressable onPress={() => setVisible(true)}>
-                <Image source={{ uri: validImage }} style={styles.image} />
-              </Pressable>
-              <ImageView
-                images={[{ uri: validImage }]}
-                imageIndex={0}
-                visible={visible}
-                onRequestClose={() => setVisible(false)}
-              />
-            </>
+        <View style={styles.header}>
+          <Text style={styles.title}>{displayTitle}</Text>
+          {global.userInfo.username === writerUsername && (
+            <View style={styles.iconButtons}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  if (typeof id === "string") {
+                    router.push({
+                      pathname: "/board/trade/edit/[id]",
+                      params: { id, itemName, description, price, imageUrl },
+                    });
+                  }
+                }}
+              >
+                <Image source={icons.WriteIcon} style={{ width: 32, height: 32 }} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { marginLeft: 8 }]}
+                onPress={handleDelete}
+              >
+                <Image source={icons.DeleteIcon} style={{ width: 30, height: 30 }} />
+              </TouchableOpacity>
+            </View>
           )}
-
-          <Text style={styles.content}>{displayContent}</Text>
         </View>
+
+        <Text style={styles.meta}>작성자: {writerUsername}</Text>
+        <Text style={styles.metaPrice}>가격: {displayPrice}</Text>
+
+        {validImage && (
+          <>
+            <Pressable onPress={() => setVisible(true)}>
+              <Image source={{ uri: validImage }} style={styles.image} resizeMode="cover" />
+            </Pressable>
+            <ImageView
+              images={[{ uri: validImage }]}
+              imageIndex={0}
+              visible={visible}
+              onRequestClose={() => setVisible(false)}
+            />
+          </>
+        )}
+
+        <Text style={styles.content}>{displayContent}</Text>
       </ScrollView>
 
       <View style={styles.buttonBox}>
-        <Button title="채팅하기" onPress={() => alert("채팅 준비 중")} />
+        <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
+          <Text style={styles.chatButtonText}>💬 채팅하기</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -118,15 +163,63 @@ export default function TradeDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", paddingTop: 60 },
-  scrollContent: { padding: 20 },
-  postBox: { backgroundColor: "#f9f9f9", borderRadius: 8, padding: 24, marginBottom: 30 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 30 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   iconButtons: { flexDirection: "row" },
-  iconButton: { padding: 4, borderWidth: 1, borderColor: "#888", borderRadius: 6 },
-  title: { fontSize: 22, fontWeight: "bold", flexShrink: 1, marginRight: 10 },
-  meta: { fontSize: 14, color: "#555", marginBottom: 4 },
-  meta_price: { fontSize: 14, color: "#555", marginBottom: 16 },
-  content: { fontSize: 16, lineHeight: 24, marginTop: 12 },
-  image: { marginTop: 12, width: "100%", height: 200, borderRadius: 8 },
-  buttonBox: { backgroundColor: "#fff", padding: 20, borderTopWidth: 1, borderColor: "#ddd" },
+  iconButton: { padding: 4, borderRadius: 6 },
+  title: {
+    fontSize: 22,
+    fontFamily: "Pretendard-SemiBold",
+    color: "#222",
+    flexShrink: 1,
+    marginRight: 10,
+  },
+  meta: {
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    color: "#555",
+    marginBottom: 4,
+  },
+  metaPrice: {
+    fontSize: 14,
+    fontFamily: "Pretendard-Regular",
+    color: "#555",
+    marginBottom: 16,
+  },
+  image: {
+    width: width - 40,
+    height: 250,
+    borderRadius: 8,
+    marginBottom: 15,
+    alignSelf: "center",
+  },
+  content: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontFamily: "Pretendard-Regular",
+    color: "#333",
+    marginTop: 12,
+  },
+  buttonBox: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  chatButton: {
+    backgroundColor: "#00D282",
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  chatButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Pretendard-SemiBold",
+  },
 });

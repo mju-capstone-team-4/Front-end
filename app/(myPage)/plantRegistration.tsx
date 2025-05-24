@@ -18,6 +18,7 @@ import axios from "axios";
 import { getPlantName } from "@/service/getPlantName";
 import DropDownPicker from "react-native-dropdown-picker";
 import { postPlantCycle } from "@/service/postPlantCycle";
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default function PlantRegistration(): JSX.Element {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function PlantRegistration(): JSX.Element {
 
   const [manualPlantName, setManualPlantName] = useState("");
   const [manualPlantId, setManualPlantId] = useState("");
+  const [image, setImage] = useState<any>(null);
+
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -72,46 +75,31 @@ export default function PlantRegistration(): JSX.Element {
     return () => clearTimeout(delay);
   }, [plantNameSearch]);
 
-  const handlePhotoRegistration = () => {
-    Alert.alert(
-      "사진 등록",
-      "어떤 방식으로 사진을 등록하시겠습니까?",
-      [
-        {
-          text: "카메라",
-          onPress: async () => {
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: "images",
-              allowsEditing: true,
-              quality: 1,
-            });
-            if (!result.canceled) {
-              const uri = result.assets[0].uri;
-              setPhotoUri(uri);
-            }
-          },
-        },
-        {
-          text: "앨범",
-          onPress: async () => {
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: "images",
-              allowsEditing: true,
-              quality: 1,
-            });
-            if (!result.canceled) {
-              const uri = result.assets[0].uri;
-              setPhotoUri(uri);
-            }
-          },
-        },
-        {
-          text: "취소",
-          style: "cancel",
-        },
-      ],
-      { cancelable: true }
-    );
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const resized = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      setImage({
+        uri: resized.uri,
+        name: "image.jpg",
+        type: "image/jpeg",
+      });
+    }
   };
 
   const handleRegister = async () => {
@@ -119,22 +107,16 @@ export default function PlantRegistration(): JSX.Element {
       Alert.alert("오류", "식물 별명을 모두 입력해주세요.");
       return;
     }
-    const selectedPlantName =
-      plantOptions.find((opt) => opt.value === selectedPlantId)?.label ||
-      plantNameSearch;
+    // const selectedPlantName =
+    //   plantOptions.find((opt) => opt.value === selectedPlantId)?.label ||
+    //   plantNameSearch;
 
     const payload = {
       name: manualPlantName.trim(),
       description: plantNickname,
-      plantId: Number(manualPlantId),
+      plantId: parseInt(manualPlantId),
       recommendTonic: useFertilizer,
-      image: photoUri
-        ? {
-            uri: photoUri,
-            fileName: "photo.jpg",
-            type: "image/jpeg",
-          }
-        : undefined,
+      image,
     };
 
     try {
@@ -153,7 +135,7 @@ export default function PlantRegistration(): JSX.Element {
       Alert.alert("완료", "식물 등록이 완료되었습니다.");
       router.back();
     } catch (error) {
-      console.error("❌ 식물 등록 실패:", error); // ✅ 에러 전체 출력
+      console.error("❌ 식물 등록 실패!:", error); // ✅ 에러 전체 출력
       Alert.alert("오류", "식물 등록에 실패했습니다." + String(error));
     }
   };
@@ -210,10 +192,7 @@ export default function PlantRegistration(): JSX.Element {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.photoButton}
-        onPress={handlePhotoRegistration}
-      >
+      <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
         <Text style={styles.photoButtonText}>사진 등록 (선택)</Text>
       </TouchableOpacity>
 

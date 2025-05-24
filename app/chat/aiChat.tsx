@@ -100,7 +100,7 @@ export default function AiChat() {
               placeholder="질문을 입력하세요"
             />
             <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-              <Text style={{ color: '#FFFFFF' }}>전송</Text>
+              <Text style={{ color: '#FFFFFF', fontFamily: 'Pretendard-Medium', }}>전송</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
   },
   inputArea: {
     flexDirection: 'row',
@@ -188,6 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     height: 40,
+    fontFamily: 'Pretendard-Medium',
   },
   sendButton: {
     marginLeft: 8,

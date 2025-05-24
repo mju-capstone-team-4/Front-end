@@ -207,10 +207,11 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#00D282',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   tabTextInactive: {
     color: '#FFFFFF',
+    fontFamily: 'Pretendard-Medium',
   },
   searchWrapper: {
     flexDirection: 'row',
@@ -236,6 +237,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: -5,
     color: '#393939',
+    fontFamily: 'Pretendard-Medium',
   },
   userList: {
     flexDirection: 'row',
@@ -260,8 +262,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   userName: {
-    fontWeight: 'bold',
     fontSize: 14,
     color: '#393939',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });

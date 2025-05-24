@@ -15,14 +15,17 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { getAllQuestions } from "../../service/getAllQuestions";
 import { getAllTrades } from "../../service/getAllTrades";
+import Back1 from "@/assets/images/back1.svg";
+import Back2 from "@/assets/images/back2.svg";
+import Back3 from "@/assets/images/back3.svg";
+import { Dimensions } from "react-native";
 
 const icons = {
   SearchIcon: require("../../assets/images/search_button.png"),
   WriteIcon: require("../../assets/images/write_button.png"),
   ChevronIcon: require("../../assets/images/chevron.png"),
 };
-
-// (import 부분은 그대로 유지)
+const { width, height } = Dimensions.get("window");
 
 export default function BoardScreen() {
   const [asking, setAsking] = useState(true);
@@ -32,6 +35,7 @@ export default function BoardScreen() {
   const [trades, setTrades] = useState<any[]>([]);
   const router = useRouter();
   
+
   useEffect(() => {
     asking ? fetchQuestions() : fetchTrades();
   }, [asking]);
@@ -75,8 +79,8 @@ export default function BoardScreen() {
             id: item.questionId,
             title: item.title,
             content: item.content,
-            nickname: item.username, // ✅ username으로 수정
-            imageUrl: item.image_url, // ✅ image_url로 수정
+            nickname: item.username, 
+            imageUrl: item.image_url, 
           },
         })
       }
@@ -106,7 +110,8 @@ export default function BoardScreen() {
             id: item.tradePostId,
             itemName: item.itemName,
             description: item.description,
-            nickname: item.username,
+            username: item.username,     // ✅ 사용자명 전달
+            memberId: item.memberId.toString(), // ✅ 작성자 ID 전달 (string 형태로)
             price: item.price,
             imageUrl: item.imageUrl,
           },
@@ -135,6 +140,11 @@ export default function BoardScreen() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
+
+        <Back1 style={styles.back1} />
+        <Back2 style={styles.back2} />
+        <Back3 style={styles.back3} />
+
           {/* 상단 */}
           <View style={styles.header}>
             <Text style={styles.title}>모두를 위한 식물</Text>
@@ -278,7 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#D4EAE1",
+    backgroundColor: "#F3F9ED",
     borderRadius: 12,
     marginBottom: 10,
   },
@@ -306,5 +316,23 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     tintColor: "#999",
+  },
+  back1: {
+    position: "absolute",
+    top: 0,
+    left: width / 15,
+    zIndex: -1,
+  },
+  back2: {
+    position: "absolute",
+    top: height / 3.5,
+    right: width / 20,
+    zIndex: -1,
+  },
+  back3: {
+    position: "absolute",
+    top: height / 2.1,
+    left: width / 8,
+    zIndex: -1,
   },
 });

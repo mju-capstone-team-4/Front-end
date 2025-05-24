@@ -116,6 +116,7 @@ export default function PostDetail() {
         >
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
+
             {global.userInfo.username === nickname && (
               <View style={styles.actions}>
                 <TouchableOpacity
@@ -144,7 +145,11 @@ export default function PostDetail() {
           {validImage && (
             <>
               <Pressable onPress={() => setVisible(true)}>
-                <Image source={{ uri: validImage }} style={styles.image} />
+                <Image
+                  source={{ uri: validImage }}
+                  style={{ width: "100%", aspectRatio: 1, borderRadius: 8, marginBottom: 20 }}
+                  resizeMode="contain"
+                />
               </Pressable>
               <ImageView
                 images={[{ uri: validImage }]}
@@ -156,14 +161,23 @@ export default function PostDetail() {
           )}
 
           <Text style={styles.content}>{content}</Text>
+
+          <View style={styles.separator} />
+
           <Text style={styles.commentTitle}>💬 댓글</Text>
+
+          {comments.length === 0 && (
+            <View style={styles.noCommentBox}>
+              <Text style={styles.noCommentText}>첫 댓글을 달아보세요!</Text>
+            </View>
+          )}
 
           {comments.map((c) => (
             <View key={c.commentId} style={styles.commentBox}>
               <Ionicons name="person-circle-outline" size={30} color="#777" />
               <View style={styles.commentRight}>
                 <View style={styles.commentTop}>
-                  <Text style={styles.commentNickname}>익명</Text>
+                  <Text style={styles.commentNickname}>{c.username}</Text>
                   <View style={styles.commentActions}>
                     <TouchableOpacity onPress={() => handleLikeToggle(c.commentId, c.liked)}>
                       <Ionicons
@@ -173,17 +187,21 @@ export default function PostDetail() {
                       />
                     </TouchableOpacity>
                     <Text style={styles.recommendCount}>{c.likeCount}</Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setEditingCommentId(c.commentId);
-                        setEditingText(c.content);
-                      }}
-                    >
-                      <Ionicons name="create-outline" size={16} color="#666" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteComment(c.commentId)}>
-                      <Ionicons name="trash-outline" size={16} color="#666" />
-                    </TouchableOpacity>
+                    {String(global.userInfo.username) === String(nickname) && (
+                      <>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setEditingCommentId(c.commentId);
+                            setEditingText(c.content);
+                          }}
+                        >
+                          <Ionicons name="create-outline" size={16} color="#666" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteComment(c.commentId)}>
+                          <Ionicons name="trash-outline" size={16} color="#666" />
+                        </TouchableOpacity>
+                      </>
+                    )}
                   </View>
                 </View>
                 {editingCommentId === c.commentId ? (
@@ -249,14 +267,19 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: "bold", color: "#222", flexShrink: 1 },
   nickname: { fontSize: 14, color: "#666", marginBottom: 20 },
-  image: { width: "100%", height: 200, borderRadius: 8, marginBottom: 20 },
-  content: { fontSize: 16, lineHeight: 24, color: "#333", marginBottom: 30 },
+  content: { fontSize: 16, lineHeight: 24, color: "#333", marginBottom: 5 },
+  separator: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginVertical: 20,
+    width: "100%",
+  },
   commentTitle: { fontSize: 16, fontWeight: "bold", color: "#000", marginBottom: 12 },
   commentBox: { flexDirection: "row", alignItems: "flex-start", marginBottom: 16 },
   commentRight: {
     flex: 1,
     marginLeft: 10,
-    backgroundColor: "#D4EAE1",
+    backgroundColor: "#F3F9ED",
     borderRadius: 8,
     padding: 10,
   },
@@ -276,6 +299,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     alignItems: "center",
+    marginBottom: 15,
   },
   commentInput: {
     flex: 1,
@@ -298,8 +322,30 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
   },
   editButtons: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8, gap: 8 },
-  saveButton: { backgroundColor: "#00A86B", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
-  cancelButton: { backgroundColor: "#eee", paddingVertical: 6, paddingHorizontal: 14, borderRadius: 6 },
+  saveButton: {
+    backgroundColor: "#00A86B",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+  },
+  cancelButton: {
+    backgroundColor: "#eee",
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+  },
   saveText: { color: "#fff", fontWeight: "bold" },
   cancelText: { color: "#666" },
+  noCommentBox: {
+    backgroundColor: "#F3F9ED",
+    borderRadius: 8,
+    padding: 20,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  noCommentText: {
+    fontFamily: "Pretendard-SemiBold",
+    fontSize: 16,
+    color: "#666",
+  },
 });

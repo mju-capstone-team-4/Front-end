@@ -19,6 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Back1 from "@/assets/images/back1.svg";
 import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
+import { getMypage } from "@/service/getMypage";
 
 const { width, height } = Dimensions.get("window");
 
@@ -61,19 +62,20 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const processToken = async (token: string) => {
-    await AsyncStorage.setItem("accessToken", token);
-    console.log("💾 accessToken 저장 완료");
-
-    const payload = decodeTokenPayload(token);
-    if (payload) {
+    try {
+      await AsyncStorage.setItem("accessToken", token);
+      const userInfo = await getMypage(); // ✅ 서버에서 username과 memberId 모두 가져옴
+  
       global.userInfo = {
-        username: payload.sub || null, // ✅ sub 값을 username으로 사용
-        memberId: payload.memberId || null, // 없는 경우 null 처리
+        username: userInfo.username,
+        memberId: userInfo.id,
       };
+  
       console.log("👤 사용자 정보:", global.userInfo);
+      router.replace("/(tabs)/board");
+    } catch (error) {
+      console.error("❌ 사용자 정보 가져오기 실패:", error);
     }
-
-    router.replace("/(tabs)/board");
   };
 
   useEffect(() => {
@@ -147,8 +149,11 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={[styles.button, styles.test]}
           onPress={async () => {
+            await AsyncStorage.removeItem("accessToken");
+
             const token = await getToken("test1@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             console.log("새로 저장됨");
             router.replace("/(tabs)/board");
           }}
@@ -161,6 +166,7 @@ export default function LoginScreen() {
           onPress={async () => {
             const token = await getToken("test2@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             router.replace("/(tabs)/board");
           }}
         >
@@ -171,6 +177,7 @@ export default function LoginScreen() {
           onPress={async () => {
             const token = await getToken("test3@example.com");
             await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
             router.replace("/(tabs)/board");
           }}
         >

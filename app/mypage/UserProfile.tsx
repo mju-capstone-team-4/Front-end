@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,19 +7,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { getMypage } from "@/service/getMypage";
 import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import EditButton from "../../assets/images/edit.svg";
-import { ColorProperties } from "react-native-reanimated/lib/typescript/Colors";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { getMypage } from "@/service/getMypage";
+import { postMyProfile } from "@/service/postMyProfile";
+import * as ImageManipulator from "expo-image-manipulator";
+import { useFocusEffect } from "@react-navigation/native";
 
-// 기준 사이즈
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const BASE_WIDTH = 414;
 const BASE_HEIGHT = 896;
-
-// 스케일 함수 -> 추후 반응형으로 변경
 const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
@@ -28,29 +28,88 @@ export default function UserProfile() {
     id: number;
     email: string;
     username: string;
-    profile_uri: string;
+    profileUrl: string;
     plants: any[];
   } | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [image, setImage] = useState<any>(null);
 
-  const handleEditProfile = () => {
-    console.log("프로필 편집 클릭");
-    router.push("/editProfile");
-  };
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const data = await getMypage();
-        setUser(data);
-      } catch (error) {
-        console.error("사용자 데이터 불러오기 실패:", error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchUser = async () => {
+    try {
+      const data = await getMypage();
+      setUser(data);
+    } catch (error) {
+      console.error("사용자 데이터 불러오기 실패:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [])
+  );
+
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("권한 필요", "갤러리 접근 권한이 필요합니다.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const resized = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const finalImage = {
+        uri: resized.uri,
+        fileName: "image.jpg",
+        type: "image/jpeg",
+      };
+
+      setImage(finalImage);
+      await uploadProfileImage(finalImage);
+    }
+  };
+
+  const uploadProfileImage = async (image: any) => {
+    try {
+      await postMyProfile({
+        profileImage: {
+          uri: image.uri,
+          type: image.type || "image/jpeg",
+          fileName: image.fileName || "profile.jpg",
+        },
+      });
+      // 🔄 상태에서 직접 이미지 URI 갱신
+      if (user) {
+        setUser({ ...user, profileUrl: image.uri });
+      }
+
+      Alert.alert("✅ 변경 완료", "프로필 이미지가 변경되었습니다.");
+    } catch (error) {
+      console.error("프로필 업로드 실패:", error);
+      Alert.alert("❌ 실패", "프로필 이미지를 업로드하지 못했습니다.");
+    }
+  };
+
+  const handleEditProfile = () => {
+    router.push("/editProfile");
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -58,6 +117,7 @@ export default function UserProfile() {
       </View>
     );
   }
+
   if (!user) {
     return (
       <View style={styles.errorContainer}>
@@ -65,23 +125,25 @@ export default function UserProfile() {
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
       <View style={styles.profileWrapper}>
-        {/* 바깥 원형 테두리 */}
         <View style={styles.profileBorder}>
-          {/* 이미지 */}
-          <Image
-            source={
-              user.profile_uri && user.profile_uri.trim() !== ""
-                ? { uri: user.profile_uri }
-                : require("@/assets/images/woman.png")
-            }
-            style={styles.profileImage}
-            resizeMode="cover"
-          />
+          <TouchableOpacity onPress={pickImage}>
+            <Image
+              source={
+                user.profileUrl && user.profileUrl.trim() !== ""
+                  ? { uri: user.profileUrl }
+                  : require("@/assets/images/flower.png")
+              }
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
       <View style={styles.infoContainer}>
         <View style={styles.nameRow}>
           <Text style={styles.userName}>{user.username}</Text>
@@ -125,10 +187,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: scaleWidth(211),
     height: scaleWidth(211),
-    // justifyContent: "center",
-    // alignItems: "center",
   },
-
   profileBorder: {
     width: scaleWidth(211),
     height: scaleWidth(211),
@@ -138,13 +197,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   profileImage: {
     width: scaleWidth(197),
     height: scaleWidth(197),
     borderRadius: scaleWidth(197) / 2,
+    backgroundColor: "#fff8de",
   },
-
   infoContainer: {
     position: "absolute",
     alignItems: "center",
@@ -169,7 +227,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   emailBackground: {
     position: "absolute",
     width: scaleWidth(154),
@@ -177,7 +234,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.3)",
     borderRadius: 30,
   },
-
   userEmail: {
     fontFamily: "Pretendard-Medium",
     fontSize: scaleWidth(10),

@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function DiagnosisSelectScreen() {
   useFocusEffect(
@@ -57,6 +58,7 @@ export default function DiagnosisSelectScreen() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 1,
+      base64: false,
     });
 
     if (!result.canceled) {
@@ -73,41 +75,41 @@ export default function DiagnosisSelectScreen() {
   };
 
   const saveToHistory = async (item: {
-  image: string;
-  result: string;
-  confidence: number;
-  originalResult: string;
-  originalConfidence: number;
-}) => {
-  try {
-    const token = await AsyncStorage.getItem('accessToken');
-    const userRes = await fetch(`${API_BASE}/mypage/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const currentUser = await userRes.json();
-    const currentEmail = currentUser.email;
+    image: string;
+    result: string;
+    confidence: number;
+    originalResult: string;
+    originalConfidence: number;
+  }) => {
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      const userRes = await fetch(`${API_BASE}/mypage/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const currentUser = await userRes.json();
+      const currentEmail = currentUser.email;
 
-    const existing = await AsyncStorage.getItem('diagnosisHistory');
-    const parsed = existing ? JSON.parse(existing) : [];
+      const existing = await AsyncStorage.getItem('diagnosisHistory');
+      const parsed = existing ? JSON.parse(existing) : [];
 
-    const updated = [
-      ...parsed,
-      {
-        result: item.result,
-        confidence: item.confidence,
-        image: item.image,
-        createdAt: new Date().toISOString(),
-        originalResult: item.originalResult,
-        originalConfidence: item.originalConfidence,
-        userEmail: currentEmail, // 사용자 구분
-      },
-    ];
+      const updated = [
+        ...parsed,
+        {
+          result: item.result,
+          confidence: item.confidence,
+          image: item.image,
+          createdAt: new Date().toISOString(),
+          originalResult: item.originalResult,
+          originalConfidence: item.originalConfidence,
+          userEmail: currentEmail, // 사용자 구분
+        },
+      ];
 
-    await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
-  } catch (e) {
-    console.error('로컬 저장 실패:', e);
-  }
-};
+      await AsyncStorage.setItem('diagnosisHistory', JSON.stringify(updated));
+    } catch (e) {
+      console.error('로컬 저장 실패:', e);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!image) {
@@ -148,6 +150,13 @@ export default function DiagnosisSelectScreen() {
         headers,
         body: formData,
       });
+
+      if (!response.ok) {
+        const errorText = await response.text(); 
+        console.error(response.status, errorText); // 에러 체크
+        return;
+      }
+
 
       const result = await response.json();
 
@@ -208,7 +217,7 @@ export default function DiagnosisSelectScreen() {
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         >
           <View style={styles.header}>
             <Image
@@ -223,7 +232,12 @@ export default function DiagnosisSelectScreen() {
               <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
             </View>
           </View>
-          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <KeyboardAwareScrollView
+            contentContainerStyle={styles.scrollContent}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+            extraScrollHeight={200}
+          >
             <Text style={styles.mainText}>사진으로 식물의{'\n'}상태를 진단해보세요</Text>
 
             <TouchableOpacity style={styles.imageBox} onPress={handleImageSelect}>
@@ -275,7 +289,7 @@ export default function DiagnosisSelectScreen() {
             >
               {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitButtonText}>진단하기</Text>}
             </TouchableOpacity>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </KeyboardAvoidingView>
       </SafeAreaViewContext>
     </>
@@ -317,8 +331,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
     zIndex: 1,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -328,10 +342,10 @@ const styles = StyleSheet.create({
   },
   mainText: {
     fontSize: 20,
-    fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
     alignSelf: 'center',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   imageBox: {
     width: 250,
@@ -368,8 +382,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
     color: '#363636',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   input: {
     borderRadius: 10,
@@ -378,6 +392,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     fontSize: 14,
     color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
   submitButton: {
     marginTop: 30,
@@ -389,8 +404,8 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'Pretendard-ExtraBold',
   },
   disabledButton: {
     backgroundColor: '#999',
@@ -401,9 +416,9 @@ const styles = StyleSheet.create({
   },
   dropdownLabel: {
     fontSize: 14,
-    fontWeight: 'bold',
     marginBottom: 10,
     color: '#363636',
+    fontFamily: 'Pretendard-ExtraBold',
   },
   dropdownItem: {
     paddingVertical: 10,
@@ -414,10 +429,6 @@ const styles = StyleSheet.create({
   },
   dropdownItemSelected: {
     backgroundColor: '#00D282',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#363636',
   },
 });
 
@@ -432,6 +443,7 @@ const pickerSelectStyles = {
     color: '#363636',
     backgroundColor: '#fff',
     paddingRight: 30, // to ensure the text is never behind the icon
+    fontFamily: 'Pretendard-Medium',
   },
   inputAndroid: {
     fontSize: 16,
@@ -443,6 +455,7 @@ const pickerSelectStyles = {
     color: '#363636',
     backgroundColor: '#fff',
     paddingRight: 30,
+    fontFamily: 'Pretendard-Medium',
   },
   iconContainer: {
     top: 15,
