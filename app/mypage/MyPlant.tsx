@@ -32,7 +32,7 @@ interface PlantData {
   wateringFrequency: string;
   photoUri: string;
   useFertilizer: boolean;
-  id: number;
+  myPlantId: number;
 }
 
 export default function MyPlant(): React.JSX.Element {
@@ -61,16 +61,20 @@ export default function MyPlant(): React.JSX.Element {
     router.push("/plantRegistration");
   };
 
-  const handlePlantPress = (plantId: number, description: string) => {
-    console.log("plantId:", plantId.toString());
+  const handlePlantPress = (
+    myPlantId: number,
+    description: string,
+    photoUri: string
+  ) => {
+    console.log("plantId:", myPlantId.toString());
 
     router.push({
       pathname: "/plantDetail",
-      params: { id: plantId.toString(), description },
+      params: { id: myPlantId.toString(), description, photoUri },
     });
   };
   // 지정한 인덱스의 식물을 삭제하는 함수
-  const handleDeletePlant = async (plantId: number) => {
+  const handleDeletePlant = async (myPlantId: number) => {
     // 삭제 전에 사용자에게 확인
     Alert.alert(
       "삭제 확인",
@@ -85,11 +89,10 @@ export default function MyPlant(): React.JSX.Element {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("❌ 삭제 요청 plantId:", plantId);
-              console.log("❌ 요청 URL:", `/mypage/myplant/${plantId}`);
-              await deleteMyPlant(plantId); // ✅ 서버에 삭제 요청
+              console.log("❌ 삭제 요청 plantId:", myPlantId);
+              await deleteMyPlant(myPlantId); // ✅ 서버에 삭제 요청
               const updatedPlants = plants.filter(
-                (plant) => plant.id !== plantId
+                (plant) => plant.myPlantId !== myPlantId
               );
 
               setPlants(updatedPlants); // 상태에서 제거
@@ -118,12 +121,20 @@ export default function MyPlant(): React.JSX.Element {
           <TouchableOpacity
             key={`${plant.description}-${index}`}
             style={styles.plantItem}
-            onPress={() => handlePlantPress(plant.id, plant.description)}
+            onPress={() =>
+              handlePlantPress(
+                plant.myPlantId,
+                plant.description,
+                plant.photoUri
+              )
+            }
           >
             <View style={styles.itemInfo}>
               <Text style={styles.plantNickname}>{plant.description}</Text>
             </View>
-            <TouchableOpacity onPress={() => handleDeletePlant(plant.id)}>
+            <TouchableOpacity
+              onPress={() => handleDeletePlant(plant.myPlantId)}
+            >
               <MaterialIcons name="delete" size={24} color="#00D282" />
             </TouchableOpacity>
           </TouchableOpacity>

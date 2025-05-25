@@ -38,9 +38,7 @@ export default function PlantRegistration(): JSX.Element {
   >([]);
   const [selectedPlantId, setSelectedPlantId] = useState<number>(0);
   const [plantNameSearch, setPlantNameSearch] = useState("");
-  const effectivePlantId = selectedPlantId > 0 ? selectedPlantId : 1;
 
-  const [manualPlantName, setManualPlantName] = useState("");
   const [manualPlantId, setManualPlantId] = useState("");
   const [image, setImage] = useState<any>(null);
 
@@ -61,7 +59,7 @@ export default function PlantRegistration(): JSX.Element {
         console.log("✅ 식물 이름 응답 데이터:", data); // ✅ 추가
         const options = data.map((plant: any) => ({
           label: plant.name,
-          value: plant.id,
+          value: plant.plantId,
         }));
 
         setPlantOptions(options);
@@ -94,11 +92,13 @@ export default function PlantRegistration(): JSX.Element {
         { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      setImage({
+      const selectedImage = {
         uri: resized.uri,
         name: "image.jpg",
         type: "image/jpeg",
-      });
+      };
+      setImage(selectedImage); // ✅ 이미지 전송용
+      setPhotoUri(resized.uri);
     }
   };
 
@@ -112,9 +112,9 @@ export default function PlantRegistration(): JSX.Element {
     //   plantNameSearch;
 
     const payload = {
-      name: manualPlantName.trim(),
+      name: plantNameSearch.trim(),
       description: plantNickname,
-      plantId: parseInt(manualPlantId),
+      plantId: Number(manualPlantId),
       recommendTonic: useFertilizer,
       image,
     };
@@ -125,7 +125,7 @@ export default function PlantRegistration(): JSX.Element {
       const response = await postMyplant(payload);
       console.log("✅ 등록 응답:", response);
 
-      const myPlantId = response.plantId;
+      const myPlantId = response.data;
       if (!myPlantId) {
         throw new Error("식물 ID를 찾지 못했습니다.");
       }
@@ -142,11 +142,15 @@ export default function PlantRegistration(): JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>식물 등록</Text>
-      {/* <DropDownPicker
+      <DropDownPicker
         open={open}
         setOpen={setOpen}
         value={selectedPlantId}
-        setValue={setSelectedPlantId as any}
+        setValue={(val) => {
+          const newVal = typeof val === "function" ? val(selectedPlantId) : val;
+          setSelectedPlantId(newVal);
+          setManualPlantId(String(newVal)); // ✅ 드롭다운 선택 시 id 반영
+        }}
         items={plantOptions}
         setItems={setPlantOptions}
         searchable={true}
@@ -155,19 +159,6 @@ export default function PlantRegistration(): JSX.Element {
           value: plantNameSearch,
         }}
         placeholder="식물 이름을 검색하거나 선택하세요"
-      /> */}
-      <TextInput
-        style={styles.input}
-        placeholder="식물 이름 입력 (직접)"
-        value={manualPlantName}
-        onChangeText={setManualPlantName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="식물 ID 입력 (예: 2)"
-        keyboardType="numeric"
-        value={manualPlantId}
-        onChangeText={setManualPlantId}
       />
 
       <TextInput
