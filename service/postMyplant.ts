@@ -30,7 +30,7 @@ export async function postMyplant({
     formData.append("recommendTonic", recommendTonic.toString());
 
     if (image) {
-      formData.append("image", {
+      formData.append("file", {
         uri: image.uri, // e.g. file:///...
         name: image.fileName,
         type: image.type,

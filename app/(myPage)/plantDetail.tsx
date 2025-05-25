@@ -18,7 +18,7 @@ const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function PlantDetail() {
-  const { id, description } = useLocalSearchParams();
+  const { id, description, photoUri } = useLocalSearchParams();
   const [markedDates, setMarkedDates] = useState<any>({});
   const [nextWateringDate, setNextWateringDate] = useState<string | null>(null);
   const [nextFertilizingDate, setNextFertilizingDate] = useState<string | null>(
@@ -50,6 +50,7 @@ export default function PlantDetail() {
       try {
         console.log("id :", id);
         console.log("des :", description);
+        console.log("photoUri :", photoUri);
 
         const data = await getMyPlantCalendar(Number(id));
 
@@ -107,6 +108,12 @@ export default function PlantDetail() {
 
         <Back3 style={styles.back3} />
       </LinearGradient>
+      {photoUri && (
+        <Image
+          source={{ uri: String(photoUri) }}
+          style={{ width: 200, height: 200, borderRadius: 12, marginTop: 16 }}
+        />
+      )}
 
       <Calendar
         style={{
