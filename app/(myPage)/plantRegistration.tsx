@@ -20,6 +20,7 @@ import { getPlantName } from "@/service/getPlantName";
 import DropDownPicker from "react-native-dropdown-picker";
 import { postPlantCycle } from "@/service/postPlantCycle";
 import * as ImageManipulator from "expo-image-manipulator";
+import Pot from "@/assets/images/pot.svg";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -28,6 +29,12 @@ const BASE_HEIGHT = 896;
 
 // 스케일 함수 -> 추후 반응형으로 변경
 const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+
+const icons = {
+  WriteIcon: require("@/assets/images/write_button.png"),
+  PictureIcon: require("@/assets/images/picture.png"),
+  PlantIcon: require("@/assets/images/plant_icon.png"),
+};
 export default function PlantRegistration(): JSX.Element {
   const router = useRouter();
 
@@ -138,7 +145,7 @@ export default function PlantRegistration(): JSX.Element {
         throw new Error("식물 ID를 찾지 못했습니다.");
       }
 
-      await postPlantCycle(myPlantId, Number(wateringFrequency), 12, 30);
+      await postPlantCycle(myPlantId, Number(wateringFrequency), 180, 365);
 
       Alert.alert("완료", "식물 등록이 완료되었습니다.");
       router.back();
@@ -150,6 +157,7 @@ export default function PlantRegistration(): JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>나의 식물 등록</Text>
+
       <DropDownPicker
         open={open}
         setOpen={setOpen}
@@ -167,6 +175,7 @@ export default function PlantRegistration(): JSX.Element {
           value: plantNameSearch,
         }}
         placeholder="식물 이름"
+        searchPlaceholder="식물을 검색해 보세요"
         style={{
           borderRadius: 8,
           borderWidth: 1,
@@ -189,10 +198,7 @@ export default function PlantRegistration(): JSX.Element {
         textStyle={{
           fontSize: 14,
           color: "#333",
-        }}
-        placeholderStyle={{
-          fontSize: 14,
-          color: "#aaa",
+          fontFamily: "Pretendard-Light",
         }}
         searchTextInputStyle={{
           height: 38,
@@ -203,42 +209,52 @@ export default function PlantRegistration(): JSX.Element {
           paddingHorizontal: 10,
           marginBottom: 6,
         }}
-        listItemLabelStyle={{
-          fontSize: 13,
-          color: "#333",
-        }}
-        listItemContainerStyle={{
-          height: 40,
-        }}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="식물 별명"
-        value={plantNickname}
-        onChangeText={setPlantNickname}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="물주기"
-        value={wateringFrequency}
-        onChangeText={setWateringFrequency}
-      />
+      <View>
+        <View style={styles.labelRow}>
+          <Pot style={styles.labelIcon} />
+          <Text style={styles.label}>식물 별명</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={plantNickname}
+          onChangeText={setPlantNickname}
+          placeholder="식물 별명을 작성해주세요"
+        />
+      </View>
 
-      <TouchableOpacity
-        style={styles.fertilizerButton}
-        onPress={() => setUseFertilizer((prev) => !prev)}
-      >
-        <Text style={styles.fertilizerButtonText}>
-          {useFertilizer ? "영양제 사용 안함" : "영양제 추천 받을래요"}
-        </Text>
-      </TouchableOpacity>
+      <View>
+        <View style={styles.labelRow}>
+          <Pot style={styles.labelIcon} />
+          <Text style={styles.label}>물 주는 주기</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="물주기"
+          value={wateringFrequency}
+          onChangeText={setWateringFrequency}
+        />
+      </View>
+      <View style={styles.toggleContainer}>
+        <Text style={styles.toggleLabel}>영양제 추천 받을래요</Text>
+        <Switch
+          value={useFertilizer}
+          onValueChange={setUseFertilizer}
+          trackColor={{ false: "#ccc", true: "#00D282" }}
+          thumbColor={useFertilizer ? "#ffffff" : "#f4f3f4"}
+        />
+      </View>
 
-      <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-        <Text style={styles.photoButtonText}>사진 등록 (선택)</Text>
-      </TouchableOpacity>
-
-      {photoUri && (
+      {!photoUri ? (
+        <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+          <Image
+            source={icons.PictureIcon}
+            style={{ width: 20, height: 20, marginRight: 6 }}
+          />
+          <Text style={styles.photoButtonText}>사진 등록 (선택)</Text>
+        </TouchableOpacity>
+      ) : (
         <Image source={{ uri: photoUri }} style={styles.previewImage} />
       )}
 
@@ -250,21 +266,38 @@ export default function PlantRegistration(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 6,
+  },
+  labelIcon: {
+    width: 15,
+    height: 15,
+  },
+  label: {
+    fontSize: 16,
+    fontFamily: "Pretendard-SemiBold",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
   contentContainer: {
     padding: 16,
-    paddingBottom: 32, // 스크롤 시 등록하기 버튼이 가려지지 않도록 여유 공간 확보
+    paddingBottom: 32,
   },
   header: {
-    fontFamily: "Pretendard-Bold",
-    fontSize: 25,
+    fontFamily: "Pretendard-Medium",
+    fontSize: 20,
     marginBottom: 16,
-    marginTop: 30,
     textAlign: "center",
   },
   input: {
@@ -275,62 +308,76 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     width: scaleWidth(350),
     height: 45,
+    fontFamily: "Pretendard-Light",
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  recommendButton: {
-    backgroundColor: "#6FA46F",
-    padding: 12,
-    borderRadius: 4,
+
+  toggleContainer: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    width: scaleWidth(350),
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
     marginBottom: 12,
+    marginTop: 20,
   },
-  recommendButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  fertilizerButton: {
-    backgroundColor: "#FF8C00",
-    padding: 12,
-    borderRadius: 4,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  fertilizerButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+  toggleLabel: {
+    fontFamily: "Pretendard-Light",
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "500",
   },
   photoButton: {
-    backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: 4,
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    justifyContent: "center",
+    backgroundColor: "#4A90E2",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginTop: 20,
   },
   photoButtonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: "Pretendard-Medium",
   },
+
   previewImage: {
-    width: 200,
-    height: 200,
+    width: 160,
+    height: 160,
+    marginTop: 7,
     marginBottom: 16,
+    borderRadius: 10,
     alignSelf: "center",
   },
   button: {
-    backgroundColor: "#6FA46F",
-    padding: 16,
-    borderRadius: 4,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#00D282",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
+    fontFamily: "Pretendard-Medium",
   },
 });

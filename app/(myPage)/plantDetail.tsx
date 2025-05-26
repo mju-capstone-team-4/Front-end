@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, Dimensions, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  Dimensions,
+  Image,
+  ScrollView,
+} from "react-native";
 import { Calendar } from "react-native-calendars";
 import { getMyPlantCalendar } from "@/service/getMyPlantCalendar";
 import { useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import Back2 from "@/assets/images/back2.svg";
-import Back3 from "@/assets/images/back3.svg";
+import PlantIcon from "@/assets/images/plant.svg";
+import Fertilizer from "@/assets/images/fertilizer.svg";
+import Water from "@/assets/images/water.svg";
+import Pot from "@/assets/images/pot.svg";
+import { rgbaColor } from "react-native-reanimated/lib/typescript/Colors";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -16,10 +25,14 @@ const BASE_HEIGHT = 896;
 // 스케일 함수 -> 추후 반응형으로 변경
 const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
+const today = new Date().toISOString().split("T")[0];
 
 export default function PlantDetail() {
-  const { id, description, photoUri } = useLocalSearchParams();
-  const [markedDates, setMarkedDates] = useState<any>({});
+  const { id, description, image } = useLocalSearchParams();
+  const [wateringDates, setWateringDates] = useState<string[]>([]);
+  const [fertilizingDates, setFertilizingDates] = useState<string[]>([]);
+  const [repottingDates, setRepottingDates] = useState<string[]>([]);
+
   const [nextWateringDate, setNextWateringDate] = useState<string | null>(null);
   const [nextFertilizingDate, setNextFertilizingDate] = useState<string | null>(
     null
@@ -27,6 +40,7 @@ export default function PlantDetail() {
   const [nextRepottingDate, setNextRepottingDate] = useState<string | null>(
     null
   );
+  const [currentDate, setCurrentDate] = useState<string>(today);
   const getNearestFutureDate = (dates: string[]): string | null => {
     const today = new Date();
     const futureDates = dates
@@ -37,12 +51,27 @@ export default function PlantDetail() {
     if (futureDates.length === 0) return null;
 
     const nextDate = futureDates[0];
-    const formatted = nextDate.toISOString().split("T")[0];
     const diffInDays = Math.ceil(
       (nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    return `${formatted} (D-${diffInDays})`;
+    return `${diffInDays}일 뒤`;
+  };
+  const getWeekCount = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Sun) ~ 6 (Sat)
+    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const totalCells = firstDayOfMonth + totalDaysInMonth;
+    return Math.ceil(totalCells / 7); // 필요한 주 수
+  };
+  const getCalendarHeight = (weekCount: number) => {
+    const rowHeight = scaleHeight(91); // 각 주차당 높이
+    const headerHeight = scaleHeight(70); // 월, 요일, 패딩 포함
+    return rowHeight * weekCount + headerHeight;
   };
 
   useEffect(() => {
@@ -50,41 +79,17 @@ export default function PlantDetail() {
       try {
         console.log("id :", id);
         console.log("des :", description);
-        console.log("photoUri :", photoUri);
+        console.log("image :", image);
 
         const data = await getMyPlantCalendar(Number(id));
+
+        setWateringDates(data.wateringDates);
+        setFertilizingDates(data.fertilizingDates);
+        setRepottingDates(data.repottingDates);
 
         setNextWateringDate(getNearestFutureDate(data.wateringDates));
         setNextFertilizingDate(getNearestFutureDate(data.fertilizingDates));
         setNextRepottingDate(getNearestFutureDate(data.repottingDates));
-
-        const marks: any = {};
-
-        data.wateringDates.forEach((date: string) => {
-          if (!marks[date]) {
-            marks[date] = {
-              marked: true,
-              dots: [{ color: "#00D282", key: "watering" }],
-              markingType: "multi-dot",
-            };
-          } else {
-            marks[date].dots.push({ color: "#00D282", key: "watering" });
-          }
-        });
-
-        data.repottingDates.forEach((date: string) => {
-          if (!marks[date]) {
-            marks[date] = {
-              marked: true,
-              dots: [{ color: "#FFA500", key: "repotting" }],
-              markingType: "multi-dot",
-            };
-          } else {
-            marks[date].dots.push({ color: "#FFA500", key: "repotting" });
-          }
-        });
-
-        setMarkedDates(marks);
       } catch (error) {
         console.error("달력 불러오기 실패", error);
       }
@@ -94,77 +99,135 @@ export default function PlantDetail() {
   }, [id]);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={["#00D282", "#FDDB83"]}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.rectangle}
-      >
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
         <View style={styles.circle}>
+          <Image
+            source={require("@/assets/images/flower.png")}
+            style={{ width: 50, height: 50 }}
+          />
           <Text style={styles.description}>{description}</Text>
+          <Image
+            source={require("@/assets/images/flower.png")}
+            style={{ width: 50, height: 50 }}
+          />
         </View>
-        <Back2 style={styles.back2} />
 
-        <Back3 style={styles.back3} />
-      </LinearGradient>
-      {photoUri && (
-        <Image
-          source={{ uri: String(photoUri) }}
-          style={{ width: 200, height: 200, borderRadius: 12, marginTop: 16 }}
+        {image && (
+          <Image
+            source={{ uri: String(image) }}
+            style={{ width: 200, height: 200, borderRadius: 12, marginTop: 16 }}
+          />
+        )}
+
+        <Calendar
+          current={currentDate}
+          onMonthChange={(date) => {
+            setCurrentDate(date.dateString);
+          }}
+          style={{
+            width: scaleWidth(380),
+            height: getCalendarHeight(getWeekCount(currentDate)), // 동적 높이 적용
+            borderRadius: 25,
+            paddingTop: 10,
+          }}
+          theme={{
+            arrowColor: "#00D282",
+          }}
+          dayComponent={({ date, state }) => {
+            if (!date) return null;
+            const dateStr = date.dateString;
+            const isToday = dateStr === today;
+            const isWatering = wateringDates.includes(dateStr);
+            const isFertilizing = fertilizingDates.includes(dateStr);
+            const isRepotting = repottingDates.includes(dateStr);
+
+            return (
+              <View style={{ alignItems: "center", height: scaleHeight(60) }}>
+                <Text
+                  style={{
+                    color: isToday
+                      ? "#00D282"
+                      : state === "disabled"
+                      ? "#ccc"
+                      : "#000",
+                    fontWeight: isToday ? "bold" : "normal",
+                  }}
+                >
+                  {date.day}
+                </Text>
+                <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
+                  {isWatering && <Water width={18} height={18} />}
+                  {isFertilizing && <Fertilizer width={18} height={18} />}
+                  {isRepotting && <PlantIcon width={18} height={18} />}
+                </View>
+              </View>
+            );
+          }}
+          renderHeader={(date) => {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            return (
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+              >
+                {year}년 {month}월
+              </Text>
+            );
+          }}
         />
-      )}
 
-      <Calendar
-        style={{
-          width: scaleWidth(380),
-          borderRadius: 20,
-        }}
-        markedDates={markedDates}
-        markingType="multi-dot"
-        renderHeader={(date) => {
-          const year = date.getFullYear();
-          const month = date.getMonth() + 1;
-          return (
-            <Text>
-              {year}년 {month}월
-            </Text>
-          );
-        }}
-      />
-      <View style={styles.imageBox}>
-        <View style={styles.row}>
-          <Image
-            source={require("@/assets/images/watering-can.jpg")}
-            style={styles.watering}
-          />
+        <View style={styles.imageBox}>
+          <View style={styles.row}>
+            <View style={styles.left}>
+              <Water width={30} height={30} />
+              <Text style={styles.MainText}>물주기</Text>
+            </View>
+            <View style={styles.minicircle}>
+              <Text style={styles.Text}>{nextWateringDate ?? "정보 없음"}</Text>
+            </View>
+          </View>
 
-          <Text style={styles.Text}>{nextWateringDate ?? "정보 없음"}</Text>
-        </View>
-        <View style={styles.row}>
-          <Image
-            source={require("@/assets/images/pill.png")}
-            style={styles.pill}
-          />
-          <Text style={styles.Text}>{nextFertilizingDate ?? "정보 없음"}</Text>
-        </View>
-        <View style={styles.row}>
-          <Image
-            source={require("@/assets/images/plant-pot.png")}
-            style={styles.pot}
-          />
-          <Text style={styles.Text}>{nextRepottingDate ?? "정보 없음"}</Text>
+          <View style={styles.row}>
+            <View style={styles.left}>
+              <Fertilizer width={30} height={30} />
+              <Text style={styles.MainText}>영양제</Text>
+            </View>
+            <View style={styles.minicircle}>
+              <Text style={styles.Text}>
+                {nextFertilizingDate ?? "정보 없음"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.left}>
+              <PlantIcon width={30} height={30} />
+              <Text style={styles.MainText}>분갈이</Text>
+            </View>
+            <View style={styles.minicircle}>
+              <Text style={styles.Text}>
+                {nextRepottingDate ?? "정보 없음"}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContainer: {
+    paddingHorizontal: 20,
     alignItems: "center",
-    backgroundColor: "white",
+  },
+
+  container: {
+    alignItems: "center",
   },
   rectangle: {
     width: scaleWidth(785),
@@ -175,59 +238,58 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   circle: {
-    width: 171,
-    height: 51,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    flexDirection: "row",
     borderRadius: 30,
+    marginBottom: 10,
     boxSizing: "border-box",
     marginTop: 30,
-    marginBottom: 30,
     alignItems: "center",
     justifyContent: "center",
+    gap: 5,
+  },
+  minicircle: {
+    // width: 60,
+    // height: 35,
+    // borderRadius: 10,
+    // alignItems: "center",
+    // justifyContent: "center",
+    // backgroundColor: "#00D282",
   },
   description: {
-    color: "white",
-    fontFamily: "Pretendard-Bold",
+    color: "black",
+    fontFamily: "Pretendard-Light",
     fontSize: 20,
   },
-  watering: {
-    width: 35,
-    height: 35,
-  },
-  pill: {
-    width: 35,
-    height: 35,
-  },
-  pot: {
-    width: 35,
-    height: 35,
-  },
+
   imageBox: {
-    alignItems: "center",
-    alignSelf: "flex-start", // ✅ 왼쪽 정렬
-    paddingHorizontal: 30, // 좌우 여백 (선택)
-    gap: 10, // 이미지 사이 간격 (React Native >= 0.71에서 지원)
+    width: scaleWidth(380),
+    paddingHorizontal: 10, // 좌우 여백 (선택)
+    gap: 10,
     marginTop: 20,
   },
-  Text: {
+  MainText: {
     marginLeft: 10,
     fontSize: 16,
-    fontFamily: "Pretendard-Regular",
+    fontFamily: "Pretendard-Medium",
+  },
+  Text: {
+    fontSize: 16,
+    fontFamily: "Pretendard-Light",
+    color: "#3c3a3f",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    marginBottom: 10,
+    marginBottom: 7,
+    justifyContent: "space-between",
+    width: "100%",
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
   },
-  back2: {
-    position: "absolute",
-    left: scaleWidth(220),
-  },
-  back3: {
-    position: "absolute",
-    right: scaleWidth(200),
-    top: 35,
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
