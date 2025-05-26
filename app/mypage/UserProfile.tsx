@@ -16,6 +16,7 @@ import { getMypage } from "@/service/getMypage";
 import { postMyProfile } from "@/service/postMyProfile";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useFocusEffect } from "@react-navigation/native";
+import PlantyLogo from "@/assets/images/plantylogo.svg";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const BASE_WIDTH = 414;
@@ -131,15 +132,17 @@ export default function UserProfile() {
       <View style={styles.profileWrapper}>
         <View style={styles.profileBorder}>
           <TouchableOpacity onPress={pickImage}>
-            <Image
-              source={
-                user.profileUrl && user.profileUrl.trim() !== ""
-                  ? { uri: user.profileUrl }
-                  : require("@/assets/images/flower.png")
-              }
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
+            {user.profileUrl && user.profileUrl.trim() !== "" ? (
+              <Image
+                source={{ uri: user.profileUrl }}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.profileImage}>
+                <PlantyLogo width={scaleWidth(100)} height={scaleWidth(100)} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>

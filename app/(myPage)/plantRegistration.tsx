@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Switch,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -19,7 +20,14 @@ import { getPlantName } from "@/service/getPlantName";
 import DropDownPicker from "react-native-dropdown-picker";
 import { postPlantCycle } from "@/service/postPlantCycle";
 import * as ImageManipulator from "expo-image-manipulator";
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 export default function PlantRegistration(): JSX.Element {
   const router = useRouter();
 
@@ -141,7 +149,7 @@ export default function PlantRegistration(): JSX.Element {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>식물 등록</Text>
+      <Text style={styles.header}>나의 식물 등록</Text>
       <DropDownPicker
         open={open}
         setOpen={setOpen}
@@ -158,7 +166,50 @@ export default function PlantRegistration(): JSX.Element {
           onChangeText: (text) => setPlantNameSearch(text),
           value: plantNameSearch,
         }}
-        placeholder="식물 이름을 검색하거나 선택하세요"
+        placeholder="식물 이름"
+        style={{
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: "#ccc",
+          height: 45,
+          width: scaleWidth(350),
+          marginBottom: 20,
+          paddingHorizontal: 12,
+          backgroundColor: "#F8F8F8",
+          alignSelf: "center",
+        }}
+        dropDownContainerStyle={{
+          borderColor: "#ccc",
+          borderRadius: 8,
+          marginHorizontal: 16,
+          backgroundColor: "#ffffff",
+          width: scaleWidth(350),
+          alignSelf: "center",
+        }}
+        textStyle={{
+          fontSize: 14,
+          color: "#333",
+        }}
+        placeholderStyle={{
+          fontSize: 14,
+          color: "#aaa",
+        }}
+        searchTextInputStyle={{
+          height: 38,
+          fontSize: 13,
+          borderColor: "#ccc",
+          borderWidth: 1,
+          borderRadius: 6,
+          paddingHorizontal: 10,
+          marginBottom: 6,
+        }}
+        listItemLabelStyle={{
+          fontSize: 13,
+          color: "#333",
+        }}
+        listItemContainerStyle={{
+          height: 40,
+        }}
       />
 
       <TextInput
@@ -202,23 +253,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
   },
   contentContainer: {
     padding: 16,
     paddingBottom: 32, // 스크롤 시 등록하기 버튼이 가려지지 않도록 여유 공간 확보
   },
   header: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Pretendard-Bold",
+    fontSize: 25,
     marginBottom: 16,
+    marginTop: 30,
     textAlign: "center",
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 4,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 12,
+    width: scaleWidth(350),
+    height: 45,
   },
   label: {
     fontSize: 16,
