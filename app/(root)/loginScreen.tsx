@@ -149,7 +149,7 @@ export default function LoginScreen() {
           onPress={async () => {
             await AsyncStorage.removeItem("accessToken");
 
-            const token = await getToken("test1@example.com");
+            const token = await getToken("test1@gmail.com");
             await AsyncStorage.setItem("accessToken", token);
             console.log("새로 저장됨");
             router.replace("/(tabs)/board");
