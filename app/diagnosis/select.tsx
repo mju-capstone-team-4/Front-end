@@ -25,6 +25,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import Back from "@/assets/images/back.svg";
 import Camera from "@/assets/images/largecamera.svg";
 import Pot from "@/assets/images/pot.svg";
+import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -50,17 +52,7 @@ export default function DiagnosisSelectScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const allowedPlants = [
-    "딸기",
-    "토마토",
-    "포도",
-    "호박",
-    "오이",
-    "상추",
-    "고추",
-    "감자",
-    "파프리카",
-  ]; // 진단 가능 식물 목록
+
   const isFromMyPlant = !!selectedPlantName;
   const [plantName, setPlantName] = useState<string | null>(
     isFromMyPlant ? selectedPlantName : null
@@ -390,6 +382,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   scrollContent: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
