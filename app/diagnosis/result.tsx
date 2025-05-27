@@ -48,7 +48,7 @@ export default function DiagnosisResultScreen() {
   const cleanedEnvironment = parsedEnvironment ? removePlantPrefix(parsedEnvironment) : '';
   const cleanedNutrition = parsedNutrition ? removePlantPrefix(parsedNutrition) : '';
 
-  // const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크  // 진단 실패 주석처리(isMismatch)
+  const isMismatch = plantName && predictedPlant && plantName !== predictedPlant; // 식물 이름 체크  // 진단 실패 주석처리(isMismatch)
   //const headerTitle = isMismatch ? '식물 진단 결과' : plantName ? `${plantName} 진단 결과` : '식물 진단 결과'; // 진단 실패 주석처리(isMismatch)
   const headerTitle = plantName ? `${predictedPlant} 진단 결과` : '식물 진단 결과';
 
@@ -133,11 +133,19 @@ export default function DiagnosisResultScreen() {
                   <View style={styles.labelContainer}>
                     <Text style={styles.statusText}>정확도</Text>
                     <Text style={styles.percentText}>{finalPercentage}%</Text>
+                    {isMismatch ? (
+                      <Text style={styles.discrepancyText}>사진과 식물명이 일치하지 않습니다</Text>
+                    ) : (
+                      <Text></Text>
+                    )}
                   </View>
                 )}
               </AnimatedCircularProgress>
+
               <Text style={styles.labelText}>진단명</Text>
+
               <Text style={styles.diagnosisText}>{finalResultText}</Text>
+
             </View>
 
             <View style={styles.imageBox}>
@@ -290,14 +298,21 @@ const styles = StyleSheet.create({
     color: '#9E9E9E',
     fontFamily: 'Pretendard-Medium',
   },
+  discrepancyText: {
+    fontSize: 12,
+    color: '#ff0000',
+    fontFamily: 'Pretendard-Medium',
+    textAlign: 'center',
+  },
   percentText: {
     fontSize: 24,
     color: '#00D282',
     fontFamily: 'Pretendard-SemiBold',
+
   },
   labelText: {
     fontSize: 14,
-    marginTop: -70,
+    marginTop: -50,
     color: '#363636',
     fontFamily: 'Pretendard-SemiBold',
   },
