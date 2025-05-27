@@ -1,43 +1,61 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
-import PlantyLogo from '../../assets/images/plantylogo.svg';
+import React, { useEffect, useRef } from "react";
+import {
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Animated,
+  Easing,
+} from "react-native";
+import Back1 from "@/assets/images/back1.svg";
+import Back2 from "@/assets/images/back2.svg";
+import Back3 from "@/assets/images/back3.svg";
 
-const { width, height } = Dimensions.get('window');
+import { LinearGradient } from "expo-linear-gradient";
+
+const { width, height } = Dimensions.get("window");
 
 export default function LoadingSplash() {
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
-        duration: 1500,
-        easing: Easing.linear,
+        duration: 6000,
         useNativeDriver: true,
-      })
+        easing: Easing.linear,
+      }),
+      { resetBeforeIteration: true }
     ).start();
   }, [rotateAnim]);
 
-  const spin = rotateAnim.interpolate({
+  const rotateInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
-
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/images/background.png')}
-        style={styles.splashImage}
-        resizeMode="cover"
-      />
-      <View style={styles.centeredContainer}>
-        <View style={styles.Circle}>
-          <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <PlantyLogo width={150} height={150} />
-          </Animated.View>
-        </View>
-      </View>
-    </View>
+    <LinearGradient
+      colors={["#00D282", "#FDDB83"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <Back1 style={styles.back1} />
+      <Back2 style={styles.back2} />
+      <Back3 style={styles.back3} />
+      <Text style={styles.title}>Planty</Text>
+
+      <Animated.View
+        style={[styles.circle, { transform: [{ rotate: rotateInterpolate }] }]}
+      >
+        <Image
+          source={require("@/assets/images/flower.png")}
+          style={{ width: 300, height: 300 }}
+        />
+      </Animated.View>
+    </LinearGradient>
   );
 }
 
@@ -45,40 +63,43 @@ const CIRCLE_SIZE = 180;
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    zIndex: 9999,
-    elevation: 9999,
-  },
-  splashImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  centeredContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
-  Circle: {
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    borderRadius: CIRCLE_SIZE / 2,
-    backgroundColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+  title: { fontSize: 50, fontFamily: "Dunkin", color: "#fff", marginTop: 142 },
+  subtitle: {
+    fontFamily: "Pretendard-Medium",
+    color: "white",
+    fontSize: 24,
+    marginTop: 10,
   },
-}); 
+  circle: {
+    width: 300,
+    height: 300,
+    borderRadius: 300,
+  },
+  logo: {
+    position: "absolute",
+    top: height / 1.7,
+    shadowColor: "rgba(18, 107, 73, 0.27)",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6.6,
+  },
+  back1: {
+    position: "absolute",
+    top: 0,
+    left: width / 15,
+  },
+  back2: {
+    position: "absolute",
+    top: height / 3.5,
+    right: width / 20,
+  },
+  back3: {
+    position: "absolute",
+    top: height / 2.1,
+    left: width / 8,
+  },
+});

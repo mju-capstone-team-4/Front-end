@@ -4,7 +4,7 @@ import apiClient from "./apiClient";
 interface PostMyplantParams {
   name: string;
   description: string;
-  plantId: number;
+  plantPilbkNo: number;
   recommendTonic: boolean;
   image?: {
     uri: string;
@@ -16,7 +16,7 @@ interface PostMyplantParams {
 export async function postMyplant({
   name,
   description,
-  plantId,
+  plantPilbkNo,
   recommendTonic,
   image,
 }: PostMyplantParams) {
@@ -26,14 +26,14 @@ export async function postMyplant({
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
-    formData.append("plantId", plantId.toString());
+    formData.append("plantPilbkNo", plantPilbkNo.toString());
     formData.append("recommendTonic", recommendTonic.toString());
 
     if (image) {
       formData.append("file", {
         uri: image.uri, // e.g. file:///...
-        name: image.fileName,
-        type: image.type,
+        name: image.fileName || "image.jpg",
+        type: image.type || "image/jpeg",
       } as any); // Expo에서는 Blob/File 대신 any로 강제 형변환
     }
 

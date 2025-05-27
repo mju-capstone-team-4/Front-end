@@ -21,12 +21,14 @@ const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 export default function EncyclopediaCard({
   imageUrl,
   name,
-  plantPilbkNo, // 🔸 추가
+  plantPilbkNo,
 }: {
   imageUrl: string;
   name: string;
-  plantPilbkNo: number; // 🔸 추가
+  plantPilbkNo: number;
 }) {
+  console.log("📷", imageUrl, name, plantPilbkNo);
+
   return (
     <TouchableOpacity
       onPress={() =>
@@ -36,7 +38,21 @@ export default function EncyclopediaCard({
     >
       <Image source={{ uri: imageUrl }} style={styles.image} />
       <Text style={styles.name}>{name}</Text>
-      <Plus style={{ marginTop: 10 }} />
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/(myPage)/plantRegistration",
+            params: {
+              plantPilbkNo,
+              name,
+              sampleImageUrl: imageUrl,
+            },
+          })
+        }
+        style={{ marginTop: 10 }}
+      >
+        <Plus />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }

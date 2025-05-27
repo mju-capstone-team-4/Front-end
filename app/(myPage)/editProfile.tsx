@@ -32,7 +32,7 @@ export default function EditProfile() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>프로필 수정</Text>
+      <Text style={styles.title}>프로필 이름 수정</Text>
 
       <TextInput
         style={styles.input}
@@ -54,14 +54,16 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     justifyContent: "center",
+    alignItems: "center",
   },
   title: {
+    fontFamily: "Pretendard-Bold",
     fontSize: 20,
     marginBottom: 20,
     textAlign: "center",
-    fontWeight: "bold",
   },
   input: {
+    width: 250,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 6,
@@ -69,6 +71,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
+    width: 100,
     backgroundColor: "#00D282",
     padding: 14,
     borderRadius: 6,
@@ -76,6 +79,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontFamily: "Pretendard-Bold",
+    fontSize: 16,
   },
 });
