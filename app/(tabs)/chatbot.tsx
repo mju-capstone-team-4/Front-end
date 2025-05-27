@@ -14,6 +14,15 @@ import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-cont
 const screenWidth = Dimensions.get('window').width;
 const cardMargin = 12;
 const cardWidth = (screenWidth - cardMargin * 3) / 2;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function ChatbotScreen() {
   const [users, setUsers] = useState<any[]>([]);
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    height: 80,
+    height: scaleHeight(90),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',

@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, Image, BackHandler, SafeAreaView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { 
+  View, Text, ScrollView, TextInput, TouchableOpacity, 
+  StyleSheet, Image, BackHandler, KeyboardAvoidingView, 
+  Platform, Keyboard, Dimensions, } from 'react-native';
 import axios from 'axios';
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,6 +15,15 @@ import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-cont
 import { Ionicons } from '@expo/vector-icons';
 
 const SERVER_URL = 'ws://15.164.198.69:8080';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 type Props = {
   roomId: string;
@@ -342,11 +354,8 @@ const styles = StyleSheet.create({
     padding: 12
   },
   header: {
-    height: 80,
+    height: scaleHeight(90),
     flexDirection: 'row',
-    //paddingTop: (Constants.statusBarHeight || 0) - 10,
-    //paddingBottom: 20,
-    //paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'flex-start',
     position: 'relative',

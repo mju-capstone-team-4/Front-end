@@ -1,13 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, ScrollView, TouchableOpacity,
-  StyleSheet, Platform, KeyboardAvoidingView, Image
+  StyleSheet, Platform, KeyboardAvoidingView, Image, Dimensions,
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function AiChat() {
   const [messages, setMessages] = useState<{ from: 'user' | 'ai'; text: string }[]>([]);
@@ -118,7 +128,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    height: 80,
+    height: scaleHeight(90),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
