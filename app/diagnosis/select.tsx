@@ -90,6 +90,7 @@ export default function DiagnosisSelectScreen() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 1,
+      base64: false,
     });
 
     if (!result.canceled) {
@@ -109,15 +110,30 @@ export default function DiagnosisSelectScreen() {
     image: string;
     result: string;
     confidence: number;
+    originalResult: string;
+    originalConfidence: number;
   }) => {
     try {
+      const token = await AsyncStorage.getItem("accessToken");
+      const userRes = await fetch(`${API_BASE}/mypage/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const currentUser = await userRes.json();
+      const currentEmail = currentUser.email;
+
       const existing = await AsyncStorage.getItem("diagnosisHistory");
       const parsed = existing ? JSON.parse(existing) : [];
+
       const updated = [
         ...parsed,
         {
-          ...item,
-          createdAt: new Date().toISOString(), // 진단 시각 추가
+          result: item.result,
+          confidence: item.confidence,
+          image: item.image,
+          createdAt: new Date().toISOString(),
+          originalResult: item.originalResult,
+          originalConfidence: item.originalConfidence,
+          userEmail: currentEmail, // 사용자 구분
         },
       ];
       await AsyncStorage.setItem("diagnosisHistory", JSON.stringify(updated));
@@ -144,6 +160,11 @@ export default function DiagnosisSelectScreen() {
     const fileName = image.split("/").pop(); // 이미지 이름 추출
     const fileType = fileName?.split(".").pop() || "jpg"; // 이미지 타입 추출
 
+    const token = await AsyncStorage.getItem("accessToken");
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
     const formData = new FormData();
     formData.append("file", {
       uri: image, // 이미지 파일 경로
@@ -158,10 +179,31 @@ export default function DiagnosisSelectScreen() {
       const response = await fetch(`${API_BASE}/disease/predict`, {
         //백엔드 ip
         method: "POST",
+        headers,
         body: formData,
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(response.status, errorText); // 에러 체크
+        return;
+      }
+
       const result = await response.json();
+
+      const predictedPlant = result.result.includes("_")
+        ? result.result.split("_")[0]
+        : null;
+      const isMismatch =
+        plantName && predictedPlant && plantName !== predictedPlant;
+
+      console.log("📦 백엔드 응답 결과:");
+      console.log("🧪 진단 결과:", result.result);
+      console.log("📊 정확도:", result.confidence);
+      console.log("💬 질병 정보:", result.diseaseInfo);
+      console.log("💧 수분 관리:", result.watering);
+      console.log("🌿 환경 관리:", result.environment);
+      console.log("🍽️ 영양 관리:", result.nutrition);
 
       // 최소 로딩 시간 계산
       const elapsedTime = Date.now() - startTime;
@@ -176,17 +218,23 @@ export default function DiagnosisSelectScreen() {
 
       await saveToHistory({
         image,
-        result: result.result,
-        confidence: result.confidence,
+        result: isMismatch ? "진단 실패" : result.result,
+        confidence: isMismatch ? 0 : result.confidence,
+        originalResult: result.result,
+        originalConfidence: result.confidence,
       });
 
       router.push({
         pathname: "/diagnosis/result",
         params: {
-          image: image, // 식물 이미지
-          result: result.result, // 식물의 진단명
-          confidence: result.confidence, // 병명 정확도
-          //image: result.image_url // 이미지 url
+          image,
+          result: result.result,
+          confidence: result.confidence,
+          diseaseInfo: result.diseaseInfo,
+          watering: result.watering,
+          environment: result.environment,
+          nutrition: result.nutrition,
+          plantName: plantName,
         },
       });
     } catch (error) {
@@ -343,7 +391,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 20,
     paddingBottom: 40,
     alignItems: "center",
     backgroundColor: "white",
@@ -406,6 +454,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 16,
+    fontFamily: "Pretendard-ExtraBold",
   },
   disabledButton: {
     backgroundColor: "#999",
@@ -460,6 +509,7 @@ const pickerSelectStyles = {
     color: "#363636",
     backgroundColor: "#fff",
     paddingRight: 30, // to ensure the text is never behind the icon
+    fontFamily: "Pretendard-Medium",
   },
   inputAndroid: {
     fontSize: 16,
@@ -471,6 +521,7 @@ const pickerSelectStyles = {
     color: "#363636",
     backgroundColor: "#fff",
     paddingRight: 30,
+    fontFamily: "Pretendard-Medium",
   },
   iconContainer: {
     top: 15,

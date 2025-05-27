@@ -59,6 +59,8 @@ export default function LoadingSplash() {
   );
 }
 
+const CIRCLE_SIZE = 180;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
