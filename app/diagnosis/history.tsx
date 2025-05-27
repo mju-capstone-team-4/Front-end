@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, Image, ScrollView,
+  View, Text, StyleSheet, Image, ScrollView, Dimensions,
   TouchableOpacity, Alert, ActivityIndicator, Modal
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,6 +11,15 @@ import Constants from 'expo-constants';
 
 const API_BASE = Constants.expoConfig?.extra?.API_URL;
 const DEFAULT_IMAGE = require('../../assets/images/appicon.png');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 type DiagnosisHistoryItem = {
   result: string;
@@ -220,7 +229,7 @@ export default function DiagnosisHistoryScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    height: 70,
+    height: scaleHeight(90),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',

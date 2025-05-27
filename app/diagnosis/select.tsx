@@ -26,6 +26,7 @@ import Back from "@/assets/images/back.svg";
 import Camera from "@/assets/images/largecamera.svg";
 import Pot from "@/assets/images/pot.svg";
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
+import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -242,107 +243,104 @@ export default function DiagnosisSelectScreen() {
 
   return (
     <>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-      >
-        <LinearGradient
-          colors={["#00D282", "#FDDB83"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 3 }}
-          style={styles.header}
+      <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Back style={{ marginTop: 10 }} />
-          </TouchableOpacity>
-          <View style={styles.circle}>
-            <Text style={styles.headerTitle}>
-              {isFromMyPlant && plantName ? `${plantName} 진단` : "식물 진단"}
-            </Text>
-          </View>
-        </LinearGradient>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.mainText}>
-            사진으로 식물의{"\n"}상태를 진단해보세요
-          </Text>
-
-          <TouchableOpacity onPress={handleImageSelect}>
-            {image ? (
-              <Image
-                source={{ uri: image }}
-                style={styles.imageBox}
-                resizeMode="cover"
-              />
-            ) : (
-              <LinearGradient
-                colors={["#00D282", "#FDDB83"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.imageBox}
-              >
-                <Camera />
-              </LinearGradient>
-            )}
-          </TouchableOpacity>
-
-          {!isFromMyPlant && (
-            <View style={styles.dropdownContainer}>
-              <View style={styles.plant}>
-                <Pot />
-                <Text style={styles.dropdownLabel}>식물 선택</Text>
-              </View>
-              <RNPickerSelect
-                onValueChange={(value) => setPlantName(value)}
-                placeholder={{ label: "식물을 선택하세요", value: null }}
-                value={plantName}
-                items={allowedPlants.map((name) => ({
-                  label: name,
-                  value: name,
-                }))}
-                style={pickerSelectStyles}
-                useNativeAndroidPickerStyle={false}
-                Icon={() => (
-                  <Ionicons name="chevron-down" size={20} color="#555" />
-                )}
-              />
-            </View>
-          )}
-          <View style={styles.section}>
-            <View style={styles.sectionTitleContainer}>
-              <Pot />
-              <Text style={styles.sectionTitle}>부가 설명</Text>
-            </View>
-
-            <TextInput
-              style={styles.input}
-              placeholder="작성 시 진단 정확도가 올라갑니다"
-              placeholderTextColor="#9E9E9E"
-              multiline
-              value={description}
-              onChangeText={setDescription}
+          <View style={styles.header}>
+            <Image
+              source={require('../../assets/images/header.png')}
+              style={styles.headerImage}
+              resizeMode="cover"
             />
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <View style={styles.titleContainer}>
+              <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+            </View>
           </View>
-
-          <TouchableOpacity
-            style={[styles.submitButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
           >
-            {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>진단하기</Text>
+            <Text style={styles.mainText}>
+              사진으로 식물의{"\n"}상태를 진단해보세요
+            </Text>
+
+            <TouchableOpacity onPress={handleImageSelect}>
+              {image ? (
+                <Image
+                  source={{ uri: image }}
+                  style={styles.imageBox}
+                  resizeMode="cover"
+                />
+              ) : (
+                <LinearGradient
+                  colors={["#00D282", "#FDDB83"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.imageBox}
+                >
+                  <Camera />
+                </LinearGradient>
+              )}
+            </TouchableOpacity>
+
+            {!isFromMyPlant && (
+              <View style={styles.dropdownContainer}>
+                <View style={styles.plant}>
+                  <Pot />
+                  <Text style={styles.dropdownLabel}>식물 선택</Text>
+                </View>
+                <RNPickerSelect
+                  onValueChange={(value) => setPlantName(value)}
+                  placeholder={{ label: "식물을 선택하세요", value: null }}
+                  value={plantName}
+                  items={allowedPlants.map((name) => ({
+                    label: name,
+                    value: name,
+                  }))}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                  Icon={() => (
+                    <Ionicons name="chevron-down" size={20} color="#555" />
+                  )}
+                />
+              </View>
             )}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <View style={styles.section}>
+              <View style={styles.sectionTitleContainer}>
+                <Pot />
+                <Text style={styles.sectionTitle}>부가 설명</Text>
+              </View>
+
+              <TextInput
+                style={styles.input}
+                placeholder="작성 시 진단 정확도가 올라갑니다"
+                placeholderTextColor="#9E9E9E"
+                multiline
+                value={description}
+                onChangeText={setDescription}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.disabledButton]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>진단하기</Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaViewContext>
     </>
   );
 }
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    height: scaleHeight(110),
+    height: scaleHeight(90),
     justifyContent: "center",
   },
   backButton: {
@@ -423,7 +421,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-
+  headerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  titleContainer: {
+    paddingVertical: 10,
+    paddingRight: 40,
+    paddingLeft: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
   icon: {
     width: 20,
     height: 20,

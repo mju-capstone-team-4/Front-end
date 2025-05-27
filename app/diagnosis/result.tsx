@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet, Image, BackHandler } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Image, BackHandler, Dimensions, } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'
@@ -7,6 +7,16 @@ import { useEffect, useState } from 'react';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+// 기준 사이즈
+const BASE_WIDTH = 414;
+const BASE_HEIGHT = 896;
+
+// 스케일 함수 -> 추후 반응형으로 변경
+const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
+const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function DiagnosisResultScreen() {
   const {
@@ -229,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    height: 70,
+    height: scaleHeight(90),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
