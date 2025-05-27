@@ -1,10 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, } from "react-native";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from "expo-constants";
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function DiagnosisScreen() {
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -21,9 +22,11 @@ export default function DiagnosisScreen() {
     description: string; // 식물 설명 
   };
 
-  useEffect(() => {
-    fetchMyPlants();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchMyPlants();
+    }, [])
+  );
 
   const fetchMyPlants = async () => {
     try {
@@ -83,7 +86,7 @@ export default function DiagnosisScreen() {
                   </View>
                   <View style={styles.cardTextBox}>
                     <Text style={styles.plantName}>이름: {plant.name}</Text>
-                    <Text style={styles.plantStatus}>설명: {plant.description}</Text>
+                    <Text style={styles.plantStatus}>별명: {plant.description}</Text>
                     <TouchableOpacity
                       style={isAllowed ? styles.myPlantSelectButton : styles.myPlantSelectButton2}
                       activeOpacity={0.85}
