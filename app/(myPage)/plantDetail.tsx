@@ -13,6 +13,7 @@ import { useLocalSearchParams } from "expo-router";
 import PlantIcon from "@/assets/images/plant.svg";
 import Fertilizer from "@/assets/images/fertilizer.svg";
 import Water from "@/assets/images/water.svg";
+
 import Pot from "@/assets/images/pot.svg";
 import { rgbaColor } from "react-native-reanimated/lib/typescript/Colors";
 
@@ -28,7 +29,7 @@ const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 const today = new Date().toISOString().split("T")[0];
 
 export default function PlantDetail() {
-  const { id, description, image } = useLocalSearchParams();
+  const { id, description, sampleImageUrl } = useLocalSearchParams();
   const [wateringDates, setWateringDates] = useState<string[]>([]);
   const [fertilizingDates, setFertilizingDates] = useState<string[]>([]);
   const [repottingDates, setRepottingDates] = useState<string[]>([]);
@@ -79,7 +80,7 @@ export default function PlantDetail() {
       try {
         console.log("id :", id);
         console.log("des :", description);
-        console.log("image :", image);
+        console.log("image :", sampleImageUrl);
 
         const data = await getMyPlantCalendar(Number(id));
 
@@ -112,13 +113,6 @@ export default function PlantDetail() {
             style={{ width: 50, height: 50 }}
           />
         </View>
-
-        {image && (
-          <Image
-            source={{ uri: String(image) }}
-            style={{ width: 200, height: 200, borderRadius: 12, marginTop: 16 }}
-          />
-        )}
 
         <Calendar
           current={currentDate}
@@ -156,6 +150,7 @@ export default function PlantDetail() {
                 >
                   {date.day}
                 </Text>
+
                 <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
                   {isWatering && <Water width={18} height={18} />}
                   {isFertilizing && <Fertilizer width={18} height={18} />}
@@ -179,39 +174,72 @@ export default function PlantDetail() {
             );
           }}
         />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {sampleImageUrl && (
+            <Image
+              source={require("@/assets/images/retro.png")}
+              style={{
+                position: "absolute",
+                top: -15,
+                left: 40,
+                width: 50,
+                height: 50,
+                zIndex: 2,
+              }}
+            />
+          )}
+          {sampleImageUrl && (
+            <Image
+              source={{ uri: String(sampleImageUrl) }}
+              style={styles.picture}
+            />
+          )}
+          <View
+            style={[
+              styles.imageBox,
+              !sampleImageUrl && { width: scaleWidth(380) }, // 이미지 없을 때 여백 줄이기
+            ]}
+          >
+            <View style={styles.row}>
+              <View style={styles.left}>
+                <Water width={25} height={25} />
+                <Text style={styles.MainText}>물주기</Text>
+              </View>
+              <View style={styles.minicircle}>
+                <Text style={styles.Text}>
+                  {nextWateringDate ?? "정보 없음"}
+                </Text>
+              </View>
+            </View>
 
-        <View style={styles.imageBox}>
-          <View style={styles.row}>
-            <View style={styles.left}>
-              <Water width={30} height={30} />
-              <Text style={styles.MainText}>물주기</Text>
+            <View style={styles.row}>
+              <View style={styles.left}>
+                <Fertilizer width={25} height={25} />
+                <Text style={styles.MainText}>영양제</Text>
+              </View>
+              <View style={styles.minicircle}>
+                <Text style={styles.Text}>
+                  {nextFertilizingDate ?? "정보 없음"}
+                </Text>
+              </View>
             </View>
-            <View style={styles.minicircle}>
-              <Text style={styles.Text}>{nextWateringDate ?? "정보 없음"}</Text>
-            </View>
-          </View>
 
-          <View style={styles.row}>
-            <View style={styles.left}>
-              <Fertilizer width={30} height={30} />
-              <Text style={styles.MainText}>영양제</Text>
-            </View>
-            <View style={styles.minicircle}>
-              <Text style={styles.Text}>
-                {nextFertilizingDate ?? "정보 없음"}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.left}>
-              <PlantIcon width={30} height={30} />
-              <Text style={styles.MainText}>분갈이</Text>
-            </View>
-            <View style={styles.minicircle}>
-              <Text style={styles.Text}>
-                {nextRepottingDate ?? "정보 없음"}
-              </Text>
+            <View style={styles.row}>
+              <View style={styles.left}>
+                <PlantIcon width={25} height={25} />
+                <Text style={styles.MainText}>분갈이</Text>
+              </View>
+              <View style={styles.minicircle}>
+                <Text style={styles.Text}>
+                  {nextRepottingDate ?? "정보 없음"}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -262,7 +290,7 @@ const styles = StyleSheet.create({
   },
 
   imageBox: {
-    width: scaleWidth(380),
+    width: scaleWidth(250),
     paddingHorizontal: 10, // 좌우 여백 (선택)
     gap: 10,
     marginTop: 20,
@@ -291,5 +319,10 @@ const styles = StyleSheet.create({
   left: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  picture: {
+    width: scaleWidth(150),
+    height: scaleHeight(200),
+    borderRadius: 18,
   },
 });

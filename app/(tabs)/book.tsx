@@ -23,9 +23,7 @@ export default function BookScreen() {
     <View style={styles.container}>
       <SearchBar value={keyword} onChange={setKeyword} />
       <FlatList
-        style={{
-          marginBottom: 71,
-        }}
+        style={{}}
         data={plants}
         keyExtractor={(item) => item.plantPilbkNo.toString()}
         renderItem={({ item }) => (
@@ -35,6 +33,7 @@ export default function BookScreen() {
             plantPilbkNo={item.plantPilbkNo}
           />
         )}
+        contentContainerStyle={{ paddingBottom: 80 }}
       />
     </View>
   );
@@ -45,5 +44,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: "#f0f0f0",
+    marginTop: 10,
   },
 });

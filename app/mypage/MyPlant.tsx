@@ -30,7 +30,7 @@ interface PlantData {
   name: string;
   description: string;
   wateringFrequency: string;
-  photoUri: string;
+  sampleImageUrl: string;
   useFertilizer: boolean;
   myPlantId: number;
 }
@@ -64,13 +64,13 @@ export default function MyPlant(): React.JSX.Element {
   const handlePlantPress = (
     myPlantId: number,
     description: string,
-    photoUri: string
+    sampleImageUrl: string
   ) => {
     console.log("plantId:", myPlantId.toString());
 
     router.push({
       pathname: "/plantDetail",
-      params: { id: myPlantId.toString(), description, photoUri },
+      params: { id: myPlantId.toString(), description, sampleImageUrl },
     });
   };
   // 지정한 인덱스의 식물을 삭제하는 함수
@@ -125,7 +125,7 @@ export default function MyPlant(): React.JSX.Element {
               handlePlantPress(
                 plant.myPlantId,
                 plant.description,
-                plant.photoUri
+                plant.sampleImageUrl
               )
             }
           >

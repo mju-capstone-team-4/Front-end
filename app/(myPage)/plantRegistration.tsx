@@ -11,7 +11,7 @@ import {
   Switch,
   Dimensions,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { postMyplant } from "@/service/postMyplant";
@@ -37,6 +37,8 @@ const icons = {
 };
 export default function PlantRegistration(): JSX.Element {
   const router = useRouter();
+  const { name, plantPilbkNo, imageUrl } = useLocalSearchParams();
+  const isFromEncyclopedia = !!name && !!plantPilbkNo && !!imageUrl;
 
   const [plantNickname, setPlantNickname] = useState("");
   // 물주는 주기는 사용자가 숫자로 입력 (문자열 형태)
@@ -44,18 +46,35 @@ export default function PlantRegistration(): JSX.Element {
   // 영양제 사용 여부 (Switch 토글)
   const [useFertilizer, setUseFertilizer] = useState(false);
   // 사용자가 등록한 사진의 URI (선택 사항)
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-
+  const [photoUri, setPhotoUri] = useState<string | null>(
+    isFromEncyclopedia ? String(imageUrl) : null
+  );
   // DropDownPicker 관련 상태
   const [open, setOpen] = useState(false);
   const [plantOptions, setPlantOptions] = useState<
     { label: string; value: number }[]
   >([]);
-  const [selectedPlantId, setSelectedPlantId] = useState<number>(0);
-  const [plantNameSearch, setPlantNameSearch] = useState("");
+  const [selectedPlantId, setSelectedPlantId] = useState<number>(
+    isFromEncyclopedia ? Number(plantPilbkNo) : 0
+  );
+  const [plantNameSearch, setPlantNameSearch] = useState(
+    isFromEncyclopedia ? String(name) : ""
+  );
 
-  const [manualPlantId, setManualPlantId] = useState("");
-  const [image, setImage] = useState<any>(null);
+  // const [manualPlantId, setManualPlantId] = useState("");
+  // const [manualPlantId, setManualPlantId] = useState(
+  //   isFromEncyclopedia ? String(plantPilbkNo) : ""
+  // );
+  //const [image, setImage] = useState<any>(null);
+  const [image, setImage] = useState<any>(
+    isFromEncyclopedia
+      ? {
+          uri: String(imageUrl),
+          name: "image.jpg",
+          type: "image/jpeg",
+        }
+      : null
+  );
 
   useEffect(() => {
     (async () => {
@@ -71,10 +90,10 @@ export default function PlantRegistration(): JSX.Element {
         if (plantNameSearch.trim() === "") return;
         console.log("👉 검색어:", plantNameSearch); // ✅ 추가
         const data = await getPlantName(plantNameSearch);
-        console.log("✅ 식물 이름 응답 데이터:", data); // ✅ 추가
+        //console.log("✅ 식물 이름 응답 데이터:", data); // ✅ 추가
         const options = data.map((plant: any) => ({
           label: plant.name,
-          value: plant.plantId,
+          value: plant.plantPilbkNo,
         }));
 
         setPlantOptions(options);
@@ -118,8 +137,8 @@ export default function PlantRegistration(): JSX.Element {
   };
 
   const handleRegister = async () => {
-    if (!plantNickname.trim()) {
-      Alert.alert("오류", "식물 별명을 모두 입력해주세요.");
+    if (!plantNickname.trim() && !wateringFrequency) {
+      Alert.alert("오류", "식물 별명과 물주는 주기를 모두 입력해주세요.");
       return;
     }
     // const selectedPlantName =
@@ -129,7 +148,7 @@ export default function PlantRegistration(): JSX.Element {
     const payload = {
       name: plantNameSearch.trim(),
       description: plantNickname,
-      plantId: Number(manualPlantId),
+      plantPilbkNo: Number(selectedPlantId),
       recommendTonic: useFertilizer,
       image,
     };
@@ -157,59 +176,69 @@ export default function PlantRegistration(): JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>나의 식물 등록</Text>
+      {!isFromEncyclopedia ? (
+        <DropDownPicker
+          open={open}
+          setOpen={setOpen}
+          value={selectedPlantId}
+          setValue={(val) => {
+            const newVal =
+              typeof val === "function" ? val(selectedPlantId) : val;
+            setSelectedPlantId(newVal);
+          }}
+          items={plantOptions}
+          setItems={setPlantOptions}
+          searchable={true}
+          searchTextInputProps={{
+            onChangeText: (text) => setPlantNameSearch(text),
+            value: plantNameSearch,
+          }}
+          placeholder="식물 이름"
+          searchPlaceholder="식물을 검색해 보세요"
+          style={{
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: "#ccc",
+            height: 45,
+            width: scaleWidth(350),
+            marginBottom: 20,
+            paddingHorizontal: 12,
+            backgroundColor: "#F8F8F8",
+            alignSelf: "center",
+          }}
+          dropDownContainerStyle={{
+            borderColor: "#ccc",
+            borderRadius: 8,
+            marginHorizontal: 16,
+            backgroundColor: "#ffffff",
+            width: scaleWidth(350),
+            alignSelf: "center",
+          }}
+          textStyle={{
+            fontSize: 14,
+            color: "#333",
+            fontFamily: "Pretendard-Light",
+          }}
+          searchTextInputStyle={{
+            height: 38,
+            fontSize: 13,
+            borderColor: "#ccc",
+            borderWidth: 1,
+            borderRadius: 6,
+            paddingHorizontal: 10,
+            marginBottom: 6,
+          }}
+        />
+      ) : (
+        <View>
+          <View style={styles.labelRow}>
+            <Pot style={styles.labelIcon} />
+            <Text style={styles.label}>식물 이름</Text>
+          </View>
 
-      <DropDownPicker
-        open={open}
-        setOpen={setOpen}
-        value={selectedPlantId}
-        setValue={(val) => {
-          const newVal = typeof val === "function" ? val(selectedPlantId) : val;
-          setSelectedPlantId(newVal);
-          setManualPlantId(String(newVal)); // ✅ 드롭다운 선택 시 id 반영
-        }}
-        items={plantOptions}
-        setItems={setPlantOptions}
-        searchable={true}
-        searchTextInputProps={{
-          onChangeText: (text) => setPlantNameSearch(text),
-          value: plantNameSearch,
-        }}
-        placeholder="식물 이름"
-        searchPlaceholder="식물을 검색해 보세요"
-        style={{
-          borderRadius: 8,
-          borderWidth: 1,
-          borderColor: "#ccc",
-          height: 45,
-          width: scaleWidth(350),
-          marginBottom: 20,
-          paddingHorizontal: 12,
-          backgroundColor: "#F8F8F8",
-          alignSelf: "center",
-        }}
-        dropDownContainerStyle={{
-          borderColor: "#ccc",
-          borderRadius: 8,
-          marginHorizontal: 16,
-          backgroundColor: "#ffffff",
-          width: scaleWidth(350),
-          alignSelf: "center",
-        }}
-        textStyle={{
-          fontSize: 14,
-          color: "#333",
-          fontFamily: "Pretendard-Light",
-        }}
-        searchTextInputStyle={{
-          height: 38,
-          fontSize: 13,
-          borderColor: "#ccc",
-          borderWidth: 1,
-          borderRadius: 6,
-          paddingHorizontal: 10,
-          marginBottom: 6,
-        }}
-      />
+          <Text style={styles.input}>{plantNameSearch}</Text>
+        </View>
+      )}
 
       <View>
         <View style={styles.labelRow}>
@@ -274,7 +303,7 @@ const styles = StyleSheet.create({
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
     gap: 6,
   },
   labelIcon: {
@@ -289,6 +318,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "white",
   },
   contentContainer: {
     padding: 16,
@@ -322,7 +352,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     marginBottom: 12,
-    marginTop: 20,
+    marginTop: 15,
   },
   toggleLabel: {
     fontFamily: "Pretendard-Light",
@@ -368,16 +398,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    alignSelf: "flex-end",
+    marginRight: 10,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: "Pretendard-Medium",
   },
 });

@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 100,
+    paddingTop: 40,
     backgroundColor: "#fff",
   },
   image: {
