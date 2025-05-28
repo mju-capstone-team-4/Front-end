@@ -27,6 +27,7 @@ import Camera from "@/assets/images/largecamera.svg";
 import Pot from "@/assets/images/pot.svg";
 import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
 import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -262,9 +263,11 @@ export default function DiagnosisSelectScreen() {
               <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
             </View>
           </View>
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
+            extraScrollHeight={150}
+            enableOnAndroid={true}
           >
             <Text style={styles.mainText}>
               사진으로 식물의{"\n"}상태를 진단해보세요
@@ -338,7 +341,7 @@ export default function DiagnosisSelectScreen() {
                 <Text style={styles.submitButtonText}>진단하기</Text>
               )}
             </TouchableOpacity>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </KeyboardAvoidingView>
       </SafeAreaViewContext>
     </>
@@ -380,7 +383,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   scrollContent: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
