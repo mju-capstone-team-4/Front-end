@@ -7,7 +7,7 @@ export async function getAllTrades() {
       params: { page: 0, size: 20 },
     });
     if (response.status === 200) {
-      return response.data.content;
+      return response.data.content.reverse();
     } else {
       throw new Error(`Unexpected response status: ${response.status}`);
     }

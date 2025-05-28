@@ -34,7 +34,6 @@ export default function BoardScreen() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [trades, setTrades] = useState<any[]>([]);
   const router = useRouter();
-  
 
   useEffect(() => {
     asking ? fetchQuestions() : fetchTrades();
@@ -43,6 +42,7 @@ export default function BoardScreen() {
   const fetchQuestions = async () => {
     try {
       const data = await getAllQuestions();
+
       setQuestions(data);
     } catch (error) {
       console.error("❌ 질문 목록 가져오기 실패:", error);
@@ -79,8 +79,8 @@ export default function BoardScreen() {
             id: item.questionId,
             title: item.title,
             content: item.content,
-            nickname: item.username, 
-            imageUrl: item.image_url, 
+            nickname: item.username,
+            imageUrl: item.image_url,
           },
         })
       }
@@ -110,7 +110,7 @@ export default function BoardScreen() {
             id: item.tradePostId,
             itemName: item.itemName,
             description: item.description,
-            username: item.username,     // ✅ 사용자명 전달
+            username: item.username, // ✅ 사용자명 전달
             memberId: item.memberId.toString(), // ✅ 작성자 ID 전달 (string 형태로)
             price: item.price,
             imageUrl: item.imageUrl,
@@ -125,9 +125,7 @@ export default function BoardScreen() {
       />
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.itemName}</Text>
-        <Text style={styles.cardSubtitle}>
-          {item.price.toLocaleString()}원
-        </Text>
+        <Text style={styles.cardSubtitle}>{item.price.toLocaleString()}원</Text>
       </View>
       <Image source={icons.ChevronIcon} style={styles.chevron} />
     </TouchableOpacity>
@@ -140,10 +138,9 @@ export default function BoardScreen() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-
-        <Back1 style={styles.back1} />
-        <Back2 style={styles.back2} />
-        <Back3 style={styles.back3} />
+          <Back1 style={styles.back1} />
+          <Back2 style={styles.back2} />
+          <Back3 style={styles.back3} />
 
           {/* 상단 */}
           <View style={styles.header}>
@@ -156,9 +153,7 @@ export default function BoardScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  router.push(
-                    asking ? "/board/ask/new" : "/board/trade/new"
-                  );
+                  router.push(asking ? "/board/ask/new" : "/board/trade/new");
                 }}
               >
                 <Image source={icons.WriteIcon} style={styles.iconImage} />
