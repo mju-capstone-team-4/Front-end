@@ -25,9 +25,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import Back from "@/assets/images/back.svg";
 import Camera from "@/assets/images/largecamera.svg";
 import Pot from "@/assets/images/pot.svg";
-import { allowedPlants } from '@/constants/allowedPlants'; // 진단 가능 식물 목록
-import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { allowedPlants } from "@/constants/allowedPlants"; // 진단 가능 식물 목록
+import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -244,7 +244,10 @@ export default function DiagnosisSelectScreen() {
 
   return (
     <>
-      <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+      <SafeAreaViewContext
+        style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+        edges={["top", "bottom"]}
+      >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -252,15 +255,20 @@ export default function DiagnosisSelectScreen() {
         >
           <View style={styles.header}>
             <Image
-              source={require('../../assets/images/header.png')}
+              source={require("../../assets/images/header.png")}
               style={styles.headerImage}
               resizeMode="cover"
             />
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
               <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-              <Text style={styles.headerTitle}>{isFromMyPlant && plantName ? `${plantName}` : '식물 진단'}</Text>
+              <Text style={styles.headerTitle}>
+                {isFromMyPlant && plantName ? `${plantName}` : "식물 진단"}
+              </Text>
             </View>
           </View>
           <KeyboardAwareScrollView
@@ -424,18 +432,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   headerImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
   titleContainer: {
     paddingVertical: 10,
     paddingRight: 40,
     paddingLeft: 40,
     borderRadius: 30,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   icon: {
     width: 20,
