@@ -6,19 +6,6 @@ export interface PlantDetailItem {
   plantSpecsScnm: string;
   familyKorNm: string;
   genusKorNm: string;
-  imageUrl: string;
-  dstrb: string;
-  leafDesc: string;
-  flwrDesc: string;
-  fritDesc: string;
-  stemDesc: string;
-  rootDesc: string;
-  useMthdDesc: string;
-  note: string;
-  spft: string;
-  rrngType: string;
-  grwEvrntDesc: string;
-  prtcPlnDesc: string;
   [key: string]: any; // 유연성 확보를 위해
 }
 
