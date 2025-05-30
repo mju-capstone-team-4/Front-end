@@ -167,7 +167,8 @@ export default function DiagnosisSelectScreen() {
     } as any);
 
     formData.append("description", description);
-    formData.append("plant", selectedPlantName);
+    console.log("plant: " + plantName)
+    formData.append("plant", plantName);
 
     try {
       const response = await fetch(`${API_BASE}/disease/predict`, {
