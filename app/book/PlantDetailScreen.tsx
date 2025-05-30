@@ -61,27 +61,17 @@ export default function PlantDetailScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={{ uri: plant.imageUrl }} style={styles.image} />
+      <Text style={styles.label}>학명</Text>
       <Text style={styles.title}>{plant.plantGnrlNm}</Text>
+
       <Text style={styles.label}>학명</Text>
       <Text style={styles.text}>{plant.plantSpecsScnm}</Text>
 
-      <Text style={styles.label}>꽃 설명</Text>
-      <Text style={styles.text}>{plant.flwrDesc || "정보 없음"}</Text>
+      <Text style={styles.label}>과</Text>
+      <Text style={styles.text}>{plant.familyKorNm}</Text>
 
-      <Text style={styles.label}>잎 설명</Text>
-      <Text style={styles.text}>{plant.leafDesc || "정보 없음"}</Text>
-
-      <Text style={styles.label}>열매 설명</Text>
-      <Text style={styles.text}>{plant.fritDesc || "정보 없음"}</Text>
-
-      <Text style={styles.label}>서식지</Text>
-      <Text style={styles.text}>{plant.dstrb || "정보 없음"}</Text>
-
-      <Text style={styles.label}>생육 환경</Text>
-      <Text style={styles.text}>{plant.grwEvrntDesc || "정보 없음"}</Text>
-
-      <Text style={styles.label}>이용 방법</Text>
-      <Text style={styles.text}>{plant.useMthdDesc || "정보 없음"}</Text>
+      <Text style={styles.label}>속</Text>
+      <Text style={styles.text}>{plant.genusKorNm}</Text>
     </ScrollView>
   );
 }
@@ -89,9 +79,7 @@ export default function PlantDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingBottom: 100,
     paddingTop: 40,
-    backgroundColor: "#fff",
   },
   image: {
     width: "100%",
