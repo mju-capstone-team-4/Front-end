@@ -75,6 +75,8 @@ export default function BookScreen() {
               "검색 실패",
               "촬영한 이미지로 식물을 찾는 데 실패했습니다."
             );
+          } finally {
+            setCameraLoading(false);
           }
         },
       },
