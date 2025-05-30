@@ -27,7 +27,7 @@ export default function EncyclopediaCard({
   name: string;
   plantPilbkNo: number;
 }) {
-  console.log("📷", imageUrl, name, plantPilbkNo);
+  //console.log("📷", imageUrl, name, plantPilbkNo);
 
   return (
     <TouchableOpacity
