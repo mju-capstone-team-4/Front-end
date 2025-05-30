@@ -60,7 +60,7 @@ export default function PlantDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: plant.imgUrl }} style={styles.image} />
+      <Image source={{ uri: plant.imageUrl }} style={styles.image} />
       <Text style={styles.title}>{plant.plantGnrlNm}</Text>
       <Text style={styles.label}>학명</Text>
       <Text style={styles.text}>{plant.plantSpecsScnm}</Text>

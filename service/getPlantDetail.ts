@@ -6,7 +6,7 @@ export interface PlantDetailItem {
   plantSpecsScnm: string;
   familyKorNm: string;
   genusKorNm: string;
-  imgUrl: string;
+  imageUrl: string;
   dstrb: string;
   leafDesc: string;
   flwrDesc: string;
