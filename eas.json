@@ -5,8 +5,12 @@
   },
   "build": {
     "development": {
-      "developmentClient": "false",
-      "distribution": "internal"
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "API_URL": "https://palnty.shop/api",
+        "API_LOGIN_URL": "https://palnty.shop"
+      }
     },
     "preview": {
       "distribution": "internal"

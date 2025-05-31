@@ -65,12 +65,12 @@ export default function LoginScreen() {
     try {
       await AsyncStorage.setItem("accessToken", token);
       const userInfo = await getMypage(); // ✅ 서버에서 username과 memberId 모두 가져옴
-  
+
       global.userInfo = {
         username: userInfo.username,
         memberId: userInfo.id,
       };
-  
+
       console.log("👤 사용자 정보:", global.userInfo);
       router.replace("/(tabs)/board");
     } catch (error) {
@@ -159,29 +159,6 @@ export default function LoginScreen() {
           }}
         >
           <Text>테스트 계정 1로 시작</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.test]}
-          onPress={async () => {
-            const token = await getToken("test2@example.com");
-            await AsyncStorage.setItem("accessToken", token);
-            processToken(token);
-            router.replace("/(tabs)/board");
-          }}
-        >
-          <Text>테스트 계정 2로 시작</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.test]}
-          onPress={async () => {
-            const token = await getToken("test3@example.com");
-            await AsyncStorage.setItem("accessToken", token);
-            processToken(token);
-            router.replace("/(tabs)/board");
-          }}
-        >
-          <Text>테스트 계정 3로 시작</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>

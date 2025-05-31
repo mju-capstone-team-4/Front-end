@@ -4,6 +4,8 @@ import { Stack, useRouter } from "expo-router";
 import * as Linking from "expo-linking";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import Constants from "expo-constants";
+console.log("🔍 실행 중 API_URL:", Constants.expoConfig?.extra?.API_URL);
 export default function Layout() {
   const router = useRouter();
 
