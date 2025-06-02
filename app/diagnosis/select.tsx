@@ -18,7 +18,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import LoadingSplash from "./LoadingSplash";
 import { Ionicons } from "@expo/vector-icons";
-import RNPickerSelect from "react-native-picker-select";
+import DropDownPicker from "react-native-dropdown-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
@@ -58,6 +58,14 @@ export default function DiagnosisSelectScreen() {
   const isFromMyPlant = !!selectedPlantName;
   const [plantName, setPlantName] = useState<string | null>(
     isFromMyPlant ? selectedPlantName : null
+  );
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null); // plantName 역할
+  const [items, setItems] = useState(
+    allowedPlants.map((name) => ({
+      label: name,
+      value: name,
+    }))
   );
 
   const pickImage = async () => {
@@ -307,19 +315,21 @@ export default function DiagnosisSelectScreen() {
                   <Pot />
                   <Text style={styles.dropdownLabel}>식물 선택</Text>
                 </View>
-                <RNPickerSelect
-                  onValueChange={(value) => setPlantName(value)}
-                  placeholder={{ label: "식물을 선택하세요", value: null }}
+                <DropDownPicker
+                  open={open}
                   value={plantName}
-                  items={allowedPlants.map((name) => ({
-                    label: name,
-                    value: name,
-                  }))}
-                  style={pickerSelectStyles}
-                  useNativeAndroidPickerStyle={false}
-                  Icon={() => (
-                    <Ionicons name="chevron-down" size={20} color="#555" />
-                  )}
+                  items={items}
+                  setOpen={setOpen}
+                  setValue={setPlantName}
+                  setItems={setItems}
+                  placeholder="식물을 선택하세요"
+                  zIndex={1000}
+                  zIndexInverse={3000}
+                  listMode="SCROLLVIEW"
+                  style={{ borderColor: '#D9D9D9' }}
+                  dropDownContainerStyle={{ borderColor: '#D9D9D9' }}
+                  ArrowDownIconComponent={() => <Ionicons name="chevron-down" size={20} color="#000000" />}
+                  ArrowUpIconComponent={() => <Ionicons name="chevron-up" size={20} color="#000000" />}
                 />
               </View>
             )}
