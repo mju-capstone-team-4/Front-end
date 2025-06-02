@@ -91,7 +91,17 @@ export default function ChatbotScreen() {
         { headers }
       );
 
-      const roomId = res.data;
+      let roomId;
+      if (res.data.exists) {
+        roomId = res.data.roomId;
+      } else {
+        const createRes = await axios.post(
+          `${CHAT_BASE}/chat/room/private/create?otherMemberId=${userId}`,
+          {},
+          { headers }
+        );
+        roomId = createRes.data;
+      }
       console.log("✅ 방 생성 성공 - roomId:", roomId);
 
       router.push({
@@ -99,7 +109,7 @@ export default function ChatbotScreen() {
         params: {
           roomId: roomId.toString(),
           partnerName: targetUser.username,
-          partnerImage: targetUser.profileUrl,
+          partnerImage: targetUser.profileUrl || "../../assets/images/appicon.png",
         },
       });
     } catch (err) {
@@ -120,7 +130,7 @@ export default function ChatbotScreen() {
             resizeMode="cover"
           />
           <View style={styles.tabContainer}>
-            <TouchableOpacity style={styles.tabActive} onPress={() => {}}>
+            <TouchableOpacity style={styles.tabActive} onPress={() => { }}>
               <Text style={styles.tabTextActive}>거래 채팅</Text>
             </TouchableOpacity>
             <TouchableOpacity
