@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 const API_BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -42,7 +42,7 @@ export default function DiagnosisScreen() {
 
   const fetchMyPlants = async () => {
     try {
-      const token = await SecureStore.getItemAsync("userToken");
+      const token = await AsyncStorage.getItem("accessToken");
       const response = await fetch(`${API_BASE}/mypage/myplant`, {
         method: "GET",
         headers: {
