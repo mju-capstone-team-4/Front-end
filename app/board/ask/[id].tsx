@@ -128,13 +128,19 @@ export default function PostDetail() {
                     })
                   }
                 >
-                  <Image source={icons.WriteIcon} style={{ width: 32, height: 32 }} />
+                  <Image
+                    source={icons.WriteIcon}
+                    style={{ width: 32, height: 32 }}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionButton, { marginLeft: 8 }]}
                   onPress={handleDeletePost}
                 >
-                  <Image source={icons.DeleteIcon} style={{ width: 30, height: 30 }} />
+                  <Image
+                    source={icons.DeleteIcon}
+                    style={{ width: 30, height: 30 }}
+                  />
                 </TouchableOpacity>
               </View>
             )}
@@ -147,7 +153,12 @@ export default function PostDetail() {
               <Pressable onPress={() => setVisible(true)}>
                 <Image
                   source={{ uri: validImage }}
-                  style={{ width: "100%", aspectRatio: 1, borderRadius: 8, marginBottom: 20 }}
+                  style={{
+                    width: "100%",
+                    aspectRatio: 1,
+                    borderRadius: 8,
+                    marginBottom: 20,
+                  }}
                   resizeMode="contain"
                 />
               </Pressable>
@@ -179,7 +190,9 @@ export default function PostDetail() {
                 <View style={styles.commentTop}>
                   <Text style={styles.commentNickname}>{c.username}</Text>
                   <View style={styles.commentActions}>
-                    <TouchableOpacity onPress={() => handleLikeToggle(c.commentId, c.liked)}>
+                    <TouchableOpacity
+                      onPress={() => handleLikeToggle(c.commentId, c.liked)}
+                    >
                       <Ionicons
                         name="thumbs-up-outline"
                         size={16}
@@ -195,10 +208,20 @@ export default function PostDetail() {
                             setEditingText(c.content);
                           }}
                         >
-                          <Ionicons name="create-outline" size={16} color="#666" />
+                          <Ionicons
+                            name="create-outline"
+                            size={16}
+                            color="#666"
+                          />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDeleteComment(c.commentId)}>
-                          <Ionicons name="trash-outline" size={16} color="#666" />
+                        <TouchableOpacity
+                          onPress={() => handleDeleteComment(c.commentId)}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={16}
+                            color="#666"
+                          />
                         </TouchableOpacity>
                       </>
                     )}
@@ -213,7 +236,10 @@ export default function PostDetail() {
                       multiline
                     />
                     <View style={styles.editButtons}>
-                      <TouchableOpacity style={styles.saveButton} onPress={handleAddOrUpdateComment}>
+                      <TouchableOpacity
+                        style={styles.saveButton}
+                        onPress={handleAddOrUpdateComment}
+                      >
                         <Text style={styles.saveText}>완료</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -274,8 +300,17 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     width: "100%",
   },
-  commentTitle: { fontSize: 16, fontWeight: "bold", color: "#000", marginBottom: 12 },
-  commentBox: { flexDirection: "row", alignItems: "flex-start", marginBottom: 16 },
+  commentTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 12,
+  },
+  commentBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
   commentRight: {
     flex: 1,
     marginLeft: 10,
@@ -321,7 +356,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
   },
-  editButtons: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8, gap: 8 },
+  editButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    gap: 8,
+  },
   saveButton: {
     backgroundColor: "#00A86B",
     paddingVertical: 6,
