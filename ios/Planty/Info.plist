@@ -31,6 +31,12 @@
           <string>com.plantz.planty</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>exp+front-end</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>2</string>

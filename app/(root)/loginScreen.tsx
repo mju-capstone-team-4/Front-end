@@ -20,6 +20,7 @@ import Back1 from "@/assets/images/back1.svg";
 import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
 import { getMypage } from "@/service/getMypage";
+console.log("✅ loginScreen 렌더링 시작");
 
 const { width, height } = Dimensions.get("window");
 
@@ -126,7 +127,7 @@ export default function LoginScreen() {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.kakao]}
-          onPress={() => handleOAuthLogin("kakao")}
+          onPress={() => handleOAuthLogin("kakao", processToken)}
         >
           <Image
             source={require("../../assets/images/kakao.png")}
@@ -137,7 +138,7 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={[styles.button, styles.google]}
-          onPress={() => handleOAuthLogin("google")}
+          onPress={() => handleOAuthLogin("google", processToken)}
         >
           <Image
             source={require("../../assets/images/google.png")}

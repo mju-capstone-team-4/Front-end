@@ -1,10 +1,8 @@
-// apiClient.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import Constants from "expo-constants";
 
-const { API_URL } = Constants.expoConfig?.extra || {};
-const BASE_URL = API_URL;
+// ✅ 환경변수 방식으로 변경
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

@@ -1,10 +1,10 @@
 import "dotenv/config";
 
-console.log("✅ API_URL:", process.env.API_URL);
+console.log("✅ API_URL:", process.env.EXPO_PUBLIC_API_URL); // ← 수정
 
 export default ({ config }) => ({
   ...config,
-  name: "Planty",
+  name: "플랜티",
   slug: "Front-end",
   version: "1.0.1",
   orientation: "portrait",
@@ -31,7 +31,7 @@ export default ({ config }) => ({
   android: {
     package: "com.plantz.planty",
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/images/appicon_android.png",
       backgroundColor: "#ffffff",
     },
     permissions: ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"],
@@ -62,8 +62,8 @@ export default ({ config }) => ({
   },
 
   extra: {
-    API_URL: process.env.API_URL,
-    API_LOGIN_URL: process.env.API_LOGIN_URL,
+    API_URL: process.env.EXPO_PUBLIC_API_URL,
+    API_LOGIN_URL: process.env.EXPO_PUBLIC_API_LOGIN_URL,
     router: {
       origin: false,
     },

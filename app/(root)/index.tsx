@@ -9,6 +9,7 @@ import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
 import "@/service/localConfig";
 const { width, height } = Dimensions.get("window");
+console.log("✅ index.tsx 진입됨");
 
 export default function Splash() {
   useEffect(() => {
