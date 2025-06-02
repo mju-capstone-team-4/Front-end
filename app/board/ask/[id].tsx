@@ -22,6 +22,7 @@ import {
   toggleLike,
 } from "@/service/commentService";
 import { deleteQuestion } from "@/service/questionService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const icons = {
   WriteIcon: require("../../../assets/images/write_button.png"),
@@ -30,9 +31,12 @@ const icons = {
 
 export default function PostDetail() {
   const router = useRouter();
-  const { id, title, content, nickname, imageUrl } = useLocalSearchParams();
+  const { id, title, content, nickname, imageUrl, memberId } =
+    useLocalSearchParams();
 
   const questionId = Array.isArray(id) ? id[0] : id;
+  const writerId = Array.isArray(memberId) ? memberId[0] : memberId; // 작성자 ID
+
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
 
   const [visible, setVisible] = useState(false);
@@ -46,6 +50,15 @@ export default function PostDetail() {
     const result = await fetchComments(questionId);
     setComments(result);
   };
+  const [myId, setMyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserId = async () => {
+      const storedId = await AsyncStorage.getItem("memberId");
+      setMyId(storedId);
+    };
+    loadUserId();
+  }, []);
 
   useEffect(() => {
     loadComments();
@@ -117,7 +130,7 @@ export default function PostDetail() {
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
 
-            {global.userInfo.username === nickname && (
+            {myId && writerId === myId && (
               <View style={styles.actions}>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -200,7 +213,7 @@ export default function PostDetail() {
                       />
                     </TouchableOpacity>
                     <Text style={styles.recommendCount}>{c.likeCount}</Text>
-                    {String(global.userInfo.username) === String(nickname) && (
+                    {myId && String(c.memberId) === String(myId) && (
                       <>
                         <TouchableOpacity
                           onPress={() => {

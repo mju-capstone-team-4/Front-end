@@ -1,9 +1,16 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  View, Text, StyleSheet, Image, Pressable, TouchableOpacity, Alert,
-  ScrollView, Dimensions
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Dimensions,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ImageView from "react-native-image-viewing";
 import { deleteTradePost } from "../../../service/tradeService";
 import axios from "axios";
@@ -19,6 +26,16 @@ const icons = {
   DeleteIcon: require("../../../assets/images/trash_icon.png"),
 };
 
+const [myMemberId, setMyMemberId] = useState<number | null>(null);
+
+useEffect(() => {
+  const fetchMemberId = async () => {
+    const id = await AsyncStorage.getItem("memberId");
+    setMyMemberId(id ? parseInt(id) : null);
+  };
+  fetchMemberId();
+}, []);
+
 export default function TradeDetail() {
   const router = useRouter();
   const {
@@ -27,15 +44,19 @@ export default function TradeDetail() {
     description,
     price,
     imageUrl,
-    username,     // ✅ 게시글 작성자의 username
-    memberId,     // ✅ 게시글 작성자의 memberId
+    username, // ✅ 게시글 작성자의 username
+    memberId, // ✅ 게시글 작성자의 memberId
   } = useLocalSearchParams();
 
   const [visible, setVisible] = useState(false);
 
   const displayTitle = typeof itemName === "string" ? itemName : "제목 없음";
-  const displayContent = typeof description === "string" ? description : "내용 없음";
-  const displayPrice = typeof price === "string" ? `${parseInt(price).toLocaleString()}원` : "가격 미정";
+  const displayContent =
+    typeof description === "string" ? description : "내용 없음";
+  const displayPrice =
+    typeof price === "string"
+      ? `${parseInt(price).toLocaleString()}원`
+      : "가격 미정";
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
   const writerUsername = typeof username === "string" ? username : "익명";
   const writerId = typeof memberId === "string" ? parseInt(memberId) : null;
@@ -72,7 +93,7 @@ export default function TradeDetail() {
         return;
       }
 
-      if (!writerId || writerId === global.userInfo.memberId) {
+      if (!writerId || writerId === myMemberId) {
         Alert.alert("알림", "본인과는 채팅할 수 없습니다.");
         return;
       }
@@ -107,7 +128,7 @@ export default function TradeDetail() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>{displayTitle}</Text>
-          {global.userInfo.username === writerUsername && (
+          {myMemberId === writerId && (
             <View style={styles.iconButtons}>
               <TouchableOpacity
                 style={styles.iconButton}
@@ -120,13 +141,19 @@ export default function TradeDetail() {
                   }
                 }}
               >
-                <Image source={icons.WriteIcon} style={{ width: 32, height: 32 }} />
+                <Image
+                  source={icons.WriteIcon}
+                  style={{ width: 32, height: 32 }}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.iconButton, { marginLeft: 8 }]}
                 onPress={handleDelete}
               >
-                <Image source={icons.DeleteIcon} style={{ width: 30, height: 30 }} />
+                <Image
+                  source={icons.DeleteIcon}
+                  style={{ width: 30, height: 30 }}
+                />
               </TouchableOpacity>
             </View>
           )}
@@ -138,7 +165,11 @@ export default function TradeDetail() {
         {validImage && (
           <>
             <Pressable onPress={() => setVisible(true)}>
-              <Image source={{ uri: validImage }} style={styles.image} resizeMode="cover" />
+              <Image
+                source={{ uri: validImage }}
+                style={styles.image}
+                resizeMode="cover"
+              />
             </Pressable>
             <ImageView
               images={[{ uri: validImage }]}

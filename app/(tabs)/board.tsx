@@ -81,6 +81,7 @@ export default function BoardScreen() {
             content: item.content,
             nickname: item.username,
             imageUrl: item.image_url,
+            memberId: item.memberId,
           },
         })
       }

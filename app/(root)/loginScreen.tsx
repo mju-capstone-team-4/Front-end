@@ -67,12 +67,10 @@ export default function LoginScreen() {
       await AsyncStorage.setItem("accessToken", token);
       const userInfo = await getMypage(); // ✅ 서버에서 username과 memberId 모두 가져옴
 
-      global.userInfo = {
-        username: userInfo.username,
-        memberId: userInfo.id,
-      };
+      await AsyncStorage.setItem("username", userInfo.username);
+      await AsyncStorage.setItem("memberId", String(userInfo.id));
 
-      console.log("👤 사용자 정보:", global.userInfo);
+      console.log("👤 사용자 정보:", userInfo);
       router.replace("/(tabs)/board");
     } catch (error) {
       console.error("❌ 사용자 정보 가져오기 실패:", error);
