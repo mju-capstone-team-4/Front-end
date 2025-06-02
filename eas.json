@@ -5,13 +5,29 @@
   },
   "build": {
     "development": {
-      "developmentClient": "false",
-      "distribution": "internal"
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://palnty.shop/api",
+        "EXPO_PUBLIC_API_LOGIN_URL": "https://palnty.shop"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://palnty.shop/api",
+        "EXPO_PUBLIC_API_LOGIN_URL": "https://palnty.shop"
+      }
     },
     "production": {
+      "distribution": "store",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://palnty.shop/api",
+        "EXPO_PUBLIC_API_LOGIN_URL": "https://palnty.shop"
+      },
       "autoIncrement": true
     }
   },

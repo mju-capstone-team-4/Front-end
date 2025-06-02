@@ -9,15 +9,20 @@ import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
 import "@/service/localConfig";
 const { width, height } = Dimensions.get("window");
+console.log("✅ index.tsx 진입됨");
 
 export default function Splash() {
   useEffect(() => {
     console.log("스플래시");
 
-    const timer = setTimeout(() => {
-      router.replace("/(root)/loginScreen");
-    }, 2000);
-    return () => clearTimeout(timer);
+    try {
+      const timer = setTimeout(() => {
+        router.replace("/(root)/loginScreen");
+      }, 2000);
+      return () => clearTimeout(timer);
+    } catch (e) {
+      console.error("라우터 이동 실패:", e);
+    }
   }, []);
 
   const [fontsLoaded] = useFonts({
@@ -30,7 +35,12 @@ export default function Splash() {
     "Pretendard-Thin": require("../../assets/fonts/Pretendard-Thin.otf"),
     "Pretendard-Medium": require("../../assets/fonts/Pretendard-Medium.otf"),
   });
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>폰트 로딩 중...</Text>
+      </View>
+    );
 
   return (
     <LinearGradient

@@ -2,16 +2,16 @@
   "expo": {
     "name": "Planty",
     "slug": "Front-end",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/appicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
 
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.plantz.planty",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "이 앱은 식물 진단을 위한 사진 촬영을 위해 카메라 접근이 필요합니다.",
         "NSPhotoLibraryUsageDescription": "이 앱은 식물 진단을 위한 사진 선택을 위해 갤러리 접근이 필요합니다.",
@@ -55,8 +55,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "https://palnty.shop/api",
-      "API_LOGIN_URL": "https://palnty.shop",
+      "EXPO_PUBLIC_API_URL": "https://palnty.shop/api",
+      "EXPO_PUBLIC_API_LOGIN_URL": "https://palnty.shop",
       "router": {
         "origin": false
       },

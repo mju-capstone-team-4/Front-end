@@ -20,6 +20,7 @@ import Back1 from "@/assets/images/back1.svg";
 import Back2 from "@/assets/images/back2.svg";
 import Back3 from "@/assets/images/back3.svg";
 import { getMypage } from "@/service/getMypage";
+console.log("✅ loginScreen 렌더링 시작");
 
 const { width, height } = Dimensions.get("window");
 
@@ -65,12 +66,12 @@ export default function LoginScreen() {
     try {
       await AsyncStorage.setItem("accessToken", token);
       const userInfo = await getMypage(); // ✅ 서버에서 username과 memberId 모두 가져옴
-  
+
       global.userInfo = {
         username: userInfo.username,
         memberId: userInfo.id,
       };
-  
+
       console.log("👤 사용자 정보:", global.userInfo);
       router.replace("/(tabs)/board");
     } catch (error) {
@@ -126,7 +127,7 @@ export default function LoginScreen() {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.kakao]}
-          onPress={() => handleOAuthLogin("kakao")}
+          onPress={() => handleOAuthLogin("kakao", processToken)}
         >
           <Image
             source={require("../../assets/images/kakao.png")}
@@ -137,7 +138,7 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={[styles.button, styles.google]}
-          onPress={() => handleOAuthLogin("google")}
+          onPress={() => handleOAuthLogin("google", processToken)}
         >
           <Image
             source={require("../../assets/images/google.png")}
@@ -159,29 +160,6 @@ export default function LoginScreen() {
           }}
         >
           <Text>테스트 계정 1로 시작</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.test]}
-          onPress={async () => {
-            const token = await getToken("test2@example.com");
-            await AsyncStorage.setItem("accessToken", token);
-            processToken(token);
-            router.replace("/(tabs)/board");
-          }}
-        >
-          <Text>테스트 계정 2로 시작</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.test]}
-          onPress={async () => {
-            const token = await getToken("test3@example.com");
-            await AsyncStorage.setItem("accessToken", token);
-            processToken(token);
-            router.replace("/(tabs)/board");
-          }}
-        >
-          <Text>테스트 계정 3로 시작</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
