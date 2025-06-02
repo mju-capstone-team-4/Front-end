@@ -1,6 +1,6 @@
 // service/updateQuestion.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import apiClient from "./apiClient"; // apiClient를 import해야 합니다!!!
-import { getToken } from "./getToken"; // 토큰 가져오는 함수도 필요하다면 import!!!
 
 export async function updateQuestion({
   id,
@@ -17,7 +17,7 @@ export async function updateQuestion({
     type: string;
   };
 }) {
-  const token = await getToken(global.userInfo.username || "null user");
+  const token = await AsyncStorage.getItem("accessToken");
 
   const formData = new FormData();
   if (title) formData.append("title", title);
