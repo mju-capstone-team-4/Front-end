@@ -26,16 +26,6 @@ const icons = {
   DeleteIcon: require("../../../assets/images/trash_icon.png"),
 };
 
-const [myMemberId, setMyMemberId] = useState<number | null>(null);
-
-useEffect(() => {
-  const fetchMemberId = async () => {
-    const id = await AsyncStorage.getItem("memberId");
-    setMyMemberId(id ? parseInt(id) : null);
-  };
-  fetchMemberId();
-}, []);
-
 export default function TradeDetail() {
   const router = useRouter();
   const {
@@ -60,6 +50,15 @@ export default function TradeDetail() {
   const validImage = typeof imageUrl === "string" ? imageUrl : undefined;
   const writerUsername = typeof username === "string" ? username : "익명";
   const writerId = typeof memberId === "string" ? parseInt(memberId) : null;
+  const [myMemberId, setMyMemberId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchMemberId = async () => {
+      const id = await AsyncStorage.getItem("memberId");
+      setMyMemberId(id ? parseInt(id) : null);
+    };
+    fetchMemberId();
+  }, []);
 
   const handleDelete = async () => {
     if (typeof id !== "string") {
