@@ -1,65 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  View, Text, TextInput, Image, TouchableOpacity,
-  ScrollView, StyleSheet, Dimensions
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
+  View,
+  Text,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import { useRouter } from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 import { getMypage } from "@/service/getMypage";
-import DefaultImage from '../../assets/images/plantylogo.svg';
-import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
+import DefaultImage from "../../assets/images/plantylogo.svg";
+import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 
-const screenWidth = Dimensions.get('window').width;
+const screenWidth = Dimensions.get("window").width;
 const cardMargin = 12;
 const cardWidth = (screenWidth - cardMargin * 3) / 2;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-// 기준 사이즈
 const BASE_WIDTH = 414;
 const BASE_HEIGHT = 896;
-
-// 스케일 함수 -> 추후 반응형으로 변경
 const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 export default function ChatbotScreen() {
   const [users, setUsers] = useState<any[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const [myInfo, setMyInfo] = useState<{ memberId: number; username: string }>({
+    memberId: -1,
+    username: "",
+  });
   const router = useRouter();
 
-  const API_BASE = Constants.expoConfig?.extra?.API_URL;
-  const CHAT_BASE = API_BASE.replace("/api", "");
+  const API_BASE = process.env.EXPO_PUBLIC_API_URL || "";
 
-  const getToken = async () => {
-    const token = await AsyncStorage.getItem("accessToken");
-    console.log("🔐 저장된 토큰2:", token);
-    console.log("👤 사용자 정보:", global.userInfo);
-    return token;
-  };
+  const CHAT_BASE = API_BASE.replace("/api", "");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = await getToken();
+        const token = await AsyncStorage.getItem("accessToken");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // 👤 내 정보 먼저 받아오기
         const me = await getMypage();
-        global.userInfo.memberId = me.id;
-        global.userInfo.username = me.username;
-        console.log("🙋‍♂️ 현재 사용자 정보:", global.userInfo);
+        setMyInfo({ memberId: me.id, username: me.username });
+        console.log("🙋‍♂️ 현재 사용자 정보:", me);
 
-        // 📡 사용자 전체 목록 조회
         console.log("📡 사용자 조회 API 호출:", `${API_BASE}/mypage/members`);
         const res = await axios.get(`${API_BASE}/mypage/members`, { headers });
 
-        // 🔍 본인 제외한 유저만 저장
-        const filteredUsers = res.data.content.filter((u: any) => u.id !== me.id);
+        const filteredUsers = res.data.content.filter(
+          (u: any) => u.id !== me.id
+        );
         console.log("✅ 필터링된 사용자 목록:", filteredUsers);
         setUsers(filteredUsers);
-
       } catch (err: any) {
         console.error("❌ 사용자 목록 또는 내 정보 불러오기 실패:", err);
       }
@@ -77,10 +75,13 @@ export default function ChatbotScreen() {
       return;
     }
 
-    const token = await getToken();
+    const token = await AsyncStorage.getItem("accessToken");
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    console.log("📡 방 생성 요청 URL:", `${API_BASE}/chat/room/private/create?otherMemberId=${userId}`);
+    console.log(
+      "📡 방 생성 요청 URL:",
+      `${API_BASE}/chat/room/private/create?otherMemberId=${userId}`
+    );
     console.log("🔐 Authorization 헤더:", headers.Authorization);
 
     try {
@@ -107,24 +108,24 @@ export default function ChatbotScreen() {
   };
 
   return (
-    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+    <SafeAreaViewContext
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      edges={["top", "bottom"]}
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('../../assets/images/header.png')}
+            source={require("../../assets/images/header.png")}
             style={styles.headerImage}
             resizeMode="cover"
           />
           <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={styles.tabActive}
-              onPress={() => { }} // 현재 화면
-            >
+            <TouchableOpacity style={styles.tabActive} onPress={() => {}}>
               <Text style={styles.tabTextActive}>거래 채팅</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.tabInactive}
-              onPress={() => router.push('/chat/aiChat')} // AI 채팅 클릭 시 이동
+              onPress={() => router.push("/chat/aiChat")}
             >
               <Text style={styles.tabTextInactive}>AI 채팅</Text>
             </TouchableOpacity>
@@ -133,7 +134,7 @@ export default function ChatbotScreen() {
 
         <View style={styles.searchWrapper}>
           <Image
-            source={require('../../assets/images/search_button.png')}
+            source={require("../../assets/images/search_button.png")}
             style={styles.searchIcon}
           />
           <TextInput
@@ -151,7 +152,7 @@ export default function ChatbotScreen() {
               (u) =>
                 u.username &&
                 u.username.includes(search) &&
-                u.id !== global.userInfo.memberId // 자신 제외
+                u.id !== myInfo.memberId
             )
             .map((user, index) => (
               <TouchableOpacity
@@ -179,30 +180,30 @@ export default function ChatbotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: "#F8F8F8",
   },
   header: {
     height: scaleHeight(90),
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   headerImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   tabActive: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingVertical: 10,
     borderRadius: 20,
     marginRight: 8,
     marginLeft: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabInactive: {
     flex: 1,
@@ -210,29 +211,29 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     marginRight: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   tabTextActive: {
-    color: '#00D282',
-    fontFamily: 'Pretendard-ExtraBold',
+    color: "#00D282",
+    fontFamily: "Pretendard-ExtraBold",
   },
   tabTextInactive: {
-    color: '#FFFFFF',
-    fontFamily: 'Pretendard-Medium',
+    color: "#FFFFFF",
+    fontFamily: "Pretendard-Medium",
   },
   searchWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#00D282',
+    borderColor: "#00D282",
     borderRadius: 20,
     paddingHorizontal: 12,
     marginHorizontal: 8,
     marginTop: 32,
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   searchIcon: {
     width: 30,
@@ -245,24 +246,24 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 14,
     marginLeft: -5,
-    color: '#393939',
-    fontFamily: 'Pretendard-Medium',
+    color: "#393939",
+    fontFamily: "Pretendard-Medium",
   },
   userList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     paddingBottom: 40,
   },
   userCard: {
     aspectRatio: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 10,
     margin: cardMargin / 2,
     marginBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   avatar: {
     width: 120,
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 14,
-    color: '#393939',
-    fontFamily: 'Pretendard-SemiBold',
+    color: "#393939",
+    fontFamily: "Pretendard-SemiBold",
   },
 });

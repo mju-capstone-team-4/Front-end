@@ -1,20 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, Text, ScrollView, TextInput, TouchableOpacity, 
-  StyleSheet, Image, BackHandler, KeyboardAvoidingView, 
-  Platform, Keyboard, Dimensions, } from 'react-native';
-import axios from 'axios';
-import { Client } from '@stomp/stompjs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { decode as atob } from 'base-64';
-import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  Dimensions,
+} from "react-native";
+import axios from "axios";
+import { Client } from "@stomp/stompjs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { decode as atob } from "base-64";
+import { useRouter } from "expo-router";
+import Constants from "expo-constants";
 import { getMypage } from "@/service/getMypage";
-import { useFocusEffect } from '@react-navigation/native';
-import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
-const SERVER_URL = 'ws://15.164.198.69:8080';
+const SERVER_URL = "ws://15.164.198.69:8080";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -40,26 +50,26 @@ type ChatMessage = {
 
 export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [myEmail, setMyEmail] = useState<string | null>(null);
   const [myName, setMyName] = useState<string | null>(null);
   const stompClientRef = useRef<Client | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
-  const API_BASE = Constants.expoConfig?.extra?.API_URL;
+  const API_BASE = process.env.EXPO_PUBLIC_API_URL || "";
   const CHAT_BASE = API_BASE.replace("/api", "");
   const [isConnected, setIsConnected] = useState(false);
 
   // JWT에서 이메일 추출
   const getMyEmailFromToken = async (): Promise<string | null> => {
-    const token = await AsyncStorage.getItem('accessToken');
+    const token = await AsyncStorage.getItem("accessToken");
     if (!token) return null;
     try {
-      const payloadBase64 = token.split('.')[1];
+      const payloadBase64 = token.split(".")[1];
       const decoded = JSON.parse(atob(payloadBase64));
       return decoded.sub || decoded.email || null;
     } catch (err) {
-      console.error('JWT 디코딩 실패:', err);
+      console.error("JWT 디코딩 실패:", err);
       return null;
     }
   };
@@ -85,11 +95,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const token = await AsyncStorage.getItem('accessToken');
+        const token = await AsyncStorage.getItem("accessToken");
         const res = await axios.get(`${CHAT_BASE}/chat/history/${roomId}`, {
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -110,7 +120,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
           scrollRef.current?.scrollToEnd({ animated: false });
         }, 100);
       } catch (err) {
-        console.error('히스토리 로딩 실패:', err);
+        console.error("히스토리 로딩 실패:", err);
       }
     };
     fetchHistory();
@@ -135,16 +145,18 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         appendMissingNULLonIncoming: true,
         reconnectDelay: 5000,
         onConnect: () => {
-          console.log('✅ STOMP 연결 완료');
+          console.log("✅ STOMP 연결 완료");
           setIsConnected(true);
-          const subscription = client.subscribe(`/topic/${roomId}`, (message) => {
-            const newMsg = JSON.parse(message.body);
-            console.log("📩 수신된 메시지:", newMsg);
-            setMessages((prev) => [...prev, newMsg]);
-          });
+          const subscription = client.subscribe(
+            `/topic/${roomId}`,
+            (message) => {
+              const newMsg = JSON.parse(message.body);
+              console.log("📩 수신된 메시지:", newMsg);
+              setMessages((prev) => [...prev, newMsg]);
+            }
+          );
 
           subscriptionRef.current = subscription;
-
         },
         onStompError: (frame) => {
           console.error("❌ STOMP 오류 발생:", frame);
@@ -161,7 +173,6 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
           console.log("🐛 STOMP 디버그:", str);
         },
       });
-
 
       client.activate();
       stompClientRef.current = client;
@@ -216,7 +227,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       ...prev,
       { ...messageDto, timestamp: new Date().toISOString() },
     ]);*/
-    setInput('');
+    setInput("");
   };
 
   useEffect(() => {
@@ -228,7 +239,10 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       return false; // false면 기본 뒤로가기 작동
     };
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
     return () => subscription.remove();
   }, []);
 
@@ -246,16 +260,15 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     React.useCallback(() => {
       return () => {
         if (stompClientRef.current) {
-          stompClientRef.current.deactivate();  // STOMP 연결 종료
+          stompClientRef.current.deactivate(); // STOMP 연결 종료
           console.log("🛑 [화면 나감] STOMP 연결 종료");
         }
       };
     }, [])
   );
 
-
   useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
       setTimeout(() => {
         scrollRef.current?.scrollToEnd({ animated: true });
       }, 50);
@@ -264,17 +277,22 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   }, []); // 키보드가 열릴 때 마지막 메시지로 스크롤
 
   return (
-    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+    <SafeAreaViewContext
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      edges={["top", "bottom"]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? (Constants.statusBarHeight || 0) : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={
+          Platform.OS === "ios" ? Constants.statusBarHeight || 0 : 0
+        }
       >
         <View style={styles.container}>
           {/* 상단 헤더 */}
           <View style={styles.header}>
             <Image
-              source={require('../../assets/images/header.png')}
+              source={require("../../assets/images/header.png")}
               style={styles.headerImage}
               resizeMode="cover"
             />
@@ -298,32 +316,43 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
           {/* 메시지 영역 */}
           <ScrollView
             ref={scrollRef}
-            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+            onContentSizeChange={() =>
+              scrollRef.current?.scrollToEnd({ animated: false })
+            }
             style={styles.chatContainer}
             contentContainerStyle={{ paddingBottom: 25 }}
           >
-            {myName && messages.map((msg, idx) => {
-              const isMe = msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
-              console.log(`💬 렌더링 메시지[${idx}]:`, msg.message, '| from:', msg.senderEmail, '| isMe:', isMe);
+            {myName &&
+              messages.map((msg, idx) => {
+                const isMe =
+                  msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
+                console.log(
+                  `💬 렌더링 메시지[${idx}]:`,
+                  msg.message,
+                  "| from:",
+                  msg.senderEmail,
+                  "| isMe:",
+                  isMe
+                );
 
-              return (
-                <View
-                  key={idx}
-                  style={[
-                    styles.messageBubble,
-                    isMe ? styles.myBubble : styles.otherBubble,
-                  ]}
-                >
-                  {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
-                  <Text style={styles.message}>{msg.message}</Text>
-                  {/*msg.timestamp && (
+                return (
+                  <View
+                    key={idx}
+                    style={[
+                      styles.messageBubble,
+                      isMe ? styles.myBubble : styles.otherBubble,
+                    ]}
+                  >
+                    {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
+                    <Text style={styles.message}>{msg.message}</Text>
+                    {/*msg.timestamp && (
                     <Text style={styles.timestamp}>
                       {formatTime(msg.timestamp)} {isMe && (msg.isRead ? '✓✓' : '✓')}
                     </Text>
                   )*/}
-                </View>
-              );
-            })}
+                  </View>
+                );
+              })}
           </ScrollView>
 
           {/* 입력창 */}
@@ -335,7 +364,9 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
               placeholder="메시지를 입력하세요"
             />
             <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-              <Text style={{ color: 'white', fontFamily: 'Pretendard-Medium', }}>전송</Text>
+              <Text style={{ color: "white", fontFamily: "Pretendard-Medium" }}>
+                전송
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -347,26 +378,26 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   chatContainer: {
     flex: 1,
-    padding: 12
+    padding: 12,
   },
   header: {
     height: scaleHeight(90),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    position: "relative",
   },
   headerImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 10,
     padding: 8,
     zIndex: 1,
@@ -380,62 +411,62 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    color: '#000000',
-    fontFamily: 'Pretendard-Medium',
+    color: "#000000",
+    fontFamily: "Pretendard-Medium",
   },
   name2: {
     fontSize: 12,
-    color: '#9E9E9E',
-    fontFamily: 'Pretendard-Medium',
+    color: "#9E9E9E",
+    fontFamily: "Pretendard-Medium",
   },
   messageBubble: {
     padding: 10,
     marginVertical: 6,
     borderRadius: 12,
-    maxWidth: '75%',
+    maxWidth: "75%",
   },
   myBubble: {
-    backgroundColor: '#D4EAE1',
-    alignSelf: 'flex-end',
+    backgroundColor: "#D4EAE1",
+    alignSelf: "flex-end",
   },
   otherBubble: {
-    backgroundColor: '#D9D9D9',
-    alignSelf: 'flex-start',
+    backgroundColor: "#D9D9D9",
+    alignSelf: "flex-start",
   },
   sender: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
-    color: '#363636',
+    color: "#363636",
   },
   message: {
     fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: "Pretendard-Medium",
   },
   timestamp: {
     fontSize: 10,
-    color: '#9E9E9E',
+    color: "#9E9E9E",
     marginTop: 4,
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderTopWidth: 1,
-    borderColor: '#D9D9D9',
+    borderColor: "#D9D9D9",
   },
   input: {
     flex: 1,
     height: 40,
     borderWidth: 1,
-    borderColor: '#D9D9D9',
+    borderColor: "#D9D9D9",
     borderRadius: 20,
     paddingHorizontal: 16,
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: "Pretendard-Medium",
   },
   sendButton: {
     marginLeft: 8,
-    backgroundColor: '#00D282',
+    backgroundColor: "#00D282",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
