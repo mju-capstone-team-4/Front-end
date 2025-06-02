@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  View, Text, StyleSheet, Image, ScrollView, Dimensions,
-  TouchableOpacity, Alert, ActivityIndicator, Modal
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView as SafeAreaViewContext } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Modal,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
+import Constants from "expo-constants";
 
-const API_BASE = Constants.expoConfig?.extra?.API_URL;
-const DEFAULT_IMAGE = require('../../assets/images/appicon.png');
+const API_BASE = process.env.EXPO_PUBLIC_API_URL;
+const DEFAULT_IMAGE = require("../../assets/images/appicon.png");
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈
@@ -38,7 +46,9 @@ type DiagnosisHistoryItem = {
 export default function DiagnosisHistoryScreen() {
   const [history, setHistory] = useState<DiagnosisHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<DiagnosisHistoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<DiagnosisHistoryItem | null>(
+    null
+  );
   const router = useRouter();
 
   /*const fetchAndMergeHistory = async () => {
@@ -101,13 +111,16 @@ export default function DiagnosisHistoryScreen() {
       let totalPages = 1;
 
       while (currentPage < totalPages) {
-        const response = await fetch(`${API_BASE}/disease/record?page=${currentPage}&size=10&sort=createdAt,desc`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${API_BASE}/disease/record?page=${currentPage}&size=10&sort=createdAt,desc`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         const data = await response.json();
 
@@ -129,18 +142,18 @@ export default function DiagnosisHistoryScreen() {
   };
 
   const parseResult = (fullResult: string | null | undefined) => {
-    if (!fullResult || typeof fullResult !== 'string') {
-      return { plant: '알 수 없음', disease: '알 수 없음' };
+    if (!fullResult || typeof fullResult !== "string") {
+      return { plant: "알 수 없음", disease: "알 수 없음" };
     }
 
-    if (!fullResult.includes('_')) {
-      return { plant: '알 수 없음', disease: fullResult };
+    if (!fullResult.includes("_")) {
+      return { plant: "알 수 없음", disease: fullResult };
     }
 
-    const [plant, ...diseaseParts] = fullResult.split('_');
+    const [plant, ...diseaseParts] = fullResult.split("_");
     return {
       plant,
-      disease: diseaseParts.join('_'),
+      disease: diseaseParts.join("_"),
     };
   };
 
@@ -150,14 +163,20 @@ export default function DiagnosisHistoryScreen() {
   }, []);
 
   return (
-    <SafeAreaViewContext style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
+    <SafeAreaViewContext
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      edges={["top", "bottom"]}
+    >
       <View style={styles.header}>
         <Image
-          source={require('../../assets/images/header.png')}
+          source={require("../../assets/images/header.png")}
           style={styles.headerImage}
           resizeMode="cover"
         />
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.titleContainer}>
@@ -170,7 +189,10 @@ export default function DiagnosisHistoryScreen() {
           <ActivityIndicator size="large" color="#00D282" />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
+          showsVerticalScrollIndicator={false}
+        >
           {history.length === 0 ? (
             <Text style={styles.emptyText}>진단 이력이 없습니다.</Text>
           ) : (
@@ -185,7 +207,10 @@ export default function DiagnosisHistoryScreen() {
                   />
                   <Text style={styles.cardPlantName}>{plant}</Text>
                   <Text style={styles.cardPlantDisease}>{disease}</Text>
-                  <TouchableOpacity onPress={() => setSelectedItem(item)} style={styles.detailButton}>
+                  <TouchableOpacity
+                    onPress={() => setSelectedItem(item)}
+                    style={styles.detailButton}
+                  >
                     <Text style={styles.detailButtonText}>상세 정보 보기</Text>
                   </TouchableOpacity>
                 </View>
@@ -207,17 +232,26 @@ export default function DiagnosisHistoryScreen() {
               <Text style={styles.resultLabel}>진단 결과</Text>
               <Text style={styles.resultValue}>{selectedItem?.result}</Text>
               <Text style={styles.resultLabel}>정확도</Text>
-              <Text style={styles.resultValue}>{((selectedItem?.confidence ?? 0) * 100).toFixed(1)}%</Text>
+              <Text style={styles.resultValue}>
+                {((selectedItem?.confidence ?? 0) * 100).toFixed(1)}%
+              </Text>
               <Text style={styles.resultLabel}>질병 정보</Text>
-              <Text style={styles.resultValue}>{selectedItem?.diseaseInfo}</Text>
+              <Text style={styles.resultValue}>
+                {selectedItem?.diseaseInfo}
+              </Text>
               <Text style={styles.resultLabel}>수분 관리</Text>
               <Text style={styles.resultValue}>{selectedItem?.watering}</Text>
               <Text style={styles.resultLabel}>환경 관리</Text>
-              <Text style={styles.resultValue}>{selectedItem?.environment}</Text>
+              <Text style={styles.resultValue}>
+                {selectedItem?.environment}
+              </Text>
               <Text style={styles.resultLabel}>영양 관리</Text>
               <Text style={styles.resultValue}>{selectedItem?.nutrition}</Text>
             </ScrollView>
-            <TouchableOpacity onPress={() => setSelectedItem(null)} style={styles.modalCloseButton}>
+            <TouchableOpacity
+              onPress={() => setSelectedItem(null)}
+              style={styles.modalCloseButton}
+            >
               <Text style={styles.modalCloseText}>닫기</Text>
             </TouchableOpacity>
           </View>
@@ -230,17 +264,17 @@ export default function DiagnosisHistoryScreen() {
 const styles = StyleSheet.create({
   header: {
     height: scaleHeight(90),
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   headerImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 10,
     padding: 8,
     zIndex: 1,
@@ -249,108 +283,108 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 30,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontFamily: 'Pretendard-ExtraBold',
+    fontFamily: "Pretendard-ExtraBold",
   },
   card: {
-    backgroundColor: '#F8F8F8',
+    backgroundColor: "#F8F8F8",
     borderRadius: 12,
     marginBottom: 20,
     padding: 10,
-    overflow: 'hidden',
-    alignItems: 'center',
+    overflow: "hidden",
+    alignItems: "center",
   },
   cardPlantName: {
     fontSize: 16,
-    color: '#000000',
+    color: "#000000",
     marginTop: 10,
-    fontFamily: 'Pretendard-ExtraBold',
+    fontFamily: "Pretendard-ExtraBold",
   },
   cardPlantDisease: {
     fontSize: 14,
-    color: '#363636',
-    textAlign: 'left',
-    fontFamily: 'Pretendard-Medium',
+    color: "#363636",
+    textAlign: "left",
+    fontFamily: "Pretendard-Medium",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    backgroundColor: '#EEEEEE',
+    backgroundColor: "#EEEEEE",
     borderRadius: 8,
   },
   detailButton: {
-    width: '100%',
+    width: "100%",
     marginTop: 10,
-    backgroundColor: '#00D282',
+    backgroundColor: "#00D282",
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 20,
   },
   detailButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    textAlign: 'center',
-    fontFamily: 'Pretendard-ExtraBold',
+    textAlign: "center",
+    fontFamily: "Pretendard-ExtraBold",
   },
   textBox: {
     padding: 15,
   },
   resultLabel: {
     fontSize: 16,
-    color: '#000000',
+    color: "#000000",
     marginTop: 10,
-    fontFamily: 'Pretendard-ExtraBold',
+    fontFamily: "Pretendard-ExtraBold",
   },
   resultValue: {
     fontSize: 14,
-    color: '#363636',
-    textAlign: 'left',
-    fontFamily: 'Pretendard-Medium',
+    color: "#363636",
+    textAlign: "left",
+    fontFamily: "Pretendard-Medium",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    color: '#9E9E9E',
+    color: "#9E9E9E",
     marginTop: 40,
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: "Pretendard-Medium",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    width: '85%',
-    backgroundColor: 'white',
+    width: "85%",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 20,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   modalCloseButton: {
-    width: '100%',
+    width: "100%",
     marginTop: 20,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingVertical: 12,
     paddingHorizontal: 40,
-    backgroundColor: '#00D282',
+    backgroundColor: "#00D282",
     borderRadius: 20,
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontFamily: 'Pretendard-ExtraBold',
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontFamily: "Pretendard-ExtraBold",
   },
 });
