@@ -91,17 +91,8 @@ export default function ChatbotScreen() {
         { headers }
       );
 
-      let roomId;
-      if (res.data.exists) {
-        roomId = res.data.roomId;
-      } else {
-        const createRes = await axios.post(
-          `${CHAT_BASE}/chat/room/private/create?otherMemberId=${userId}`,
-          {},
-          { headers }
-        );
-        roomId = createRes.data;
-      }
+      const roomId = res.data;
+
       console.log("✅ 방 생성 성공 - roomId:", roomId);
 
       router.push({
