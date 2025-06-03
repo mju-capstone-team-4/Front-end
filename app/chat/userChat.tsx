@@ -140,19 +140,12 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
-        /*
+        
         webSocketFactory: () => new WebSocket(wsUrl),
         forceBinaryWSFrames: true,
         appendMissingNULLonIncoming: true,
         reconnectDelay: 5000,
-        */
-        brokerURL: "wss://palnty.shop/connect", // 도메인 그대로
-        connectHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-        appendMissingNULLonIncoming: true,
-        forceBinaryWSFrames: true,
-        reconnectDelay: 5000,
+    
         onConnect: () => {
           console.log("✅ STOMP 연결 완료");
           setIsConnected(true);
