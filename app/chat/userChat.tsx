@@ -24,7 +24,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-const SERVER_URL = "ws://15.164.198.69:8080";
+// const SERVER_URL = "ws://15.164.198.69:8080";
+const SERVER_URL = "wss://palnty.shop";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // 기준 사이즈

@@ -140,7 +140,11 @@ export default function UserProfile() {
               />
             ) : (
               <View style={styles.profileImage}>
-                <PlantyLogo width={scaleWidth(100)} height={scaleWidth(100)} />
+                <Image
+                  source={require("@/assets/images/flower.png")}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />{" "}
               </View>
             )}
           </TouchableOpacity>

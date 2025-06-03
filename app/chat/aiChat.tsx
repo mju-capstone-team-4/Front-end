@@ -53,7 +53,7 @@ export default function AiChat() {
 
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      console.log("🔐 token:", token);
+
       const res = await axios.post(
         `${API_BASE}/chat/bot/ask`,
         { message: input },

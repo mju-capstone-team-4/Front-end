@@ -109,7 +109,8 @@ export default function ChatbotScreen() {
         params: {
           roomId: roomId.toString(),
           partnerName: targetUser.username,
-          partnerImage: targetUser.profileUrl || "../../assets/images/appicon.png",
+          partnerImage:
+            targetUser.profileUrl || "../../assets/images/appicon.png",
         },
       });
     } catch (err) {
@@ -130,7 +131,7 @@ export default function ChatbotScreen() {
             resizeMode="cover"
           />
           <View style={styles.tabContainer}>
-            <TouchableOpacity style={styles.tabActive} onPress={() => { }}>
+            <TouchableOpacity style={styles.tabActive} onPress={() => {}}>
               <Text style={styles.tabTextActive}>거래 채팅</Text>
             </TouchableOpacity>
             <TouchableOpacity
