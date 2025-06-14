@@ -28,18 +28,18 @@ WebBrowser.maybeCompleteAuthSession();
 const API_URL = Constants?.expoConfig?.extra?.API_LOGIN_URL;
 
 // ✅ 글로벌 타입 선언 (global.d.ts에도 있으면 더 좋아요!)
-declare global {
-  var userInfo: {
-    username: string | null;
-    memberId: number | null;
-  };
-}
+// declare global {
+//   var userInfo: {
+//     username: string | null;
+//     memberId: number | null;
+//   };
+// }
 
-// ✅ 전역 변수 초기화
-global.userInfo = {
-  username: null,
-  memberId: null,
-};
+// // ✅ 전역 변수 초기화
+// global.userInfo = {
+//   username: null,
+//   memberId: null,
+// };
 
 // ✅ 토큰 디코딩 함수
 function decodeTokenPayload(token: string) {

@@ -6,7 +6,7 @@ export default ({ config }) => ({
   ...config,
   name: "플랜티",
   slug: "Front-end",
-  version: "1.0.1",
+  version: "1.0.2",
   orientation: "portrait",
   icon: "./assets/images/appicon.png",
   scheme: "myapp",
@@ -15,7 +15,7 @@ export default ({ config }) => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.plantz.planty",
-    buildNumber: "2",
+    buildNumber: "7",
     infoPlist: {
       NSCameraUsageDescription:
         "이 앱은 식물 진단을 위한 사진 촬영을 위해 카메라 접근이 필요합니다.",
@@ -31,10 +31,18 @@ export default ({ config }) => ({
   android: {
     package: "com.plantz.planty",
     adaptiveIcon: {
-      foregroundImage: "./assets/images/appicon_android.png",
+      foregroundImage: "./assets/images/appicon.png",
       backgroundColor: "#ffffff",
     },
     permissions: ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"],
+    plugins: [
+      [
+        "expo-system-ui",
+        {
+          edgeToEdge: true,
+        },
+      ],
+    ],
   },
 
   web: {

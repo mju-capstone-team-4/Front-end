@@ -23,7 +23,7 @@ import {
 } from "@/service/commentService";
 import { deleteQuestion } from "@/service/questionService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import Delete from "@/assets/images/deleteicon.svg";
 const icons = {
   WriteIcon: require("../../../assets/images/write_button.png"),
   DeleteIcon: require("../../../assets/images/trash_icon.png"),
@@ -150,10 +150,7 @@ export default function PostDetail() {
                   style={[styles.actionButton, { marginLeft: 8 }]}
                   onPress={handleDeletePost}
                 >
-                  <Image
-                    source={icons.DeleteIcon}
-                    style={{ width: 30, height: 30 }}
-                  />
+                  <Delete style={{ marginTop: 5 }} />
                 </TouchableOpacity>
               </View>
             )}
