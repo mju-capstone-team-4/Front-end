@@ -159,6 +159,20 @@ export default function LoginScreen() {
         >
           <Text>테스트 계정 1로 시작</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.test]}
+          onPress={async () => {
+            await AsyncStorage.removeItem("accessToken");
+
+            const token = await getToken("test1@gmail.com");
+            await AsyncStorage.setItem("accessToken", token);
+            processToken(token);
+            console.log("새로 저장됨");
+            router.replace("/(tabs)/board");
+          }}
+        >
+          <Text>테스트 계정 2로 시작</Text>
+        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
