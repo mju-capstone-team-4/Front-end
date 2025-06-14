@@ -24,15 +24,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView as SafeAreaViewContext } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-// const SERVER_URL = "ws://15.164.198.69:8080";
 const SERVER_URL = "wss://palnty.shop";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-// 기준 사이즈
 const BASE_WIDTH = 414;
 const BASE_HEIGHT = 896;
 
-// 스케일 함수 -> 추후 반응형으로 변경
 const scaleWidth = (size: number) => (SCREEN_WIDTH / BASE_WIDTH) * size;
 const scaleHeight = (size: number) => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
@@ -60,8 +56,8 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
   const API_BASE = process.env.EXPO_PUBLIC_API_URL || "";
   const CHAT_BASE = API_BASE.replace("/api", "");
   const [isConnected, setIsConnected] = useState(false);
+  const subscriptionRef = useRef<any>(null);
 
-  // JWT에서 이메일 추출
   const getMyEmailFromToken = async (): Promise<string | null> => {
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) return null;
@@ -75,12 +71,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     }
   };
 
-  // 내 이메일 가져오기
   useEffect(() => {
     const fetchEmail = async () => {
       try {
-        const me = await getMypage(); // 이름
-        const email = await getMyEmailFromToken(); // 이메일
+        const me = await getMypage();
+        const email = await getMyEmailFromToken();
         setMyName(me.username);
         setMyEmail(email);
         console.log("📩 내 이름:", me.username);
@@ -92,7 +87,6 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     fetchEmail();
   }, []);
 
-  // 메시지 히스토리 불러오기
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -110,7 +104,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
 
         const mapped = res.data.map((msg: ChatMessage) => {
           if (msg.senderEmail?.toLowerCase() === myEmail?.toLowerCase()) {
-            return { ...msg, senderEmail: myName }; // ✅ 내 이름으로 강제 변경
+            return { ...msg, senderEmail: myName }; // 이름으로 교체 (주의)
           }
           return msg;
         });
@@ -127,24 +121,20 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     fetchHistory();
   }, [roomId]);
 
-  const subscriptionRef = useRef<any>(null);
-
-  // STOMP 연결 및 수신 처리
   useEffect(() => {
+    let client: Client;
+
     const setupStomp = async () => {
       const token = await AsyncStorage.getItem("accessToken");
       if (!token) {
         console.error("❌ 토큰이 없습니다. STOMP 연결 중단.");
         return;
       }
-      //console.log(token)
+
       const wsUrl = `${SERVER_URL}/connect?token=${encodeURIComponent(token)}`;
 
-      const client = new Client({
-        webSocketFactory: () =>
-          new WebSocket(
-            `wss://palnty.shop/connect?token=${encodeURIComponent(token)}`
-          ),
+      client = new Client({
+        webSocketFactory: () => new WebSocket(wsUrl),
         reconnectDelay: 5000,
         appendMissingNULLonIncoming: true,
         forceBinaryWSFrames: true,
@@ -179,45 +169,33 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
 
       client.activate();
       stompClientRef.current = client;
-
-      return () => {
-        if (subscriptionRef.current) {
-          subscriptionRef.current.unsubscribe();
-          console.log("🔕 채팅방 구독 해제");
-        }
-        stompClientRef.current?.deactivate();
-        console.log("🛑 STOMP 연결 종료");
-      };
     };
+
     setupStomp();
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        console.log("🔕 채팅방 구독 해제");
+      }
+      client?.deactivate();
+      console.log("🛑 STOMP 연결 종료");
+    };
   }, [roomId]);
 
-  // 메시지 전송
   const sendMessage = () => {
-    /*console.log("🚀 전송 시도:", input);
-
-    const connected = stompClientRef.current?.connected;
-    console.log("📡 STOMP 연결 상태:", connected);
-    console.log("👤 내 이메일:", myEmail);
-
-    if (!input.trim() || !connected || !myEmail) {
-      console.warn("⚠️ 메시지 전송 조건 불충분. 전송 중단.");
-      return;
-    }*/
-    const client = stompClientRef.current;
-
     if (!input.trim() || !stompClientRef.current?.connected || !myName) {
       console.warn("⚠️ 메시지 전송 조건 불충분. 전송 중단.");
       return;
     }
 
     const messageDto = {
-      senderEmail: myName,
+      senderEmail: myName, // 💡 실제 이메일이 아니라 이름을 넣고 있음
       message: input,
     };
 
     try {
-      client?.publish({
+      stompClientRef.current?.publish({
         destination: `/publish/${roomId}`,
         body: JSON.stringify(messageDto),
       });
@@ -226,20 +204,14 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       console.error("❌ 메시지 publish 실패:", err);
     }
 
-    /*setMessages((prev) => [
-      ...prev,
-      { ...messageDto, timestamp: new Date().toISOString() },
-    ]);*/
     setInput("");
   };
 
   useEffect(() => {
     const onBackPress = () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate(); // STOMP 연결 종료
-        console.log("🛑 [뒤로가기] STOMP 연결 종료");
-      }
-      return false; // false면 기본 뒤로가기 작동
+      stompClientRef.current?.deactivate();
+      console.log("🛑 [뒤로가기] STOMP 연결 종료");
+      return false;
     };
 
     const subscription = BackHandler.addEventListener(
@@ -249,23 +221,11 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
     return () => subscription.remove();
   }, []);
 
-  // 타임스탬프 포맷
-  /*const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const period = hours < 12 ? '오전' : '오후';
-    const hour12 = hours % 12 || 12;
-    return `${period} ${hour12}:${minutes}`;
-  };*/
-
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        if (stompClientRef.current) {
-          stompClientRef.current.deactivate(); // STOMP 연결 종료
-          console.log("🛑 [화면 나감] STOMP 연결 종료");
-        }
+        stompClientRef.current?.deactivate();
+        console.log("🛑 [화면 나감] STOMP 연결 종료");
       };
     }, [])
   );
@@ -277,7 +237,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
       }, 50);
     });
     return () => showSub.remove();
-  }, []); // 키보드가 열릴 때 마지막 메시지로 스크롤
+  }, []);
 
   return (
     <SafeAreaViewContext
@@ -292,7 +252,6 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
         }
       >
         <View style={styles.container}>
-          {/* 상단 헤더 */}
           <View style={styles.header}>
             <Image
               source={require("../../assets/images/header.png")}
@@ -301,10 +260,8 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
             />
             <TouchableOpacity
               onPress={() => {
-                if (stompClientRef.current) {
-                  stompClientRef.current.deactivate(); // STOMP 연결 종료
-                  console.log("🛑 [← 버튼] STOMP 연결 종료");
-                }
+                stompClientRef.current?.deactivate();
+                console.log("🛑 [← 버튼] STOMP 연결 종료");
                 router.back();
               }}
               style={styles.backButton}
@@ -316,7 +273,6 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
             <Text style={styles.name2}> 님과의 대화</Text>
           </View>
 
-          {/* 메시지 영역 */}
           <ScrollView
             ref={scrollRef}
             onContentSizeChange={() =>
@@ -328,16 +284,7 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
             {myName &&
               messages.map((msg, idx) => {
                 const isMe =
-                  msg.senderEmail?.toLowerCase() === myName?.toLowerCase();
-                console.log(
-                  `💬 렌더링 메시지[${idx}]:`,
-                  msg.message,
-                  "| from:",
-                  msg.senderEmail,
-                  "| isMe:",
-                  isMe
-                );
-
+                  msg.senderEmail?.toLowerCase() === myName.toLowerCase();
                 return (
                   <View
                     key={idx}
@@ -346,19 +293,12 @@ export default function UserChat({ roomId, partnerName, partnerImage }: Props) {
                       isMe ? styles.myBubble : styles.otherBubble,
                     ]}
                   >
-                    {/*!isMe && <Text style={styles.sender}>{msg.senderEmail}</Text>*/}
                     <Text style={styles.message}>{msg.message}</Text>
-                    {/*msg.timestamp && (
-                    <Text style={styles.timestamp}>
-                      {formatTime(msg.timestamp)} {isMe && (msg.isRead ? '✓✓' : '✓')}
-                    </Text>
-                  )*/}
                   </View>
                 );
               })}
           </ScrollView>
 
-          {/* 입력창 */}
           <View style={styles.inputContainer}>
             <TextInput
               value={input}
@@ -436,20 +376,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#D9D9D9",
     alignSelf: "flex-start",
   },
-  sender: {
-    fontWeight: "bold",
-    marginBottom: 4,
-    color: "#363636",
-  },
   message: {
     fontSize: 15,
     fontFamily: "Pretendard-Medium",
-  },
-  timestamp: {
-    fontSize: 10,
-    color: "#9E9E9E",
-    marginTop: 4,
-    alignSelf: "flex-end",
   },
   inputContainer: {
     flexDirection: "row",
