@@ -23,6 +23,7 @@
     },
     "android": {
       "package": "com.plantz.planty",
+
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

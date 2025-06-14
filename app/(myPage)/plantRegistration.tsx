@@ -185,6 +185,11 @@ export default function PlantRegistration(): JSX.Element {
             const newVal =
               typeof val === "function" ? val(selectedPlantId) : val;
             setSelectedPlantId(newVal);
+
+            const selectedLabel = plantOptions.find(
+              (opt) => opt.value === newVal
+            )?.label;
+            if (selectedLabel) setPlantNameSearch(selectedLabel);
           }}
           items={plantOptions}
           setItems={setPlantOptions}

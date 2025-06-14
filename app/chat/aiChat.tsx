@@ -82,7 +82,7 @@ export default function AiChat() {
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={
           Platform.OS === "ios" ? Constants.statusBarHeight || 0 : 0
         }

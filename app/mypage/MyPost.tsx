@@ -28,17 +28,7 @@ export default function MyPost(): React.JSX.Element {
     </TouchableOpacity>
   );
 }
-// /* Rectangle 34625143 */
 
-// position: absolute;
-// width: 366px;
-// height: 57px;
-// left: 24px;
-// top: 702px;
-
-// background: #FFFFFF;
-// box-shadow: 0px 0px 4px #E4E4E4;
-// border-radius: 20px;
 
 const styles = StyleSheet.create({
   container: {
